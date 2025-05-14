@@ -1,0 +1,71 @@
+# ===== Go (Golang) =====
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output of go build
+/build/
+/bin/
+/pkg/
+
+# Go modules
+go.sum
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Coverage
+*.coverprofile
+
+# ===== C# Blazor WebAssembly =====
+## Build results
+bin/
+obj/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+## Publish directory
+wwwroot/dist/
+wwwroot/build/
+wwwroot/_framework/
+wwwroot/*.gz
+wwwroot/*.br
+
+## Logs
+*.log
+
+## Rider project files
+.idea/
+*.sln.iml
+
+## Visual Studio Code
+.vscode/
+
+# Backup & temp files
+*.tmp
+*.bak
+*.orig
+*.rej
+
+# Others
+.DS_Store
+Thumbs.db
+
+# Optional: node_modules if using NPM/Yarn with Blazor
+node_modules/
+poc/
