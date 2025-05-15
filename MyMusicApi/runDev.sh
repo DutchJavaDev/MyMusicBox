@@ -1,5 +1,5 @@
 #!/bin/bash
 
-sudo go build main.go
+#go build main.go
 
-sudo run ./main -port=8081
+go run main.go -port=8081 -devurl
