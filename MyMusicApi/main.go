@@ -86,7 +86,8 @@ func main() {
 			AudioQuality("0").
 			AudioFormat("opus").
 			NoKeepVideo().
-			Output("%(extractor)s - %(title)s.%(ext)s").
+			// Output("%(extractor)s - %(title)s.%(ext)s").
+			Output("%(title)s.%(ext)s").
 			Cookies(string(cookiesPath))
 
 		result, err := dl.Run(context.TODO(), "https://www.youtube.com/watch?v=dQw4w9WgXcQ")
