@@ -54,7 +54,7 @@ options.add_argument('--user-agent=Mozilla/5.0 (Linux; Android 10; Pixel 3) Appl
 # Initialize undetected-chromedriver (avoids bot detection)
 # Connect to Selenium in Docker
 driver = webdriver.Remote(
-    command_executor='http://chrome:4444/wd/hub',
+    command_executor='http://localhost:4444/wd/hub',
     options=options,
 )
 
