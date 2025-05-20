@@ -94,13 +94,15 @@ try:
         cookies = driver.get_cookies()
         netscape_format = json_to_netscape(cookies)
 
-        with open("youtube_cookies.json", "w", encoding="utf-8") as f:
-            json.dump(cookies, f)
-
         with open("cookies_netscape", "w", encoding="utf-8") as cn:
             cn.write(netscape_format)
 
-        print("Cookies saved to 'youtube_cookies.json'")
+        print("cookies converted and saved to cookies_netscape")
+
+        # with open("youtube_cookies.json", "w", encoding="utf-8") as f:
+        #     json.dump(cookies, f)
+
+        # print("Cookies saved to 'youtube_cookies.json'")
     else:
         print("❌ Login failed. Check credentials or CAPTCHA.")
 
