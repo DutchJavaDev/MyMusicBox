@@ -74,3 +74,5 @@ cookies_netscape
 youtube_cookies.json
 main
 *.opus
+video_archive.db
+music/
