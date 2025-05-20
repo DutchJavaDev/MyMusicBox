@@ -76,3 +76,4 @@ main
 *.opus
 video_archive.db
 music/
+*.db
