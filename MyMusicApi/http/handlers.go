@@ -72,11 +72,12 @@ func downloadPlaylist(playlistUrl string) {
 		AudioFormat("opus").
 		PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
 		DownloadArchive("video_archive.db").
+		EmbedMetadata().
+		EmbedThumbnail().
 		ForceIPv4().
-		ParseMetadata("").
 		NoKeepVideo().
-		Output("music/%(playlist)s/%(title)s.%(ext)s").
-		SleepInterval(5).MaxSleepInterval(15).
+		Output("music/%(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s").
+		SleepInterval(8).MaxSleepInterval(20).
 		Cookies("selenium/cookies_netscape")
 
 	result, errr := dl.Run(context.TODO(), playlistUrl)
