@@ -1,6 +1,8 @@
 import json
 import random
 import time
+import os
+from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -31,6 +33,8 @@ def json_to_netscape(cookies):
 
     return "\n".join(lines)
 
+# Load env files if any
+load_dotenv()
 # Configure Chrome options for headless mode
 options = Options()
 #options.binary_location = "/usr/bin/chromium-browser"
@@ -54,7 +58,7 @@ options.add_argument('--user-agent=Mozilla/5.0 (Linux; Android 10; Pixel 3) Appl
 # Initialize undetected-chromedriver (avoids bot detection)
 # Connect to Selenium in Docker
 driver = webdriver.Remote(
-    command_executor='http://chrome:4444/wd/hub',
+    command_executor='http://localhost:4444/wd/hub',
     options=options,
 )
 
@@ -67,10 +71,10 @@ try:
     #view source of all....
     # with open("email.html", "w") as i:
     #     i.write(driver.page_source)
-
+    account_email = os.getenv("EMAIL")
     # Step 2: Enter email
     email = driver.find_element(By.ID, "identifierId")
-    email.send_keys("swa97479@gmail.com")  # Replace with your email
+    email.send_keys(account_email)  # Replace with your email
     driver.find_element(By.ID, "identifierNext").click()
     print("Email submitted. Waiting for password page...")
     human_delay()
@@ -79,14 +83,16 @@ try:
     #     i.write(driver.page_source)
 
     # Step 3: Enter password
+    account_email_password = os.getenv("EMAIL_PASSWORD")
     password = driver.find_element(By.NAME, "Passwd")
-    password.send_keys("Kwende1995!")  # Replace with your password
+    password.send_keys(account_email_password)  # Replace with your password
     driver.find_element(By.ID, "passwordNext").click()
     print("Password submitted. Waiting for login...")
-    time.sleep(30)
+    human_delay()
 
     # Step 4: Verify login by checking YouTube
-    driver.get("https://www.youtube.com/watch?v=qqQcFCYR6rM")
+    # baby shark daadodododaodoaodoadoaod :
+    driver.get("https://www.youtube.com/watch?v=XqZsoesa55w")
     if "YouTube" in driver.title:
         print("✅ Login successful!")
         
@@ -94,13 +100,10 @@ try:
         cookies = driver.get_cookies()
         netscape_format = json_to_netscape(cookies)
 
-        with open("youtube_cookies.json", "w", encoding="utf-8") as f:
-            json.dump(cookies, f)
-
         with open("cookies_netscape", "w", encoding="utf-8") as cn:
             cn.write(netscape_format)
-
-        print("Cookies saved to 'youtube_cookies.json'")
+            
+        print("cookies converted and saved to cookies_netscape")
     else:
         print("❌ Login failed. Check credentials or CAPTCHA.")
 

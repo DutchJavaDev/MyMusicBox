@@ -1,40 +1,50 @@
 package main
 
 import (
+	"api/db"
+	"api/http"
+	"api/util"
 	"context"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lrstanley/go-ytdlp"
 )
 
-func test() {}
-
 func main() {
+	config := util.GetConfig()
+
+	db.CreateDatabase()
+
 	// If yt-dlp isn't installed yet, download and cache it for further use.
 	ytdlp.MustInstall(context.TODO(), nil)
-	router := gin.Default()
 
-	api := router.Group("/api")
-	{
-		api.GET("/randonData", func(ctx *gin.Context) {
-
-			dl := ytdlp.New().
-				FormatSort("res,ext:mp4:m4a").
-				RecodeVideo("mp4").
-				Output("%(extractor)s - %(title)s.%(ext)s").
-				Cookies("cookies.txt")
-
-			result, err := dl.Run(context.TODO(), "https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-			if err != nil {
-				ctx.JSON(500, gin.H{
-					"message": err.Error(),
-				})
-			} else {
-				ctx.JSON(200, gin.H{
-					"message": result,
-				})
-			}
-		})
+	if config.UseDevUrl {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
 	}
-	router.Run() // listen and serve on 0.0.0.0:8080
+
+	engine := gin.Default()
+
+	engine.SetTrustedProxies(nil)
+
+	apiGroup := engine.Group(util.GetApiGroupUrl(config.UseDevUrl))
+
+	apiGroup.POST("/music", http.AddMusic)
+
+	apiGroup.GET("/music", http.GetMusic)
+
+	apiGroup.GET("/playlist/download", http.DownloadPlaylist)
+
+	apiGroup.GET("/dryrun", http.DryRun)
+
+	if config.DevPort != "" {
+		devPort := "127.0.0.1:" + config.DevPort
+		fmt.Println("Running on development port")
+		engine.Run(devPort)
+	} else {
+		engine.Run() // listen and serve on 0.0.0.0:8080
+	}
+
 }

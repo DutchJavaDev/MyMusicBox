@@ -69,3 +69,12 @@ Thumbs.db
 # Optional: node_modules if using NPM/Yarn with Blazor
 node_modules/
 poc/
+
+cookies_netscape
+youtube_cookies.json
+main
+*.opus
+video_archive.db
+music/
+*.db
+*.env
