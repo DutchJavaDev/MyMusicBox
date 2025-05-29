@@ -2,10 +2,11 @@ package util
 
 import (
 	"api/logging"
+	"api/models"
 	"flag"
 )
 
-func GetConfig() Config {
+func GetConfig() models.Config {
 	var devPort string
 	flag.StringVar(&devPort, "port", "", "development port")
 
@@ -17,7 +18,7 @@ func GetConfig() Config {
 	// only ouput my logs when in debug mode
 	logging.OutputLog = devUrl
 
-	return Config{
+	return models.Config{
 		UseDevUrl: devUrl,
 		DevPort:   devPort,
 	}
