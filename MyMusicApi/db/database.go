@@ -2,84 +2,99 @@ package db
 
 import (
 	"api/logging"
+	"context"
 	"database/sql"
+	"fmt"
 	"os"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/lib/pq"
 )
 
-const databaseFileName = "localDatabase.db"
-
-func CreateDatabase() {
-	db, err := sql.Open("sqlite", databaseFileName)
-	defer db.Close()
-
-	if err != nil {
-		panic(err)
-	}
-
-	initScriptPath := "db/init_script.sql"
-
-	initQuery, err := os.ReadFile(initScriptPath)
-
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = db.Exec(string(initQuery))
-
-	if err != nil {
-		panic(err)
-	}
+type PostgresDb struct {
+	connection *sql.DB
+	Error      error
 }
 
-func createConnection() (*sql.DB, error) {
-	return sql.Open("sqlite", databaseFileName)
+func (pdb *PostgresDb) InitDatabase() (created bool) {
+
+	baseConnectionString := "user=postgres dbname=postgres password=%s host=127.0.0.1 port=5432 sslmode=disable"
+
+	connectionString := fmt.Sprintf(baseConnectionString, os.Getenv("POSTGRES_PASSWORD"))
+
+	pdb.connection, pdb.Error = sql.Open("postgres", connectionString)
+
+	if pdb.Error != nil {
+		logging.Error(fmt.Sprintf("Failed to init database connection: %s", pdb.Error.Error()))
+		return false
+	}
+	return true
 }
 
-func InsertMusic(music *Music) {
-	con, _ := createConnection()
-	defer con.Close()
+func (pdb *PostgresDb) Close() {
+	pdb.connection.Close()
+}
 
-	query := "insert into music (Name, Url, Path) values (?, ?, ?)"
+func (pdb *PostgresDb) GetAllSongs(ctx context.Context) (songs []Song, error error) {
 
-	prep, _ := con.Prepare(query)
-	defer prep.Close()
+	query := "SELECT Id, Name, Path, Duration, SourceURL, UpdatedAt FROM Song" // order by?
 
-	result, err := prep.Exec(music.Name, music.Url, music.Path)
+	rows, err := pdb.connection.QueryContext(ctx, query)
+	defer rows.Close()
 
 	if err != nil {
-		logging.Log(err.Error())
+		logging.Error(err.Error())
+		return nil, err
 	}
 
-	row, _ := result.LastInsertId()
+	var song Song
 
-	logging.Log(row)
+	songs = make([]Song, 0)
 
-}
-
-func GetMusic() *[]Music {
-	con, _ := createConnection()
-	defer con.Close()
-
-	query := "select Id, Name, Url, Path from music"
-
-	var m Music
-
-	row, _ := con.Query(query)
-
-	musics := make([]Music, 0)
-
-	for row.Next() {
-		scanError := row.Scan(&m.Id, &m.Name, &m.Url, &m.Path)
+	for rows.Next() {
+		scanError := rows.Scan(&song.Id, &song.Name, &song.Path, &song.Duration, &song.SourceURL, &song.UpdatedAt)
 
 		if scanError != nil {
-			logging.Log(scanError.Error())
+			logging.Error(scanError.Error())
 			continue
 		}
 
-		musics = append(musics, m)
+		songs = append(songs, song)
 	}
 
-	return &musics
+	return songs, nil
+}
+
+func (pdb *PostgresDb) AddSong(song Song) (lastInsertedId int64, error error) {
+
+	query := `INSERT INTO song (name, sourceurl, path, duration) VALUES ($1, $2, $3, $4) RETURNING Id`
+
+	// could add request context?
+	transaction, err := pdb.connection.Begin()
+
+	statement, err := transaction.Prepare(query)
+	defer statement.Close()
+
+	if err != nil {
+		transaction.Rollback()
+		logging.Error(err.Error())
+		return -1, err
+	}
+
+	err = statement.QueryRow(song.Name, song.SourceURL, song.Path, song.Duration).Scan(&lastInsertedId)
+
+	if err != nil {
+		logging.Error(err.Error())
+		transaction.Rollback()
+		return -1, err
+	}
+
+	err = transaction.Commit()
+
+	if err != nil {
+		logging.Error(err.Error())
+		transaction.Rollback()
+		return -1, err
+	}
+
+	return lastInsertedId, nil
 }
