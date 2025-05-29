@@ -1,11 +1,10 @@
 package main
 
 import (
-	"api/db"
 	"api/http"
+	"api/logging"
 	"api/util"
 	"context"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lrstanley/go-ytdlp"
@@ -13,9 +12,6 @@ import (
 
 func main() {
 	config := util.GetConfig()
-
-	db.CreateDatabase()
-
 	// If yt-dlp isn't installed yet, download and cache it for further use.
 	ytdlp.MustInstall(context.TODO(), nil)
 
@@ -29,11 +25,11 @@ func main() {
 
 	engine.SetTrustedProxies(nil)
 
-	apiGroup := engine.Group(util.GetApiGroupUrl(config.UseDevUrl))
+	apiGroup := engine.Group(util.GetApiGroupUrlV1(config.UseDevUrl))
 
-	apiGroup.POST("/music", http.AddMusic)
+	apiGroup.POST("/add/song", http.AddSong)
 
-	apiGroup.GET("/music", http.GetMusic)
+	apiGroup.GET("/songs", http.GetSongs)
 
 	apiGroup.GET("/playlist/download", http.DownloadPlaylist)
 
@@ -41,7 +37,7 @@ func main() {
 
 	if config.DevPort != "" {
 		devPort := "127.0.0.1:" + config.DevPort
-		fmt.Println("Running on development port")
+		logging.Info("Running on development port")
 		engine.Run(devPort)
 	} else {
 		engine.Run() // listen and serve on 0.0.0.0:8080
