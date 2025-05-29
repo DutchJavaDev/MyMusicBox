@@ -25,15 +25,24 @@ func main() {
 
 	engine.SetTrustedProxies(nil)
 
-	apiGroup := engine.Group(util.GetApiGroupUrlV1(config.UseDevUrl))
+	apiv1Group := engine.Group(util.GetApiGroupUrlV1(config.UseDevUrl))
 
-	apiGroup.POST("/add/song", http.AddSong)
+	apiv1Group.GET("/songs", http.FetchSongs)
+	apiv1Group.GET("/playlist", http.FetchPlaylists)
+	apiv1Group.GET("/playlist/:playlistId", http.FetchPlaylistSongs)
 
-	apiGroup.GET("/songs", http.GetSongs)
+	apiv1Group.POST("/playlist", http.InsertPlaylist)
+	apiv1Group.POST("/playlistsong/:playlistId/:songId", http.InsertPlaylistSong)
 
-	apiGroup.GET("/playlist/download", http.DownloadPlaylist)
+	apiv1Group.DELETE("/playlist/:playlistId", http.DeletePlaylist)
+	apiv1Group.DELETE("playlistsong/:playlistId/:songId", http.DeletePlaylistSong)
 
-	apiGroup.GET("/dryrun", http.DryRun)
+	// Ignore
+	apiv1Group.GET("/playlist/download", http.DownloadPlaylist)
+
+	apiv1Group.GET("/dryrun", http.DryRun)
+
+	apiv1Group.POST("/add/song", http.AddSong)
 
 	if config.DevPort != "" {
 		devPort := "127.0.0.1:" + config.DevPort
