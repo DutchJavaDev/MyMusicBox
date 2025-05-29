@@ -23,10 +23,10 @@ func GetConfig() Config {
 	}
 }
 
-func GetApiGroupUrl(useDevUrl bool) string {
+func GetApiGroupUrlV1(useDevUrl bool) string {
 	if useDevUrl {
-		return "/dev/api"
+		return "/dev/api/v1"
 	} else {
-		return "/api"
+		return "/api/v1"
 	}
 }
