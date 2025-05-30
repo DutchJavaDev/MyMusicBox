@@ -11,11 +11,11 @@ import (
 )
 
 func main() {
-	config := util.GetConfig()
+	util.LoadConfig()
 	// If yt-dlp isn't installed yet, download and cache it for further use.
 	ytdlp.MustInstall(context.TODO(), nil)
 
-	if config.UseDevUrl {
+	if util.Config.UseDevUrl {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
@@ -25,7 +25,7 @@ func main() {
 
 	engine.SetTrustedProxies(nil)
 
-	apiv1Group := engine.Group(util.GetApiGroupUrlV1(config.UseDevUrl))
+	apiv1Group := engine.Group(util.GetApiGroupUrlV1(util.Config.UseDevUrl))
 
 	apiv1Group.GET("/songs", http.FetchSongs)
 	apiv1Group.GET("/playlist", http.FetchPlaylists)
@@ -39,13 +39,11 @@ func main() {
 
 	// Ignore
 	apiv1Group.GET("/playlist/download", http.DownloadPlaylist)
-
-	apiv1Group.GET("/dryrun", http.DryRun)
-
+	// apiv1Group.GET("/dryrun", http.DryRun)
 	apiv1Group.POST("/add/song", http.AddSong)
 
-	if config.DevPort != "" {
-		devPort := "127.0.0.1:" + config.DevPort
+	if util.Config.DevPort != "" {
+		devPort := "127.0.0.1:" + util.Config.DevPort
 		logging.Info("Running on development port")
 		engine.Run(devPort)
 	} else {

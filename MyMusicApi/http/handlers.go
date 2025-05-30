@@ -2,72 +2,65 @@ package http
 
 import (
 	"api/db"
-	"api/logging"
 	"api/models"
-	"context"
 	"fmt"
 	"math/rand"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lrstanley/go-ytdlp"
 )
 
-// begin fetch
 func FetchSongs(ctx *gin.Context) {
 	db := db.PostgresDb{}
 
-	defer db.Close()
+	defer db.CloseConnection()
 
-	if db.InitDatabase() {
+	if db.OpenConnection() {
 		songs, err := db.FetchSongs(ctx.Request.Context())
 		if err != nil {
-			ctx.JSON(500, err.Error())
+			ctx.JSON(500, models.ErrorResponse(err.Error()))
 			return
 		}
-		ctx.JSON(200, songs)
+		ctx.JSON(200, models.OkResponse(songs, fmt.Sprintf("Found %d songs", len(songs))))
 	} else {
-		ctx.JSON(500, db.Error)
+		ctx.JSON(500, models.ErrorResponse(db.Error))
 	}
 }
 
 func FetchPlaylists(ctx *gin.Context) {
 	db := db.PostgresDb{}
-	defer db.Close()
+	defer db.CloseConnection()
 
-	if db.InitDatabase() {
-		songs, err := db.FetchPlaylists(ctx.Request.Context())
+	if db.OpenConnection() {
+		playlists, err := db.FetchPlaylists(ctx.Request.Context())
 		if err != nil {
-			ctx.JSON(500, err.Error())
+			ctx.JSON(500, models.ErrorResponse(err))
 			return
 		}
-		ctx.JSON(200, songs)
+		ctx.JSON(200, models.OkResponse(playlists, fmt.Sprintf("Found %d playlist", len(playlists))))
 	} else {
-		ctx.JSON(500, db.Error)
+		ctx.JSON(500, models.ErrorResponse(db.Error))
 	}
 }
 
 func FetchPlaylistSongs(ctx *gin.Context) {
 	db := db.PostgresDb{}
-	defer db.Close()
+	defer db.CloseConnection()
 
 	playlistId, _ := strconv.Atoi(ctx.Param("playlistId"))
 
-	if db.InitDatabase() {
+	if db.OpenConnection() {
 		songs, err := db.FetchPlaylistSongs(ctx.Request.Context(), playlistId)
 		if err != nil {
-			ctx.JSON(500, err.Error())
+			ctx.JSON(500, models.ErrorResponse(err))
 			return
 		}
-		ctx.JSON(200, songs)
+		ctx.JSON(200, models.OkResponse(songs, fmt.Sprintf("Found %d songs in playlist %d", len(songs), playlistId)))
 	} else {
-		ctx.JSON(500, db.Error)
+		ctx.JSON(500, models.ErrorResponse(db.Error))
 	}
 }
 
-// end fetch
-
-// begin insert
 func InsertPlaylist(ctx *gin.Context) {
 
 	var playlist models.Playlist
@@ -75,79 +68,84 @@ func InsertPlaylist(ctx *gin.Context) {
 	ctx.ShouldBindBodyWithJSON(&playlist)
 
 	db := db.PostgresDb{}
-	defer db.Close()
+	defer db.CloseConnection()
 
-	if db.InitDatabase() {
+	if db.OpenConnection() {
 		id, err := db.InsertPlaylist(playlist)
 
 		if err != nil {
-			ctx.JSON(500, err.Error())
+			ctx.JSON(500, models.ErrorResponse(err))
 			return
 		}
 
-		ctx.JSON(200, gin.H{"playlistId": id})
+		ctx.JSON(200, models.OkResponse(gin.H{"playlistId": id}, "Created new playlist"))
 	} else {
-		ctx.JSON(500, db.Error)
+		ctx.JSON(500, models.ErrorResponse(db.Error))
 	}
 }
 
 func InsertPlaylistSong(ctx *gin.Context) {
 	db := db.PostgresDb{}
-	defer db.Close()
+	defer db.CloseConnection()
 
 	playlistId, _ := strconv.Atoi(ctx.Param("playlistId"))
 	songId, _ := strconv.Atoi(ctx.Param("songId"))
 
-	if db.InitDatabase() {
+	if db.OpenConnection() {
 		id, err := db.InsertPlaylistSong(playlistId, songId)
 
 		if err != nil {
-			ctx.JSON(500, err.Error())
+			ctx.JSON(500, models.ErrorResponse(err))
 			return
 		}
-		ctx.JSON(200, gin.H{"playlistSongId": id})
+		ctx.JSON(200, models.OkResponse(gin.H{"playlistSongId": id}, fmt.Sprintf("Added song %d to playlist %d", songId, playlistId)))
 	} else {
-		ctx.JSON(500, db.Error)
+		ctx.JSON(500, models.ErrorResponse(db.Error))
 	}
 }
 
-// end insert
-
-// begin delete
 func DeletePlaylist(ctx *gin.Context) {
 	db := db.PostgresDb{}
-	defer db.Close()
+	defer db.CloseConnection()
 
 	id, _ := strconv.Atoi(ctx.Param("playlistId"))
 
-	if db.InitDatabase() {
-		err := db.DeletePlaylistById(id)
+	if db.OpenConnection() {
+		err := db.DeletePlaylist(id)
 		if err != nil {
-			ctx.JSON(500, err.Error())
+			ctx.JSON(500, models.ErrorResponse(err))
 			return
 		}
 		ctx.Status(200)
+	} else {
+		ctx.JSON(500, models.ErrorResponse(db.Error))
 	}
 }
 
 func DeletePlaylistSong(ctx *gin.Context) {
 	db := db.PostgresDb{}
-	defer db.Close()
+	defer db.CloseConnection()
 
 	playlistId, _ := strconv.Atoi(ctx.Param("playlistId"))
 	songId, _ := strconv.Atoi(ctx.Param("songId"))
 
-	if db.InitDatabase() {
+	if db.OpenConnection() {
 		err := db.DeletePlaylistSong(playlistId, songId)
 		if err != nil {
-			ctx.JSON(500, err.Error())
+			ctx.JSON(500, models.ErrorResponse(err))
 			return
 		}
 		ctx.Status(200)
+	} else {
+		ctx.JSON(500, models.ErrorResponse(db.Error))
 	}
 }
 
-// end delete
+func DownloadRequest(ctx *gin.Context) {
+	var request models.DownloadRequest
+	ctx.ShouldBindBodyWithJSON(&request)
+
+}
 
 // Downloads and converts playlist videos to audio only
 func DownloadPlaylist(ctx *gin.Context) {
@@ -162,64 +160,64 @@ func DownloadPlaylist(ctx *gin.Context) {
 
 // Exports playlist data to file
 // Does not download and convert video
-func DryRun(ctx *gin.Context) {
-	var urlRequest models.UrlRequest
+// func DryRun(ctx *gin.Context) {
+// 	var urlRequest models.UrlRequest
 
-	ctx.ShouldBindBodyWithJSON(&urlRequest)
+// 	ctx.ShouldBindBodyWithJSON(&urlRequest)
 
-	go dryRun(urlRequest.Url)
+// 	go dryRun(urlRequest.Url)
 
-	ctx.String(200, "Doing a dry run!")
-}
+// 	ctx.String(200, "Doing a dry run!")
+// }
 
-func dryRun(link string) {
-	dl := ytdlp.New().
-		SkipDownload().
-		ForceIPv4().
-		SleepInterval(5).
-		MaxSleepInterval(20).
-		PrintToFile("[%(playlist)s] %(webpage_url)s %(title)s", "playlist_info").
-		Cookies("selenium/cookies_netscape")
+// func dryRun(link string) {
+// 	dl := ytdlp.New().
+// 		SkipDownload().
+// 		ForceIPv4().
+// 		SleepInterval(5).
+// 		MaxSleepInterval(20).
+// 		PrintToFile("[%(playlist)s] %(webpage_url)s %(title)s", "playlist_info").
+// 		Cookies("selenium/cookies_netscape")
 
-	result, err := dl.Run(context.TODO(), link)
+// 	result, err := dl.Run(context.TODO(), link)
 
-	if err != nil {
-		logging.Error(err.Error())
-	}
+// 	if err != nil {
+// 		Error(err.Error())
+// 	}
 
-	logging.Info(result)
-}
+// 	Info(result)
+// }
 
 func downloadPlaylist(playlistUrl string) {
-	dl := ytdlp.New().
-		FormatSort("bestaudio").
-		ExtractAudio().
-		AudioFormat("opus").
-		PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
-		DownloadArchive("video_archive.db").
-		EmbedMetadata().
-		EmbedThumbnail().
-		WriteThumbnail().
-		ForceIPv4().
-		NoKeepVideo().
-		Output("music/%(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s").
-		SleepInterval(8).MaxSleepInterval(20).
-		Cookies("selenium/cookies_netscape")
+	// dl := ytdlp.New().
+	// 	FormatSort("bestaudio").
+	// 	ExtractAudio().
+	// 	AudioFormat("opus").
+	// 	PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
+	// 	DownloadArchive("video_archive.db").
+	// 	EmbedMetadata().
+	// 	EmbedThumbnail().
+	// 	WriteThumbnail().
+	// 	ForceIPv4().
+	// 	NoKeepVideo().
+	// 	Output("music/%(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s").
+	// 	SleepInterval(8).MaxSleepInterval(20).
+	// 	Cookies("selenium/cookies_netscape")
 
-	result, errr := dl.Run(context.TODO(), playlistUrl)
+	// result, errr := dl.Run(context.TODO(), playlistUrl)
 
-	if errr != nil {
-		logging.Error("#yt-dlp Failed")
-		logging.Error(errr.Error())
-		return
-	}
+	// if errr != nil {
+	// 	//logging.Error("#yt-dlp Failed")
+	// 	//logging.Error(errr.Error())
+	// 	return
+	// }
 
-	logging.Info("#stdout")
-	logging.Info(result.Stdout)
+	//logging.Info("#stdout")
+	//logging.Info(result.Stdout)
 
-	for _, log := range result.OutputLogs {
-		logging.Info(log.Line)
-	}
+	// for _, log := range result.OutputLogs {
+	// 	//logging.Info(log.Line)
+	// }
 }
 
 // Ignore thise endpoint, testing purpose
@@ -233,9 +231,9 @@ func AddSong(ctx *gin.Context) {
 	song.SourceURL = fmt.Sprintf("https://www.youtube.com/watch?v=0G5a6Tm_pQQQ %d", num)
 
 	db := db.PostgresDb{}
-	defer db.Close()
+	defer db.CloseConnection()
 
-	if db.InitDatabase() {
+	if db.OpenConnection() {
 		id, err := db.InsertSong(song)
 
 		if err != nil {
