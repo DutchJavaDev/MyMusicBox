@@ -1,12 +1,13 @@
 package util
 
 import (
-	"api/logging"
 	"api/models"
 	"flag"
 )
 
-func GetConfig() models.Config {
+var Config models.Config
+
+func LoadConfig() {
 	var devPort string
 	flag.StringVar(&devPort, "port", "", "development port")
 
@@ -16,12 +17,10 @@ func GetConfig() models.Config {
 	flag.Parse()
 
 	// only ouput my logs when in debug mode
-	logging.OutputLog = devUrl
+	Config.OutputLog = devUrl
 
-	return models.Config{
-		UseDevUrl: devUrl,
-		DevPort:   devPort,
-	}
+	Config.DevPort = devPort
+	Config.UseDevUrl = devUrl
 }
 
 func GetApiGroupUrlV1(useDevUrl bool) string {
