@@ -16,7 +16,7 @@ type PostgresDb struct {
 	Error      error
 }
 
-func (pdb *PostgresDb) InitDatabase() (created bool) {
+func (pdb *PostgresDb) OpenConnection() (created bool) {
 
 	baseConnectionString := "user=postgres dbname=postgres password=%s host=127.0.0.1 port=5432 sslmode=disable"
 
@@ -31,7 +31,7 @@ func (pdb *PostgresDb) InitDatabase() (created bool) {
 	return true
 }
 
-func (pdb *PostgresDb) Close() {
+func (pdb *PostgresDb) CloseConnection() {
 	pdb.connection.Close()
 }
 
@@ -56,7 +56,7 @@ func (pdb *PostgresDb) FetchSongs(ctx context.Context) (songs []models.Song, err
 		scanError := rows.Scan(&song.Id, &song.Name, &song.Path, &song.Duration, &song.SourceURL, &song.UpdatedAt)
 
 		if scanError != nil {
-			logging.Error(fmt.Sprintf("[FetchSongs] Scan error: %s", err.Error()))
+			logging.Error(fmt.Sprintf("[FetchSongs] Scan error: %s", scanError.Error()))
 			continue
 		}
 
@@ -85,7 +85,7 @@ func (pdb *PostgresDb) FetchPlaylists(ctx context.Context) (playlists []models.P
 		scanError := rows.Scan(&playlist.Id, &playlist.Name, &playlist.Description)
 
 		if scanError != nil {
-			logging.Error(fmt.Sprintf("[FetchPlaylists] Scan error: %s", err.Error()))
+			logging.Error(fmt.Sprintf("[FetchPlaylists] Scan error: %s", scanError.Error()))
 			continue
 		}
 
@@ -125,7 +125,7 @@ func (pdb *PostgresDb) FetchPlaylistSongs(ctx context.Context, playlistId int) (
 		scanError := rows.Scan(&song.Id, &song.Name, &song.Path, &song.Duration, &song.SourceURL, &song.UpdatedAt)
 
 		if scanError != nil {
-			logging.Error(fmt.Sprintf("[FetchPlaylistSongs] Scan error: %s", err.Error()))
+			logging.Error(fmt.Sprintf("[FetchPlaylistSongs] Scan error: %s", scanError.Error()))
 			continue
 		}
 
@@ -244,7 +244,7 @@ func (pdb *PostgresDb) InsertPlaylistSong(playlistId int, songId int) (lastInser
 //end insert
 
 // begin delete
-func (pdb *PostgresDb) DeletePlaylistById(id int) (error error) {
+func (pdb *PostgresDb) DeletePlaylist(id int) (error error) {
 	query := `DELETE FROM Playlist WHERE Id = $1`
 	// Should also deleted linked playlistsong TODO
 	transaction, err := pdb.connection.Begin()
