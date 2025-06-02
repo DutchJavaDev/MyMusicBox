@@ -22,9 +22,10 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE Song (
     Id SERIAL PRIMARY KEY,
-    Name VARCHAR(255) NOT NULL,
-    SourceURL VARCHAR(512) NOT NULL,
-    Path VARCHAR(512),
+    Name VARCHAR(100) NOT NULL,
+    SourceURL VARCHAR(130) NOT NULL, --- based of youtube 43*3+1
+    Path VARCHAR(100) NOT NULL,
+    ThumbnailPath VARCHAR(100) NOT NULL,
     Duration INTEGER,
     CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -35,15 +36,16 @@ CREATE TABLE Song (
 COMMENT ON COLUMN Song.SourceURL IS 'URL where the song can be obtained (not streaming URL)';
 COMMENT ON COLUMN Song.Duration IS 'Duration in seconds';
 
-CREATE TABLE Logging (
+-- Used for ytdlp output
+CREATE TABLE TaskLog(
     Id SERIAL PRIMARY KEY,
-    Timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    Message TEXT NOT NULL,
-    Type INTEGER NOT NULL CHECK (Type BETWEEN 0 AND 2),
-    Context JSONB
+    StartTime TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    EndTime TIMESTAMP WITH TIME ZONE NULL,
+    Status INTEGER NOT NULL CHECK (Status BETWEEN 0 AND 4),
+    OutputLog JSONB
 );
 
-COMMENT ON COLUMN Logging.Type IS '0=Info, 1=Warning, 2=Error';
+COMMENT ON COLUMN TaskLog.Status IS '0=Pending, 1=Downloading, 2=Updating, 3=Done, 4=Error';
 
 CREATE TABLE Playlist (
     Id SERIAL PRIMARY KEY,
@@ -111,8 +113,8 @@ FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 -- SECTION 5: INDEXES FOR PERFORMANCE
 -- =============================================
 
-CREATE INDEX idx_logging_timestamp ON Logging(Timestamp);
-CREATE INDEX idx_logging_type ON Logging(Type);
+CREATE INDEX idx_tasklog_starttime ON TaskLog(StartTime);
+CREATE INDEX idx_tasklog_status ON TaskLog(Status);
 CREATE INDEX idx_song_name ON Song(Name);
 CREATE INDEX idx_song_created ON Song(CreatedAt);
 CREATE INDEX idx_song_search ON Song USING gin(to_tsvector('english', Name));
@@ -123,7 +125,16 @@ CREATE INDEX idx_playlistsong_playlist ON PlaylistSong(PlaylistId);
 CREATE INDEX idx_playlistsong_song ON PlaylistSong(SongId);
 
 -- =============================================
--- SECTION 6: SAMPLE DATA
+-- SECTION 6: Default DATA
+-- =============================================
+
+-- Main playlist for all songs
+-- Should not show up in playlist list, instead under tab all songs 
+INSERT INTO Playlist (Name, Description, IsPublic) VALUES
+('Library', 'Default playlist for all', FALSE);
+
+-- =============================================
+-- SECTION 7: SAMPLE DATA
 -- =============================================
 
 -- INSERT INTO Song (Name, SourceURL, Path, Duration) VALUES
@@ -136,7 +147,7 @@ CREATE INDEX idx_playlistsong_song ON PlaylistSong(SongId);
 -- ('Public Workout Jams', TRUE),
 -- ('Chill Evening Tracks', FALSE);
 
--- -- These inserts will now work without recursion errors
+-- These inserts will now work without recursion errors
 -- INSERT INTO PlaylistSong (SongId, PlaylistId) VALUES
 -- (1, 1),  -- Position 0
 -- (2, 1),  -- Position 1
