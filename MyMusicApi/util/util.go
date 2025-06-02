@@ -16,9 +16,6 @@ func LoadConfig() {
 
 	flag.Parse()
 
-	// only ouput my logs when in debug mode
-	Config.OutputLog = devUrl
-
 	Config.DevPort = devPort
 	Config.UseDevUrl = devUrl
 }
