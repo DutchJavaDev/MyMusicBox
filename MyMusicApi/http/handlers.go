@@ -2,12 +2,18 @@ package http
 
 import (
 	"api/db"
+	"api/logging"
 	"api/models"
+	"api/util"
+	"bufio"
+	"context"
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lrstanley/go-ytdlp"
 )
 
 func FetchSongs(ctx *gin.Context) {
@@ -143,8 +149,29 @@ func DeletePlaylistSong(ctx *gin.Context) {
 
 func DownloadRequest(ctx *gin.Context) {
 	var request models.DownloadRequest
-	ctx.ShouldBindBodyWithJSON(&request)
+	err := ctx.ShouldBindBodyWithJSON(&request)
 
+	if err != nil {
+		ctx.JSON(500, models.ErrorResponse(err))
+	} else {
+		db := db.PostgresDb{}
+		defer db.CloseConnection()
+
+		if db.OpenConnection() {
+			// Insert a new task
+			taskId, err := db.InsertTaskLog()
+
+			if err != nil {
+				ctx.JSON(500, models.ErrorResponse(err))
+				return
+			}
+
+			go util.StartDownloadTask(taskId, request)
+			ctx.JSON(200, models.OkResponse(gin.H{"taskId": taskId}, "Started task"))
+		} else {
+			ctx.JSON(500, models.ErrorResponse(db.Error))
+		}
+	}
 }
 
 // Downloads and converts playlist videos to audio only
@@ -153,7 +180,9 @@ func DownloadPlaylist(ctx *gin.Context) {
 
 	ctx.ShouldBindBodyWithJSON(&urlRequest)
 
-	go downloadPlaylist(urlRequest.Url)
+	//go downloadPlaylist(urlRequest.Url)
+
+	go dryRun(urlRequest.Url)
 
 	ctx.String(200, "Started downloading playlist...")
 }
@@ -170,23 +199,52 @@ func DownloadPlaylist(ctx *gin.Context) {
 // 	ctx.String(200, "Doing a dry run!")
 // }
 
-// func dryRun(link string) {
-// 	dl := ytdlp.New().
-// 		SkipDownload().
-// 		ForceIPv4().
-// 		SleepInterval(5).
-// 		MaxSleepInterval(20).
-// 		PrintToFile("[%(playlist)s] %(webpage_url)s %(title)s", "playlist_info").
-// 		Cookies("selenium/cookies_netscape")
+func dryRun(link string) {
+	dl := ytdlp.New().
+		SkipDownload().
+		ForceIPv4().
+		RestrictFilenames().
+		SleepInterval(5).
+		MaxSleepInterval(20).
+		PrintToFile("%(id)s", "ids_info").
+		PrintToFile("%(title)s", "names_info").
+		PrintToFile("%(duration_string)s", "durations_info").
+		PrintToFile("%(webpage_url)s", "urls_info").
+		Cookies("selenium/cookies_netscape")
 
-// 	result, err := dl.Run(context.TODO(), link)
+	_, err := dl.Run(context.TODO(), link)
 
-// 	if err != nil {
-// 		Error(err.Error())
-// 	}
+	if err != nil {
+		logging.Error(err.Error())
+	} else {
+		ids, _ := ReadLines("ids_info")
+		names, _ := ReadLines("names_info")
+		durations, _ := ReadLines("durations_info")
+		urls, _ := ReadLines("urls_info")
 
-// 	Info(result)
-// }
+		for id := range len(ids) {
+			fmt.Println(ids[id], names[id], durations[id], urls[id])
+		}
+	}
+
+}
+
+// readLines reads a whole file into memory
+// and returns a slice of its lines.
+func ReadLines(path string) ([]string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, scanner.Err()
+}
 
 func downloadPlaylist(playlistUrl string) {
 	// dl := ytdlp.New().
