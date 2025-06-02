@@ -33,6 +33,7 @@ func main() {
 
 	apiv1Group.POST("/playlist", http.InsertPlaylist)
 	apiv1Group.POST("/playlistsong/:playlistId/:songId", http.InsertPlaylistSong)
+	apiv1Group.POST("/download", http.DownloadRequest)
 
 	apiv1Group.DELETE("/playlist/:playlistId", http.DeletePlaylist)
 	apiv1Group.DELETE("playlistsong/:playlistId/:songId", http.DeletePlaylistSong)
