@@ -35,6 +35,41 @@ func (pdb *PostgresDb) CloseConnection() {
 	pdb.connection.Close()
 }
 
+func (pdb *PostgresDb) NonScalarQuery(query string, params ...any) (error error) {
+
+	transaction, err := pdb.connection.Begin()
+
+	if err != nil {
+		logging.Error(fmt.Sprintf("[NonScalarQuery] Transaction error: %s", err.Error()))
+		return err
+	}
+
+	statement, err := transaction.Prepare(query)
+
+	if err != nil {
+		if err != nil {
+			logging.Error(fmt.Sprintf("[NonScalarQuery] Prepared statement error: %s", err.Error()))
+			return err
+		}
+	}
+
+	_, err = statement.Exec(params...)
+
+	if err != nil {
+		logging.Error(fmt.Sprintf("[NonScalarQuery] Exec error: %s", err.Error()))
+		return err
+	}
+
+	err = transaction.Commit()
+
+	if err != nil {
+		logging.Error(fmt.Sprintf("[NonScalarQuery] Transaction commit error: %s", err.Error()))
+		return err
+	}
+
+	return nil
+}
+
 // begin fetch
 func (pdb *PostgresDb) FetchSongs(ctx context.Context) (songs []models.Song, error error) {
 
@@ -67,7 +102,7 @@ func (pdb *PostgresDb) FetchSongs(ctx context.Context) (songs []models.Song, err
 }
 
 func (pdb *PostgresDb) FetchPlaylists(ctx context.Context) (playlists []models.Playlist, error error) {
-	query := "SELECT Id, Name, Description FROM Playlist" // order by?
+	query := "SELECT Id, Name, Description FROM Playlist WHERE Id > 1" // order by?
 
 	rows, err := pdb.connection.QueryContext(ctx, query)
 	defer rows.Close()
@@ -103,6 +138,7 @@ func (pdb *PostgresDb) FetchPlaylistSongs(ctx context.Context, playlistId int) (
 			  order by ps.Position` // order by playlist position
 
 	statement, err := pdb.connection.Prepare(query)
+	defer statement.Close()
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("[FetchPlaylistSongs] Prepared statement error: %s", err.Error()))
@@ -138,6 +174,75 @@ func (pdb *PostgresDb) FetchPlaylistSongs(ctx context.Context, playlistId int) (
 //end fetch
 
 // begin insert
+func (pdb *PostgresDb) InsertTaskLog() (lastInsertedId int, error error) {
+	// Will create a new tasklog set to pending state
+	// Will be updated using its Id
+	query := `INSERT INTO TaskLog (Status) VALUES($1) RETURNING Id`
+
+	transaction, err := pdb.connection.Begin()
+
+	statement, err := transaction.Prepare(query)
+	defer statement.Close()
+
+	if err != nil {
+		transaction.Rollback()
+		logging.Error(fmt.Sprintf("[InsertTaskLog] Prepared statement error: %s", err.Error()))
+		return -1, err
+	}
+
+	err = statement.QueryRow(models.Pending).Scan(&lastInsertedId)
+
+	if err != nil {
+		logging.Error(fmt.Sprintf("[InsertTaskLog] Queryrow error: %s", err.Error()))
+		transaction.Rollback()
+		return -1, err
+	}
+
+	err = transaction.Commit()
+
+	if err != nil {
+		logging.Error(fmt.Sprintf("[InsertTaskLog] Transaction commit error: %s", err.Error()))
+		transaction.Rollback()
+		return -1, err
+	}
+
+	return lastInsertedId, nil
+}
+
+func (pdb *PostgresDb) UpdateTaskLogStatus(taskId int, nStatus int) (error error) {
+	query := `UPDATE TaskLog SET Status = $1 WHERE Id = $2`
+
+	// could add request context?
+	transaction, err := pdb.connection.Begin()
+
+	statement, err := transaction.Prepare(query)
+	defer statement.Close()
+
+	if err != nil {
+		transaction.Rollback()
+		logging.Error(fmt.Sprintf("[UpdateTaskLogStatus] Prepared statement error: %s", err.Error()))
+		return err
+	}
+
+	_, err = statement.Exec(taskId, nStatus)
+
+	if err != nil {
+		logging.Error(fmt.Sprintf("[UpdateTaskLogStatus] Queryrow error: %s", err.Error()))
+		transaction.Rollback()
+		return err
+	}
+
+	err = transaction.Commit()
+
+	if err != nil {
+		logging.Error(fmt.Sprintf("[UpdateTaskLogStatus] Transaction commit error: %s", err.Error()))
+		transaction.Rollback()
+		return err
+	}
+
+	return nil
+}
+
 func (pdb *PostgresDb) InsertSong(song models.Song) (lastInsertedId int, error error) {
 
 	query := `INSERT INTO Song (name, sourceurl, path, duration) VALUES ($1, $2, $3, $4) RETURNING Id`
@@ -169,6 +274,8 @@ func (pdb *PostgresDb) InsertSong(song models.Song) (lastInsertedId int, error e
 		transaction.Rollback()
 		return -1, err
 	}
+
+	// add to default playlist
 
 	return lastInsertedId, nil
 }
@@ -244,9 +351,8 @@ func (pdb *PostgresDb) InsertPlaylistSong(playlistId int, songId int) (lastInser
 //end insert
 
 // begin delete
-func (pdb *PostgresDb) DeletePlaylist(id int) (error error) {
+func (pdb *PostgresDb) DeletePlaylist(playlistId int) (error error) {
 	query := `DELETE FROM Playlist WHERE Id = $1`
-	// Should also deleted linked playlistsong TODO
 	transaction, err := pdb.connection.Begin()
 
 	statement, err := transaction.Prepare(query)
@@ -258,7 +364,7 @@ func (pdb *PostgresDb) DeletePlaylist(id int) (error error) {
 		return err
 	}
 
-	_, err = statement.Exec(id)
+	_, err = statement.Exec(playlistId)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("[DeletePlaylistById] Execute error: %s", err.Error()))
@@ -270,6 +376,40 @@ func (pdb *PostgresDb) DeletePlaylist(id int) (error error) {
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("[DeletePlaylistById] Transaction commmit error: %s", err.Error()))
+		transaction.Rollback()
+		return err
+	}
+
+	// Should also deleted linked playlistsong TODO
+	return pdb.deletePlaylistSongs(playlistId)
+}
+
+func (pdb *PostgresDb) deletePlaylistSongs(playlistId int) (error error) {
+	query := `DELETE FROM PlaylistSong WHERE PlaylistId = $1`
+
+	transaction, err := pdb.connection.Begin()
+
+	statement, err := transaction.Prepare(query)
+	defer statement.Close()
+
+	if err != nil {
+		transaction.Rollback()
+		logging.Error(fmt.Sprintf("[deletePlaylistSongs] Prepared statement error: %s", err.Error()))
+		return err
+	}
+
+	_, err = statement.Exec(playlistId)
+
+	if err != nil {
+		transaction.Rollback()
+		logging.Error(fmt.Sprintf("[deletePlaylistSongs] Execute error: %s", err.Error()))
+		return err
+	}
+
+	err = transaction.Commit()
+
+	if err != nil {
+		logging.Error(fmt.Sprintf("[deletePlaylistSongs] Transaction commmit error: %s", err.Error()))
 		transaction.Rollback()
 		return err
 	}
