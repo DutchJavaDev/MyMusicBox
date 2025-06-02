@@ -4,8 +4,6 @@ import (
 	"fmt"
 )
 
-var OutputLog bool
-
 func Info(a any) {
 	go log(fmt.Sprintf("\033[32m[API Info]\033[0m %s", a))
 }
@@ -19,7 +17,5 @@ func Error(a any) {
 }
 
 func log(text string) {
-	if OutputLog {
-		fmt.Println(text)
-	}
+	fmt.Println(text)
 }
