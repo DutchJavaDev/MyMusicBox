@@ -5,15 +5,12 @@ import (
 	"api/logging"
 	"api/models"
 	"api/util"
-	"bufio"
-	"context"
 	"fmt"
-	"math/rand"
+	"net/http"
 	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lrstanley/go-ytdlp"
 )
 
 func FetchSongs(ctx *gin.Context) {
@@ -148,7 +145,7 @@ func DeletePlaylistSong(ctx *gin.Context) {
 }
 
 func DownloadRequest(ctx *gin.Context) {
-	var request models.DownloadRequest
+	var request models.DownloadRequestModel
 	err := ctx.ShouldBindBodyWithJSON(&request)
 
 	if err != nil {
@@ -174,133 +171,43 @@ func DownloadRequest(ctx *gin.Context) {
 	}
 }
 
-// Downloads and converts playlist videos to audio only
-func DownloadPlaylist(ctx *gin.Context) {
-	var urlRequest models.UrlRequest
+func Play(ctx *gin.Context) {
+	sourceId := ctx.Param("sourceId")
 
-	ctx.ShouldBindBodyWithJSON(&urlRequest)
-
-	//go downloadPlaylist(urlRequest.Url)
-
-	go dryRun(urlRequest.Url)
-
-	ctx.String(200, "Started downloading playlist...")
-}
-
-// Exports playlist data to file
-// Does not download and convert video
-// func DryRun(ctx *gin.Context) {
-// 	var urlRequest models.UrlRequest
-
-// 	ctx.ShouldBindBodyWithJSON(&urlRequest)
-
-// 	go dryRun(urlRequest.Url)
-
-// 	ctx.String(200, "Doing a dry run!")
-// }
-
-func dryRun(link string) {
-	dl := ytdlp.New().
-		SkipDownload().
-		ForceIPv4().
-		RestrictFilenames().
-		SleepInterval(5).
-		MaxSleepInterval(20).
-		PrintToFile("%(id)s", "ids_info").
-		PrintToFile("%(title)s", "names_info").
-		PrintToFile("%(duration_string)s", "durations_info").
-		PrintToFile("%(webpage_url)s", "urls_info").
-		Cookies("selenium/cookies_netscape")
-
-	_, err := dl.Run(context.TODO(), link)
-
-	if err != nil {
-		logging.Error(err.Error())
-	} else {
-		ids, _ := ReadLines("ids_info")
-		names, _ := ReadLines("names_info")
-		durations, _ := ReadLines("durations_info")
-		urls, _ := ReadLines("urls_info")
-
-		for id := range len(ids) {
-			fmt.Println(ids[id], names[id], durations[id], urls[id])
-		}
+	if sourceId == "" {
+		ctx.Status(404)
+		logging.Warning(fmt.Sprintf("[Play] No sourceId in request"))
+		return
 	}
 
-}
+	path := fmt.Sprintf("%s/%s.%s", util.Config.SourceFolder, sourceId, util.Config.OutputExtension)
 
-// readLines reads a whole file into memory
-// and returns a slice of its lines.
-func ReadLines(path string) ([]string, error) {
 	file, err := os.Open(path)
+
 	if err != nil {
-		return nil, err
+		logging.Error(fmt.Sprintf("[Play] Failed to read file, %s", err.Error()))
+		ctx.JSON(500, models.ErrorResponse(err))
+		return
 	}
 	defer file.Close()
 
-	var lines []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+	fileInfo, err := file.Stat()
+	if err != nil {
+		logging.Error(fmt.Sprintf("[Play] Failed could not get fileinfo: %s", err.Error()))
+		ctx.JSON(500, models.ErrorResponse(err))
+		return
 	}
-	return lines, scanner.Err()
-}
 
-func downloadPlaylist(playlistUrl string) {
-	// dl := ytdlp.New().
-	// 	FormatSort("bestaudio").
-	// 	ExtractAudio().
-	// 	AudioFormat("opus").
-	// 	PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
-	// 	DownloadArchive("video_archive.db").
-	// 	EmbedMetadata().
-	// 	EmbedThumbnail().
-	// 	WriteThumbnail().
-	// 	ForceIPv4().
-	// 	NoKeepVideo().
-	// 	Output("music/%(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s").
-	// 	SleepInterval(8).MaxSleepInterval(20).
-	// 	Cookies("selenium/cookies_netscape")
+	// Set proper headers for OPUS audio
+	ctx.Header("Content-Type", "audio/opus")
+	ctx.Header("Accept-Ranges", "bytes")
 
-	// result, errr := dl.Run(context.TODO(), playlistUrl)
-
-	// if errr != nil {
-	// 	//logging.Error("#yt-dlp Failed")
-	// 	//logging.Error(errr.Error())
-	// 	return
-	// }
-
-	//logging.Info("#stdout")
-	//logging.Info(result.Stdout)
-
-	// for _, log := range result.OutputLogs {
-	// 	//logging.Info(log.Line)
-	// }
-}
-
-// Ignore thise endpoint, testing purpose
-func AddSong(ctx *gin.Context) {
-
-	var song models.Song
-	num := rand.Int()
-	path := fmt.Sprintf("/lol/path %d", num)
-	song.Name = fmt.Sprintf("Juice WRLD - Vampire %d", num)
-	song.Path = &path
-	song.SourceURL = fmt.Sprintf("https://www.youtube.com/watch?v=0G5a6Tm_pQQQ %d", num)
-
-	db := db.PostgresDb{}
-	defer db.CloseConnection()
-
-	if db.OpenConnection() {
-		id, err := db.InsertSong(song)
-
-		if err != nil {
-			ctx.JSON(500, err.Error())
-			return
-		}
-
-		ctx.JSON(200, gin.H{"songId": id})
-	} else {
-		ctx.JSON(500, db.Error)
-	}
+	// Use http.ServeContent which handles range requests automatically
+	http.ServeContent(
+		ctx.Writer,
+		ctx.Request,
+		fileInfo.Name(),
+		fileInfo.ModTime(),
+		file,
+	)
 }
