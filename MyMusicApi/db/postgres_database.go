@@ -47,10 +47,8 @@ func (pdb *PostgresDb) NonScalarQuery(query string, params ...any) (error error)
 	statement, err := transaction.Prepare(query)
 
 	if err != nil {
-		if err != nil {
-			logging.Error(fmt.Sprintf("[NonScalarQuery] Prepared statement error: %s", err.Error()))
-			return err
-		}
+		logging.Error(fmt.Sprintf("[NonScalarQuery] Prepared statement error: %s", err.Error()))
+		return err
 	}
 
 	_, err = statement.Exec(params...)
@@ -73,7 +71,7 @@ func (pdb *PostgresDb) NonScalarQuery(query string, params ...any) (error error)
 // begin fetch
 func (pdb *PostgresDb) FetchSongs(ctx context.Context) (songs []models.Song, error error) {
 
-	query := "SELECT Id, Name, Path, Duration, SourceURL, UpdatedAt FROM Song" // order by?
+	query := "SELECT Id, Name, Path, ThumbnailPath, Duration, SourceId, UpdatedAt, CreatedAt FROM Song" // order by?
 
 	rows, err := pdb.connection.QueryContext(ctx, query)
 	defer rows.Close()
@@ -88,7 +86,7 @@ func (pdb *PostgresDb) FetchSongs(ctx context.Context) (songs []models.Song, err
 	songs = make([]models.Song, 0)
 
 	for rows.Next() {
-		scanError := rows.Scan(&song.Id, &song.Name, &song.Path, &song.Duration, &song.SourceURL, &song.UpdatedAt)
+		scanError := rows.Scan(&song.Id, &song.Name, &song.Path, &song.ThumbnailPath, &song.Duration, &song.SourceId, &song.UpdatedAt, &song.CreatedAt)
 
 		if scanError != nil {
 			logging.Error(fmt.Sprintf("[FetchSongs] Scan error: %s", scanError.Error()))
@@ -102,7 +100,7 @@ func (pdb *PostgresDb) FetchSongs(ctx context.Context) (songs []models.Song, err
 }
 
 func (pdb *PostgresDb) FetchPlaylists(ctx context.Context) (playlists []models.Playlist, error error) {
-	query := "SELECT Id, Name, Description FROM Playlist WHERE Id > 1" // order by?
+	query := "SELECT Id, Name, ThumbnailPath, Description, CreatedAt FROM Playlist WHERE Id > 1" // order by?
 
 	rows, err := pdb.connection.QueryContext(ctx, query)
 	defer rows.Close()
@@ -117,7 +115,7 @@ func (pdb *PostgresDb) FetchPlaylists(ctx context.Context) (playlists []models.P
 	playlists = make([]models.Playlist, 0)
 
 	for rows.Next() {
-		scanError := rows.Scan(&playlist.Id, &playlist.Name, &playlist.Description)
+		scanError := rows.Scan(&playlist.Id, &playlist.Name, &playlist.ThumbnailPath, &playlist.Description, &playlist.CreationDate)
 
 		if scanError != nil {
 			logging.Error(fmt.Sprintf("[FetchPlaylists] Scan error: %s", scanError.Error()))
@@ -132,7 +130,7 @@ func (pdb *PostgresDb) FetchPlaylists(ctx context.Context) (playlists []models.P
 
 func (pdb *PostgresDb) FetchPlaylistSongs(ctx context.Context, playlistId int) (songs []models.Song, error error) {
 
-	query := `SELECT s.Id, s.Name, s.Path, s.Duration, s.SourceURL, s.UpdatedAt FROM Song s
+	query := `SELECT s.Id, s.Name, s.Path, s.Duration, s.SourceId, s.UpdatedAt, CreatedAt FROM Song s
 	          INNER JOIN PlaylistSong ps ON ps.PlaylistId = $1
 			  WHERE ps.SongId = s.Id
 			  order by ps.Position` // order by playlist position
@@ -158,7 +156,7 @@ func (pdb *PostgresDb) FetchPlaylistSongs(ctx context.Context, playlistId int) (
 	songs = make([]models.Song, 0)
 
 	for rows.Next() {
-		scanError := rows.Scan(&song.Id, &song.Name, &song.Path, &song.Duration, &song.SourceURL, &song.UpdatedAt)
+		scanError := rows.Scan(&song.Id, &song.Name, &song.Path, &song.Duration, &song.SourceId, &song.UpdatedAt, &song.CreatedAt)
 
 		if scanError != nil {
 			logging.Error(fmt.Sprintf("[FetchPlaylistSongs] Scan error: %s", scanError.Error()))
@@ -224,7 +222,7 @@ func (pdb *PostgresDb) UpdateTaskLogStatus(taskId int, nStatus int) (error error
 		return err
 	}
 
-	_, err = statement.Exec(taskId, nStatus)
+	_, err = statement.Exec(nStatus, taskId)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("[UpdateTaskLogStatus] Queryrow error: %s", err.Error()))
@@ -245,7 +243,7 @@ func (pdb *PostgresDb) UpdateTaskLogStatus(taskId int, nStatus int) (error error
 
 func (pdb *PostgresDb) InsertSong(song models.Song) (lastInsertedId int, error error) {
 
-	query := `INSERT INTO Song (name, sourceurl, path, duration) VALUES ($1, $2, $3, $4) RETURNING Id`
+	query := `INSERT INTO Song (name, sourceid, path, thumbnailPath, duration) VALUES ($1, $2, $3, $4, $5) RETURNING Id`
 
 	// could add request context?
 	transaction, err := pdb.connection.Begin()
@@ -259,7 +257,7 @@ func (pdb *PostgresDb) InsertSong(song models.Song) (lastInsertedId int, error e
 		return -1, err
 	}
 
-	err = statement.QueryRow(song.Name, song.SourceURL, song.Path, song.Duration).Scan(&lastInsertedId)
+	err = statement.QueryRow(song.Name, song.SourceId, song.Path, song.ThumbnailPath, song.Duration).Scan(&lastInsertedId)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("[InsertSong] Queryrow error: %s", err.Error()))
@@ -276,12 +274,13 @@ func (pdb *PostgresDb) InsertSong(song models.Song) (lastInsertedId int, error e
 	}
 
 	// add to default playlist
+	_, err = pdb.InsertPlaylistSong(1, lastInsertedId)
 
-	return lastInsertedId, nil
+	return lastInsertedId, err
 }
 
 func (pdb *PostgresDb) InsertPlaylist(playlist models.Playlist) (lastInsertedId int, error error) {
-	query := `INSERT INTO Playlist (name, description) VALUES ($1, $2) RETURNING Id`
+	query := `INSERT INTO Playlist (name, description, thumbnailPath) VALUES ($1, $2, $3) RETURNING Id`
 
 	// could add request context?
 	transaction, err := pdb.connection.Begin()
@@ -295,7 +294,7 @@ func (pdb *PostgresDb) InsertPlaylist(playlist models.Playlist) (lastInsertedId 
 		return -1, err
 	}
 
-	err = statement.QueryRow(playlist.Name, playlist.Description).Scan(&lastInsertedId)
+	err = statement.QueryRow(playlist.Name, playlist.Description, playlist.ThumbnailPath).Scan(&lastInsertedId)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("[InsertPlaylist] Queryrow error: %s", err.Error()))
