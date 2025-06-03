@@ -22,18 +22,19 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE Song (
     Id SERIAL PRIMARY KEY,
-    Name VARCHAR(100) NOT NULL,
-    SourceURL VARCHAR(130) NOT NULL, --- based of youtube 43*3+1
-    Path VARCHAR(100) NOT NULL,
-    ThumbnailPath VARCHAR(100) NOT NULL,
+    Name VARCHAR(100) NOT NULL, --- fixed lenght title
+    SourceId VARCHAR(11) NOT NULL, --- youtube video id fixed lenght of 11
+    Path VARCHAR(111) NOT NULL, --- for now this is fine
+    ThumbnailPath VARCHAR(255) NOT NULL,
     Duration INTEGER,
     CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT sourceurl_unique UNIQUE (SourceURL),
-    CONSTRAINT path_unique UNIQUE (Path)
+    CONSTRAINT sourceurl_unique UNIQUE (SourceId),
+    CONSTRAINT path_unique UNIQUE (Path),
+    CONSTRAINT songsthumbnailpath_unique UNIQUE (ThumbnailPath)
 );
 
-COMMENT ON COLUMN Song.SourceURL IS 'URL where the song can be obtained (not streaming URL)';
+COMMENT ON COLUMN Song.SourceId IS 'URL where the song can be obtained (not streaming URL)';
 COMMENT ON COLUMN Song.Duration IS 'Duration in seconds';
 
 -- Used for ytdlp output
@@ -51,6 +52,7 @@ CREATE TABLE Playlist (
     Id SERIAL PRIMARY KEY,
     Name VARCHAR(255) NOT NULL,
     Description TEXT,
+    ThumbnailPath VARCHAR(255) NOT NULL,
     CreationDate TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     IsPublic BOOLEAN NOT NULL DEFAULT FALSE,
@@ -62,7 +64,7 @@ CREATE TABLE PlaylistSong (
     PlaylistId INTEGER NOT NULL REFERENCES Playlist(Id) ON DELETE CASCADE,
     Position INTEGER,
     AddedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (SongId, PlaylistId)
+    PRIMARY KEY (PlaylistId, SongId)
 );
 
 -- =============================================
@@ -130,8 +132,8 @@ CREATE INDEX idx_playlistsong_song ON PlaylistSong(SongId);
 
 -- Main playlist for all songs
 -- Should not show up in playlist list, instead under tab all songs 
-INSERT INTO Playlist (Name, Description, IsPublic) VALUES
-('Library', 'Default playlist for all', FALSE);
+INSERT INTO Playlist (Name, Description, ThumbnailPath, IsPublic) VALUES
+('Library', 'Default playlist for all', 'https://picsum.photos/100', FALSE);
 
 -- =============================================
 -- SECTION 7: SAMPLE DATA
