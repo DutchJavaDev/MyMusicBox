@@ -1,23 +1,25 @@
 package main
 
 import (
-	"api/http"
-	"api/logging"
-	"api/util"
 	"context"
+	"musicboxapi/configuration"
+	"musicboxapi/http"
+	"musicboxapi/logging"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/lrstanley/go-ytdlp"
 )
 
 func main() {
-	util.LoadConfig()
+	configuration.LoadConfig()
 
 	// If yt-dlp isn't installed yet, download and cache it for further use.
 	ytdlp.MustInstall(context.TODO(), nil)
 
-	if util.Config.UseDevUrl {
+	if configuration.Config.UseDevUrl {
 		gin.SetMode(gin.DebugMode)
+
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -26,7 +28,11 @@ func main() {
 
 	engine.SetTrustedProxies(nil)
 
-	apiv1Group := engine.Group(util.GetApiGroupUrlV1(util.Config.UseDevUrl))
+	if configuration.Config.UseDevUrl {
+		engine.Use(cors.Default())
+	}
+
+	apiv1Group := engine.Group(configuration.GetApiGroupUrlV1(configuration.Config.UseDevUrl))
 
 	apiv1Group.GET("/songs", http.FetchSongs)
 	apiv1Group.GET("/playlist", http.FetchPlaylists)
@@ -40,8 +46,8 @@ func main() {
 	apiv1Group.DELETE("/playlist/:playlistId", http.DeletePlaylist)
 	apiv1Group.DELETE("playlistsong/:playlistId/:songId", http.DeletePlaylistSong)
 
-	if util.Config.DevPort != "" {
-		devPort := "127.0.0.1:" + util.Config.DevPort
+	if configuration.Config.DevPort != "" {
+		devPort := "127.0.0.1:" + configuration.Config.DevPort
 		logging.Info("Running on development port")
 		engine.Run(devPort)
 	} else {
