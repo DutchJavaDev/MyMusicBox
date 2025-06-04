@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo docker build -t="mymusicbox_api" .
+sudo docker build -t="mymusicboxapi:latest" .
