@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"flag"
+	"fmt"
 	"musicboxapi/models"
 )
 
@@ -15,10 +16,19 @@ func LoadConfig() {
 	flag.Parse()
 }
 
-func GetApiGroupUrlV1(useDevUrl bool) string {
-	if useDevUrl {
+func GetApiGroupUrlV1() string {
+	if Config.UseDevUrl {
 		return "/dev/api/v1"
 	} else {
 		return "/api/v1"
 	}
+}
+
+func GetApiGroupUrl(version string) string {
+	if Config.UseDevUrl {
+		return fmt.Sprintf("/dev/api/%s", version)
+	} else {
+		return fmt.Sprintf("/api/%s", version)
+	}
+
 }
