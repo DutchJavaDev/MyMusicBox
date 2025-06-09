@@ -7,7 +7,7 @@ import (
 	"musicboxapi/models"
 )
 
-func (pdb *PostgresDb) InsertSong(song models.Song) (lastInsertedId int, error error) {
+func (pdb *PostgresDb) InsertSong(song *models.Song) (error error) {
 
 	query := `INSERT INTO Song (name, sourceid, path, thumbnailPath, duration) VALUES ($1, $2, $3, $4, $5) RETURNING Id`
 
@@ -24,7 +24,9 @@ func (pdb *PostgresDb) InsertSong(song models.Song) (lastInsertedId int, error e
 		_, err = pdb.InsertPlaylistSong(1, lastInsertedId)
 	}
 
-	return lastInsertedId, err
+	song.Id = lastInsertedId
+
+	return err
 }
 
 func (pdb *PostgresDb) FetchSongs(ctx context.Context) (songs []models.Song, error error) {
