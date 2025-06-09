@@ -58,6 +58,5 @@ func (pdb *PostgresDb) DeletePlaylist(playlistId int) (error error) {
 		return err
 	}
 
-	// Should also deleted linked playlistsong TODO
 	return pdb.deletePlaylistSongs(playlistId)
 }
