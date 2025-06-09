@@ -9,7 +9,7 @@ import (
 
 func (pdb *PostgresDb) FetchPlaylistSongs(ctx context.Context, playlistId int) (songs []models.Song, error error) {
 
-	query := `SELECT s.Id, s.Name, s.Path, s.Duration, s.SourceId, s.UpdatedAt, CreatedAt FROM Song s
+	query := `SELECT s.Id, s.Name, s.Path, s.ThumbnailPath, s.Duration, s.SourceId, s.UpdatedAt, CreatedAt FROM Song s
 	          INNER JOIN PlaylistSong ps ON ps.PlaylistId = $1
 			  WHERE ps.SongId = s.Id
 			  order by ps.Position` // order by playlist position
@@ -35,7 +35,7 @@ func (pdb *PostgresDb) FetchPlaylistSongs(ctx context.Context, playlistId int) (
 	songs = make([]models.Song, 0)
 
 	for rows.Next() {
-		scanError := rows.Scan(&song.Id, &song.Name, &song.Path, &song.Duration, &song.SourceId, &song.UpdatedAt, &song.CreatedAt)
+		scanError := rows.Scan(&song.Id, &song.Name, &song.Path, &song.ThumbnailPath, &song.Duration, &song.SourceId, &song.UpdatedAt, &song.CreatedAt)
 
 		if scanError != nil {
 			logging.Error(fmt.Sprintf("[FetchPlaylistSongs] Scan error: %s", scanError.Error()))
