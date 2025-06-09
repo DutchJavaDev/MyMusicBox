@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"musicboxapi/configuration"
 	"musicboxapi/http"
 	"musicboxapi/logging"
@@ -12,14 +13,14 @@ import (
 )
 
 func main() {
-	configuration.LoadConfig()
-
 	// If yt-dlp isn't installed yet, download and cache it for further use.
-	ytdlp.MustInstall(context.TODO(), nil)
+	// todo test....
+	go ytdlp.MustInstall(context.TODO(), nil)
+
+	configuration.LoadConfig()
 
 	if configuration.Config.UseDevUrl {
 		gin.SetMode(gin.DebugMode)
-
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -30,10 +31,10 @@ func main() {
 
 	if configuration.Config.UseDevUrl {
 		engine.Use(cors.Default())
+		logging.Warning("CORS is enabled for all origins")
 	}
 
-	apiv1Group := engine.Group(configuration.GetApiGroupUrlV1(configuration.Config.UseDevUrl))
-
+	apiv1Group := engine.Group(configuration.GetApiGroupUrl("v1"))
 	apiv1Group.GET("/songs", http.FetchSongs)
 	apiv1Group.GET("/playlist", http.FetchPlaylists)
 	apiv1Group.GET("/playlist/:playlistId", http.FetchPlaylistSongs)
@@ -46,6 +47,9 @@ func main() {
 	apiv1Group.DELETE("/playlist/:playlistId", http.DeletePlaylist)
 	apiv1Group.DELETE("playlistsong/:playlistId/:songId", http.DeletePlaylistSong)
 
+	// Serving static files
+	apiv1Group.Static("/images", fmt.Sprintf("%s/%s", configuration.Config.SourceFolder, "images"))
+
 	if configuration.Config.DevPort != "" {
 		devPort := "127.0.0.1:" + configuration.Config.DevPort
 		logging.Info("Running on development port")
@@ -53,5 +57,4 @@ func main() {
 	} else {
 		engine.Run() // listen and serve on 0.0.0.0:8080
 	}
-
 }
