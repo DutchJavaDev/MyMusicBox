@@ -15,6 +15,7 @@ import (
 type PostgresDb struct {
 	connection *sql.DB
 	Error      error
+	closed     bool
 }
 
 func (pdb *PostgresDb) OpenConnection() (created bool) {
@@ -38,7 +39,13 @@ func (pdb *PostgresDb) OpenConnection() (created bool) {
 }
 
 func (pdb *PostgresDb) CloseConnection() {
+
+	if pdb.closed {
+		return
+	}
+
 	pdb.connection.Close()
+	pdb.closed = true
 }
 
 func (pdb *PostgresDb) NonScalarQuery(query string, params ...any) (error error) {
