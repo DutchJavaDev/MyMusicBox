@@ -13,8 +13,21 @@ func InsertPlaylistSong(ctx *gin.Context) {
 	db := database.PostgresDb{}
 	defer db.CloseConnection()
 
-	playlistId, _ := strconv.Atoi(ctx.Param("playlistId"))
-	songId, _ := strconv.Atoi(ctx.Param("songId"))
+	playlistIdParameter := ctx.Param("playlistId")
+	songIdParameter := ctx.Param("songId")
+
+	if playlistIdParameter == "" {
+		ctx.JSON(500, models.ErrorResponse("playlistId is empty"))
+		return
+	}
+
+	if songIdParameter == "" {
+		ctx.JSON(500, models.ErrorResponse("songId is empty"))
+		return
+	}
+
+	playlistId, _ := strconv.Atoi(playlistIdParameter)
+	songId, _ := strconv.Atoi(songIdParameter)
 
 	if db.OpenConnection() {
 		id, err := db.InsertPlaylistSong(playlistId, songId)
@@ -33,8 +46,21 @@ func DeletePlaylistSong(ctx *gin.Context) {
 	db := database.PostgresDb{}
 	defer db.CloseConnection()
 
-	playlistId, _ := strconv.Atoi(ctx.Param("playlistId"))
-	songId, _ := strconv.Atoi(ctx.Param("songId"))
+	playlistIdParameter := ctx.Param("playlistId")
+	songIdParameter := ctx.Param("songId")
+
+	if playlistIdParameter == "" {
+		ctx.JSON(500, models.ErrorResponse("playlistId is empty"))
+		return
+	}
+
+	if songIdParameter == "" {
+		ctx.JSON(500, models.ErrorResponse("songId is empty"))
+		return
+	}
+
+	playlistId, _ := strconv.Atoi(playlistIdParameter)
+	songId, _ := strconv.Atoi(songIdParameter)
 
 	if db.OpenConnection() {
 		err := db.DeletePlaylistSong(playlistId, songId)
