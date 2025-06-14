@@ -29,7 +29,14 @@ func FetchPlaylistSongs(ctx *gin.Context) {
 	db := database.PostgresDb{}
 	defer db.CloseConnection()
 
-	playlistId, _ := strconv.Atoi(ctx.Param("playlistId"))
+	playlistIdParameter := ctx.Param("playlistId")
+
+	if playlistIdParameter == "" {
+		ctx.JSON(500, models.ErrorResponse("No playlistId inrequest"))
+		return
+	}
+
+	playlistId, _ := strconv.Atoi(playlistIdParameter)
 
 	if db.OpenConnection() {
 		songs, err := db.FetchPlaylistSongs(ctx.Request.Context(), playlistId)
@@ -47,7 +54,12 @@ func InsertPlaylist(ctx *gin.Context) {
 
 	var playlist models.Playlist
 
-	ctx.ShouldBindBodyWithJSON(&playlist)
+	err := ctx.ShouldBindBodyWithJSON(&playlist)
+
+	if err != nil {
+		ctx.JSON(500, models.ErrorResponse(err))
+		return
+	}
 
 	db := database.PostgresDb{}
 	defer db.CloseConnection()
@@ -70,7 +82,14 @@ func DeletePlaylist(ctx *gin.Context) {
 	db := database.PostgresDb{}
 	defer db.CloseConnection()
 
-	id, _ := strconv.Atoi(ctx.Param("playlistId"))
+	playlistIdParameter := ctx.Param("playlistId")
+
+	if playlistIdParameter == "" {
+		ctx.JSON(500, models.ErrorResponse("playlistId is empty"))
+		return
+	}
+
+	id, _ := strconv.Atoi(playlistIdParameter)
 
 	if db.OpenConnection() {
 		err := db.DeletePlaylist(id)
