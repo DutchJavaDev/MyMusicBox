@@ -120,15 +120,19 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
 			DownloadArchive(archiveFileName).
 			WriteThumbnail().
+		
 			ConcurrentFragments(10).
 			ConvertThumbnails("jpg").
 			ForceIPv4().
-			NoKeepVideo().
-			Downloader("aria2c").
-			DownloaderArgs("aria2c:-x 16 -s 16 -j 16").
 			PrintToFile("%(id)s", idsFileName).
 			PrintToFile("%(title)s", namesFileName).
 			PrintToFile("%(duration)s", durationFileName).
+			PrintToFile("%(playlist_title)s", playlistTitleFileName).
+			PrintToFile("%(playlist_id)s", playlistIdFileName).
+			//sudo apt install aria2
+			Downloader("aria2c").
+			DownloaderArgs("aria2c:-x 16 -s 16 -j 16").
+			NoKeepVideo().
 			Output(storageFolderName + "/%(id)s.%(ext)s").
 			Cookies("selenium/cookies_netscape")
 
