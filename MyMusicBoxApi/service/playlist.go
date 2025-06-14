@@ -64,11 +64,10 @@ func downloadPlaylist(
 	}
 
 	if !playlistExists {
-		desc := "Custom playlist"
 		_playlistId, _ := readLines(playlistIdFileName)
 		playlistId, _ = db.InsertPlaylist(models.Playlist{
 			Name:          playlistNames[0],
-			Description:   &desc,
+			Description:   "Custom playlist",
 			ThumbnailPath: fmt.Sprintf("%s.jpg", _playlistId[0]),
 			CreationDate:  time.Now(),
 			IsPublic:      true,
