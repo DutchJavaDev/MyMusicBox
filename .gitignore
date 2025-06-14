@@ -76,5 +76,7 @@ main
 *.opus
 video_archive.db
 music/
+music_dev/
 *.db
 *.env
+database/data
