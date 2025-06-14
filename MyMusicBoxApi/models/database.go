@@ -16,11 +16,11 @@ const (
 )
 
 type TaskLog struct {
-	Id        int             `json:"id" db:"id"`
-	StartTime time.Time       `json:"startTime" db:"starttime"`
-	EndTime   *time.Time      `json:"endTime,omitempty" db:"endtime"`     // Nullable
-	Status    int             `json:"status" db:"status"`                 // Expected to be 0–4
-	OutputLog json.RawMessage `json:"outputLog,omitempty" db:"outputlog"` // JSONB field
+	Id        int              `json:"id" db:"id"`
+	StartTime time.Time        `json:"startTime" db:"starttime"`
+	EndTime   *time.Time       `json:"endTime,omitempty" db:"endtime"`     // Nullable
+	Status    int              `json:"status" db:"status"`                 // Expected to be 0–4
+	OutputLog *json.RawMessage `json:"outputLog,omitempty" db:"outputlog"` // JSONB field
 }
 
 type Song struct {
@@ -37,7 +37,7 @@ type Song struct {
 type Playlist struct {
 	Id            int       `json:"id" db:"id"`
 	Name          string    `json:"name" db:"name"`
-	Description   *string   `json:"description,omitempty" db:"description"`
+	Description   string    `json:"description,omitempty" db:"description"`
 	ThumbnailPath string    `json:"thumbnailPath" db:"thumbnailpath"`
 	CreationDate  time.Time `json:"creationDate" db:"creationdate"`
 	UpdatedAt     time.Time `json:"updatedAt" db:"updatedat"`
@@ -47,6 +47,6 @@ type Playlist struct {
 type PlaylistSong struct {
 	SongId     int       `json:"songId" db:"songid"`
 	PlaylistId int       `json:"playlistId" db:"playlistid"`
-	Position   *int      `json:"position,omitempty" db:"position"` // Nullable
+	Position   int       `json:"position,omitempty" db:"position"`
 	AddedAt    time.Time `json:"addedAt" db:"addedat"`
 }
