@@ -1,163 +1,148 @@
+<!-- App.svelte -->
 <script>
+  import Home from "./lib/pages/Home.svelte";
+  import { onMount } from "svelte";
+  import { initializeRoute, route, setRoute } from "./lib/route.js";
+  import Test from "./lib/pages/Test.svelte";
+
+  $: $route;
+
+  onMount(() => {
+    initializeRoute();
+  });
 </script>
 
-<main>
-  <div class="container" style="position:fixed; inset:0; max-width:100vw; max-height:100vh;">
-    <header class="top-bar">
-      <input type="text" placeholder="Search..." class="search-input" />
-      <button class="search-btn">Search</button>
-      <button class="add-btn">+</button>
-    </header>
-    <section class="content">
-      <!-- Main content goes here -->
-      <div>
-        <h2>Placeholder Content</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, eu consectetur nisl nisi euismod nisi.</p>
-        <p>Aliquam erat volutpat. Suspendisse potenti. Etiam ac mauris lectus. Integer non dui vitae urna cursus tincidunt.</p>
-        <p>Morbi nec magna ac sem euismod commodo. Proin dictum, lorem a facilisis pretium, enim erat dictum urna, nec dictum enim enim nec enim.</p>
-        <p>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
-        <p>Curabitur euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, eu consectetur nisl nisi euismod nisi.</p>
-        <p>Aliquam erat volutpat. Suspendisse potenti. Etiam ac mauris lectus. Integer non dui vitae urna cursus tincidunt.</p>
-        <p>Morbi nec magna ac sem euismod commodo. Proin dictum, lorem a facilisis pretium, enim erat dictum urna, nec dictum enim enim nec enim.</p>
-        <p>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
+<div class="app-layout">
+  <!-- Sticky Top Bar -->
+  <header class="top-bar">
+    <div class="container-fluid h-100">{$route}</div>
+  </header>
+
+  <!-- Scrollable Content -->
+  <main class="scrollable-content">
+    <div class="container-fluid">
+      {#if $route === "Home"}
+        <Home />
+      {:else if $route === "Test"}
+        <Test />
+      {:else}
+        <div class="content-item">Page not found {$route}</div>
+      {/if}
+    </div>
+  </main>
+
+  <!-- Sticky Player Bar -->
+  <div class="player-bar bg-dark rounded rounded-3 mb-2">
+    <div class="row">
+      <div class="col-3">
+        <img class="img-fluid" src="https://www.bamdevserver.nl/dev/api/v1/images/_BJ9AJ7iwIg.jpg" alt="lol" />
       </div>
-    </section>
-    <nav class="middle-bar">
-      <img class="left-btn" src="https://picsum.photos/100" alt="404" />
-      <button class="middle-btn">Juice World</button>
-      <button class="right-btn">▶</button>
-    </nav>
-    <nav class="bottom-bar">
-      <button class="bottom-btn">Search</button>
-      <button class="bottom-btn">Library</button>
-      <button class="bottom-btn">Settings</button>
-    </nav>
+      <div class="col-7 bg-dark border border-1">
+        <button class="btn btn-dark btn-lg clickable-text">Lorem ipsum dolor si Lorem ipsum dolor si Lorem ipsum dolor si Lorem ipsum dolor  Lorem ipsum dolor si Lorem ipsum dolor si</button>
+      </div>
+      <div class="col-2">
+        <button class="btn btn-dark play-button">▶</button>
+      </div>
+    </div>
   </div>
-</main>
+
+  <!-- Sticky Bottom Bar -->
+  <footer class="bottom-bar bg-dark">
+    <div class="row w-100">
+      <button class="col-4 btn btn-dark" on:click={() => setRoute("Settings")}>Settings</button>
+      <button class="col-4 btn btn-dark" on:click={() => setRoute("Home")}>Home</button>
+      <button class="col-4 btn btn-dark" on:click={() => setRoute("Test")}>Test</button>
+    </div>
+  </footer>
+</div>
+
+<audio id="audio-player" style="display: none;"></audio>
 
 <style>
-.container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-  margin: 0;
-  padding: 0;
-}
+  .app-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+  }
 
-.top-bar {
-  position: sticky;
-  top: 0;
-  background: black;
-  padding: 0.75rem;
-  display: flex;
-  gap: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-  z-index: 10;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-  border-bottom: 2px solid white;
-}
+  .player-bar {
+    max-height: 10rem;
+  }
 
-.content {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding: 1rem;
-  background: #000000;
-}
+  .player-bar .clickable-text {
+    font-size: 1.1rem;
+    max-height: 3.6rem;
+    font-weight: bolder;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: start;
+  }
 
-.middle-bar {
-  position: sticky;
-  bottom: 3.5rem; /* Height of bottom-bar + gap */
-  display: flex;
-  justify-content: space-around;
-  padding: 0.5rem 0;
-  z-index: 9;
-  border: 2px solid #444;
-  width: 96%;
-  margin-left: auto;
-  margin-right: auto;
-}
+  .play-button {
+    font-weight: bolder;
+    font-size: 2.5rem;
+    width: 100%;
+    height: 100%;
+    color: #5bbd99;
+    border-radius: 0.25rem;
+    border: none;
+    font-weight: bolder;
+  }
 
-.middle-btn {
-  flex: 1 1 0;
-  margin: 0 0.25rem;
-  padding: 0.75rem 0;
-  background: #333;
-  border: none;
-  color: white;
-  border-radius: 6px;
-  font-size: 1rem;
-}
+  .bottom-bar button {
+    font-size: 1.2rem;
+    max-height: 3rem;
+    border: none !important;
+  }
 
-.bottom-bar {
-  position: sticky;
-  bottom: 0;
-  background: black;
-  display: flex;
-  justify-content: space-around;
-  padding: 0.5rem 0;
-  box-shadow: 0 -2px 4px rgba(0,0,0,0.03);
-  z-index: 10;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  border-top: 2px solid white;
-}
+  .player-bar img {
+    width: 4.5rem;
+    height: 4.5rem;
+    object-fit: contain;
+  }
 
-.bottom-btn {
-  flex: 1 1 0;
-  margin: 0 0.25rem;
-  padding: 0.75rem 0;
-  background: #2a2020;
-  border: none;
-  color: white;
-  border-radius: 6px;
-  font-size: 1rem;
-}
+  .top-bar {
+    flex: 0 0 auto;
+    padding: 1rem;
+    position: sticky;
+    height: 150px;
+    top: 0;
+    z-index: 10;
+    text-align: center;
+    border-bottom: 10px solid #ffffff;
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+  }
 
-.search-input {
-  flex: 1 1 0;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-}
+  .scrollable-content {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem 1rem 3rem; /* 👈 Important: bottom padding to make space for bottom bar */
+  }
 
-.search-btn {
-  padding: 0.5rem 0.5rem;
-  background: #ff3e00;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-
-.left-btn {
-  width: 3rem;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.add-btn {
-  padding: 0.5rem 1rem;
-  background: #ff3e00;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-
-@media (max-width: 600px) {
-  .content {
+  .bottom-bar {
+    flex: 0 0 auto;
     padding: 0.5rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    border-top: 15px solid #ffffff;
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    height: 10rem; /* Optional: define fixed height if needed for padding calc */
   }
-  .top-bar, .bottom-bar, .middle-bar {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+
+  @media (min-width: 600px) {
+    .content-item {
+      font-size: 1.1rem;
+    }
   }
-  /* .middle-bar {
-    width: 98%;
-  } */
-}
 </style>
