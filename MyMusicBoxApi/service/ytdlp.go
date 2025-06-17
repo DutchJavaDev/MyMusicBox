@@ -68,6 +68,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			NoKeepVideo().
 			SkipDownload().
 			FlatPlaylist().
+			WriteThumbnail().
 			PrintToFile("%(id)s", idsFileName).
 			PrintToFile("%(title)s", namesFileName).
 			PrintToFile("%(duration)s", durationFileName).
@@ -120,7 +121,6 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
 			DownloadArchive(archiveFileName).
 			WriteThumbnail().
-		
 			ConcurrentFragments(10).
 			ConvertThumbnails("jpg").
 			ForceIPv4().
