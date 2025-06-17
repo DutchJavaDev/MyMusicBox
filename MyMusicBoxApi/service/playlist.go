@@ -63,8 +63,9 @@ func downloadPlaylist(
 		}
 	}
 
+	_playlistId, _ := readLines(playlistIdFileName)
+
 	if !playlistExists {
-		_playlistId, _ := readLines(playlistIdFileName)
 		playlistId, _ = db.InsertPlaylist(models.Playlist{
 			Name:          playlistNames[0],
 			Description:   "Custom playlist",
@@ -73,6 +74,13 @@ func downloadPlaylist(
 			IsPublic:      true,
 			UpdatedAt:     time.Now(),
 		})
+	}
+
+	// Special case, thumbnail is written to root directory
+	if len(playlistNames) > 0 && len(_playlistId) > 0 {
+		oldpath := fmt.Sprintf("%s [%s].jpg", playlistNames[0], _playlistId[0])
+		newpath := fmt.Sprintf("%s/%s.jpg", imagesFolder, _playlistId[0])
+		_ = os.Rename(oldpath, newpath)
 	}
 
 	// Update task status
