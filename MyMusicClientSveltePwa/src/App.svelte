@@ -1,14 +1,20 @@
 <!-- App.svelte -->
 <script>
-  import Home from "./lib/pages/Home.svelte";
   import { onMount } from "svelte";
-  import { initializeRoute, route, setRoute } from "./lib/route.js";
-  import Test from "./lib/pages/Test.svelte";
+  import { initializeRoute, route, setRoute, component, componentParams } from "./lib/scripts/route.js";
+  import { updateStores } from "./lib/scripts/api.js";
+  import { initPlaybackAudio } from "./lib/scripts/playback.js";
 
   $: $route;
+  $: $component;
 
   onMount(() => {
-    initializeRoute();
+    async function async() {
+      await updateStores();
+      initPlaybackAudio();
+      initializeRoute();
+    }
+    async();
   });
 </script>
 
@@ -21,37 +27,31 @@
   <!-- Scrollable Content -->
   <main class="scrollable-content">
     <div class="container-fluid">
-      {#if $route === "Home"}
-        <Home />
-      {:else if $route === "Test"}
-        <Test />
-      {:else}
-        <div class="content-item">Page not found {$route}</div>
-      {/if}
+      <svelte:component this={$component} {...$componentParams} />
     </div>
   </main>
 
   <!-- Sticky Player Bar -->
-  <div class="player-bar bg-dark rounded rounded-3 mb-2">
-    <div class="row">
-      <div class="col-3">
-        <img class="img-fluid" src="https://www.bamdevserver.nl/dev/api/v1/images/_BJ9AJ7iwIg.jpg" alt="lol" />
+  <div class="container-fluid player-bar mb-2 bg-dark rounded rounded-2">
+    <div class="row justify-content-center align-items-center">
+      <div class="col-10">
+        <button class="btn btn-dark clickable-text">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        </button>
       </div>
-      <div class="col-7 bg-dark border border-1">
-        <button class="btn btn-dark btn-lg clickable-text">Lorem ipsum dolor si Lorem ipsum dolor si Lorem ipsum dolor si Lorem ipsum dolor  Lorem ipsum dolor si Lorem ipsum dolor si</button>
-      </div>
-      <div class="col-2">
+      <div class="col-2 border-start border-2 rounded-start rounded-1">
         <button class="btn btn-dark play-button">▶</button>
       </div>
     </div>
+
   </div>
 
   <!-- Sticky Bottom Bar -->
-  <footer class="bottom-bar bg-dark">
+  <footer class="bottom-bar">
     <div class="row w-100">
-      <button class="col-4 btn btn-dark" on:click={() => setRoute("Settings")}>Settings</button>
-      <button class="col-4 btn btn-dark" on:click={() => setRoute("Home")}>Home</button>
-      <button class="col-4 btn btn-dark" on:click={() => setRoute("Test")}>Test</button>
+      <button class="col-4 btn btn-dark" on:click={() => setRoute("/Settings")}>Settings</button>
+      <button class="col-4 btn btn-dark" on:click={() => setRoute("/Home")}>Home</button>
+      <button class="col-4 btn btn-dark" on:click={() => setRoute("/Test")}>Test</button>
     </div>
   </footer>
 </div>
@@ -66,17 +66,13 @@
     width: 100vw;
   }
 
-  .player-bar {
-    max-height: 10rem;
-  }
-
   .player-bar .clickable-text {
-    font-size: 1.1rem;
+    font-size: 0.6rem;
     max-height: 3.6rem;
-    font-weight: bolder;
+    font-weight: bold;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -85,13 +81,23 @@
 
   .play-button {
     font-weight: bolder;
-    font-size: 2.5rem;
+    font-size: 2rem;
     width: 100%;
     height: 100%;
+    display: block !important;
+    margin: 0;
     color: #5bbd99;
     border-radius: 0.25rem;
     border: none;
     font-weight: bolder;
+  }
+
+  .player-bar .col-2 {
+    padding: 0 !important;
+  }
+
+  .player-bar .col-10 {
+    padding: 0 !important;
   }
 
   .bottom-bar button {
@@ -100,23 +106,23 @@
     border: none !important;
   }
 
-  .player-bar img {
+  /* .player-bar img {
     width: 4.5rem;
     height: 4.5rem;
     object-fit: contain;
-  }
+  } */
 
   .top-bar {
     flex: 0 0 auto;
     padding: 1rem;
     position: sticky;
-    height: 150px;
+    height: 3.5rem;
     top: 0;
     z-index: 10;
     text-align: center;
-    border-bottom: 10px solid #ffffff;
-    border-bottom-left-radius: 25px;
-    border-bottom-right-radius: 25px;
+    border-bottom: 0.2rem solid #ffffff;
+    border-bottom-left-radius: 1.5rem;
+    border-bottom-right-radius: 1.5rem;
   }
 
   .scrollable-content {
@@ -134,15 +140,15 @@
     z-index: 10;
     display: flex;
     justify-content: center;
-    border-top: 15px solid #ffffff;
-    border-top-left-radius: 25px;
-    border-top-right-radius: 25px;
-    height: 10rem; /* Optional: define fixed height if needed for padding calc */
+    border-top: 0.2rem solid #ffffff;
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    height: 9rem; /* Optional: define fixed height if needed for padding calc */
   }
 
-  @media (min-width: 600px) {
-    .content-item {
-      font-size: 1.1rem;
-    }
+  .bottom-bar button {
+    background-color: black;
+    font-weight: bolder;
+    border: 0.1rem solid #ffffff !important;
   }
 </style>

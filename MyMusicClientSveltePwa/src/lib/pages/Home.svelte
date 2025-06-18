@@ -1,11 +1,18 @@
-<script></script>
+<script>
+  import { onMount } from "svelte";
+  import PlaylistComponent from "../components/PlaylistComponent.svelte";
+  import { playlistsStore } from "../scripts/api";
 
-{#each Array.from({ length: 100 }) as _, index}
-  <div class="content-item">
-    <!-- <Song {song} /> -->
-    Content {index + 1}
-  </div>
+  $: $playlistsStore;
+
+  onMount(() => {});
+</script>
+
+{#if $playlistsStore.length > 0}
+  {#each $playlistsStore as playlist}
+  <PlaylistComponent {playlist} />
 {/each}
-<style>
-    
-</style>
+{:else}
+  <p class="text-center">Working.....</p>
+{/if}
+
