@@ -3,7 +3,9 @@
   import { onMount } from "svelte";
   import { initializeRoute, route, setRoute, component, componentParams } from "./lib/scripts/route.js";
   import { updateStores } from "./lib/scripts/api.js";
-  import { initPlaybackAudio } from "./lib/scripts/playback.js";
+  import { initPlaybackAudio, playOrPauseAudio } from "./lib/scripts/playback.js";
+  import { nextSong, previousSong } from "./lib/scripts/playlist.js";
+  import PlayerBarComponent from "./lib/components/PlayerBarComponent.svelte";
 
   $: $route;
   $: $component;
@@ -13,9 +15,20 @@
       await updateStores();
       initPlaybackAudio();
       initializeRoute();
+
+      // setInterval( async () => {
+      //   await updateStores();
+      // }, 1000 * 30); // Update every 30 seconds
     }
     async();
   });
+
+  function next(){
+    playOrPauseAudio(nextSong())
+  }
+  function prev() {
+    playOrPauseAudio(previousSong())
+  }
 </script>
 
 <div class="app-layout">
@@ -32,31 +45,19 @@
   </main>
 
   <!-- Sticky Player Bar -->
-  <div class="container-fluid player-bar mb-2 bg-dark rounded rounded-2">
-    <div class="row justify-content-center align-items-center">
-      <div class="col-10">
-        <button class="btn btn-dark clickable-text">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        </button>
-      </div>
-      <div class="col-2 border-start border-2 rounded-start rounded-1">
-        <button class="btn btn-dark play-button">▶</button>
-      </div>
-    </div>
-
-  </div>
+  <PlayerBarComponent />
 
   <!-- Sticky Bottom Bar -->
   <footer class="bottom-bar">
     <div class="row w-100">
-      <button class="col-4 btn btn-dark" on:click={() => setRoute("/Settings")}>Settings</button>
+      <button class="col-4 btn btn-dark" on:click={prev}>Prev</button>
       <button class="col-4 btn btn-dark" on:click={() => setRoute("/Home")}>Home</button>
-      <button class="col-4 btn btn-dark" on:click={() => setRoute("/Test")}>Test</button>
+      <button class="col-4 btn btn-dark" on:click={next}>Next</button>
     </div>
   </footer>
 </div>
 
-<audio id="audio-player" style="display: none;"></audio>
+<audio id="audio-player" preload="auto" style="display: none;"></audio>
 
 <style>
   .app-layout {
@@ -64,40 +65,6 @@
     flex-direction: column;
     height: 100vh;
     width: 100vw;
-  }
-
-  .player-bar .clickable-text {
-    font-size: 0.6rem;
-    max-height: 3.6rem;
-    font-weight: bold;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: start;
-  }
-
-  .play-button {
-    font-weight: bolder;
-    font-size: 2rem;
-    width: 100%;
-    height: 100%;
-    display: block !important;
-    margin: 0;
-    color: #5bbd99;
-    border-radius: 0.25rem;
-    border: none;
-    font-weight: bolder;
-  }
-
-  .player-bar .col-2 {
-    padding: 0 !important;
-  }
-
-  .player-bar .col-10 {
-    padding: 0 !important;
   }
 
   .bottom-bar button {

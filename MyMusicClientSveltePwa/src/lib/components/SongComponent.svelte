@@ -1,29 +1,29 @@
 <script>
-import { playAudio } from "../scripts/playback";
+import { playOrPauseAudio, currentSong, isPlaying } from "../scripts/playback.js";
+import { setSongs, setCurrentSong, getCurrentSong } from "../scripts/playlist.js"
+
 export let song;
+export let playlistId;
+
+$: $currentSong;
+$: $isPlaying;
 
 function playSong() {
-  if (song) {
-    playAudio(song.source_id, song.id);
-  }
+  setSongs(playlistId);
+  setCurrentSong(song);
+  playOrPauseAudio(getCurrentSong());
 }
 </script>
 
 {#if song}
-  <!-- <div class="song-component bg-dark d-flex align-items-center mb-2 border border-1 rounded rounded-2 p-2">
-        <div class="song-info">
-            <p>{song.name}</p>
-        </div>
-        <button class="btn btn-dark play-button">▶</button>
-    </div> -->
   <div class="row mb-3 song-component">
-    <div class="col-10 bg-dark border border-1 rounded rounded-2">
+    <div class="col-10 bg-dark border border-1 rounded rounded-2" style="{$currentSong && $currentSong.id === song.id && $isPlaying ? "border-color:#5bbd99 !important;" : ""}">
       <div class="text-lg-start">
-        <p>{song.name}</p>
+        <p style="{$currentSong && $currentSong.id === song.id && $isPlaying ? "color:#5bbd99;" : ""}">{song.name}</p>
       </div>
     </div>
     <div class="col-2">
-      <button on:click={playSong} class="btn btn-dark play-button">▶</button>
+      <button on:click={playSong} class="btn btn-dark play-button">{$currentSong && $currentSong.id === song.id && $isPlaying ? "||" : "▶"}</button>
     </div>
   </div>
 {:else}

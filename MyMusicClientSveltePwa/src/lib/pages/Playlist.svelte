@@ -7,25 +7,23 @@
   import { getPlaylistSongs } from "../scripts/api";
 
   let songs = writable([]);
-  export let id = -1;
+  export let playlistId = -1;
 
   $: $songs;
 
   onMount(() => {
-    songs.set(getPlaylistSongs(id));
+    songs.set(getPlaylistSongs(playlistId));
   });
 </script>
 
 {#if $songs.length > 0}
   <div class="playlist-page">
-    <!-- <h1>{playlist.name}</h1>
-    <p>{playlist.description}</p> -->
     <div class="playlist-songs">
       {#each $songs as song}
-        <SongComponent {song} />
+        <SongComponent {song} {playlistId} />
       {/each}
     </div>
   </div>
 {:else}
-  <p>No playlist selected.</p>
+  <p>No songs in playlist.</p>
 {/if}

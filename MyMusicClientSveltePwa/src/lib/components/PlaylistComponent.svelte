@@ -3,15 +3,18 @@
   export let playlist = null;
   import { getImageUrl, getPlaylistSongs } from "../scripts/api";
   import { setRoute } from "../scripts/route.js";
+  import { currentPlaylistId } from "../scripts/playlist.js";
+
+  $: $currentPlaylistId;
 
   async function viewPlaylist() {
-    setRoute(`/Playlist`, { id : playlist.id });
+    setRoute(`/Playlist`, { playlistId : playlist.id });
   }
 </script>
 
 <div class="playlist-component">
   {#if playlist}
-    <button on:click={viewPlaylist} class="playlist-item btn w-100 border border-1" style="--url: url({getImageUrl(playlist.thumbnailPath)});">
+    <button on:click={viewPlaylist} class="playlist-item btn w-100 border border-3" style="--url: url({getImageUrl(playlist.thumbnailPath)}); {$currentPlaylistId && $currentPlaylistId === playlist.id ? "border-color: #5bbd99 !important;" : ""}">
       <h3>{playlist.name}</h3>
       <p>{playlist.description}</p>
     </button>

@@ -16,6 +16,7 @@ export async function updateStores(){
         .catch(error => console.error('Error fetching playlists:', error));
 
         playlistsArray = [];
+        playlistsSongsMap.clear();
 
     for (const playlist of playlists) {
         playlistsArray.push(playlist);
