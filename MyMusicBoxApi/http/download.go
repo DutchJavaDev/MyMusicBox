@@ -4,6 +4,7 @@ import (
 	"musicboxapi/database"
 	"musicboxapi/models"
 	"musicboxapi/service"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,6 +12,12 @@ import (
 func DownloadRequest(ctx *gin.Context) {
 	var request models.DownloadRequestModel
 	err := ctx.ShouldBindBodyWithJSON(&request)
+
+	// If it contains &list= it will download but it will not update the database for all entries or create the playlist entry
+	if strings.Contains(request.Url, "&list=") && strings.Contains(request.Url, "watch?") {
+		ctx.JSON(500, models.ErrorResponse(gin.H{"error": "Url format is wrong, contains watch instead of playlist="}))
+		return
+	}
 
 	if err != nil {
 		ctx.JSON(500, models.ErrorResponse(err))
