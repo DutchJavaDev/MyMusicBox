@@ -8,7 +8,7 @@ import (
 )
 
 func (pdb *PostgresDb) FetchPlaylists(ctx context.Context) (playlists []models.Playlist, error error) {
-	query := "SELECT Id, Name, ThumbnailPath, Description, CreationDate FROM Playlist WHERE Id > 1" // order by?
+	query := "SELECT Id, Name, ThumbnailPath, Description, CreationDate FROM Playlist" // order by?
 
 	rows, err := pdb.connection.QueryContext(ctx, query)
 	defer rows.Close()
