@@ -41,6 +41,16 @@ export function getPlaylistSongs(playlistId) {
     }
 }
 
+export function getPlaylistById(playlistId) {
+    const playlist = playlistsArray.find(p => p.id === playlistId);
+    if (playlist) {
+        return playlist;
+    } else {
+        console.warn(`No playlist found with ID: ${playlistId}`);
+        return null;
+    }
+}
+
 async function fetchPlaylistSongs(playlistId) {
 
     let songs = await fetch(`${baseApiUrl}/playlist/${playlistId}`)

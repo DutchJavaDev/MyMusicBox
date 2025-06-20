@@ -23,7 +23,13 @@ function playSong() {
       </div>
     </div>
     <div class="col-2">
-      <button on:click={playSong} class="btn btn-dark play-button">{$currentSong && $currentSong.id === song.id && $isPlaying ? "||" : "▶"}</button>
+      <button on:click={playSong} class="btn btn-dark play-button">
+        {#if $currentSong && $currentSong.id === song.id && $isPlaying}
+          <i class="fa-solid fa-pause"></i>
+        {:else}
+          <i class="fa-solid fa-play"></i>
+        {/if}
+      </button>
     </div>
   </div>
 {:else}

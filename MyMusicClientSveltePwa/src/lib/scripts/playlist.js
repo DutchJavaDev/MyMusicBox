@@ -2,9 +2,14 @@ import { get, writable } from "svelte/store";
 import { getPlaylistSongs } from "./api.js";
 
 export let currentPlaylistId = writable(-1);
+export let isShuffleEnabled = writable(false);
 let currentIndex = 0;
 let originalPlaylist = []; // This can be used to store the original playlist if needed
 let currentPlaylist = [];
+
+export function getCurrentPlaylistId() {
+  return get(currentPlaylistId);
+}
 
 export function setSongs(playlistId) {
   if (get(currentPlaylistId) === playlistId) {
@@ -21,12 +26,12 @@ export function getCurrentSong() {
 }
 
 export function setCurrentSong(song) {
-    const index = currentPlaylist.findIndex(s => s.id === song.id);
-    if (index !== -1) {
-        currentIndex = index; // Update the current index to the song's index
-    } else {
-        console.warn("Song not found in the current playlist.");
-    }
+  const index = currentPlaylist.findIndex((s) => s.id === song.id);
+  if (index !== -1) {
+    currentIndex = index; // Update the current index to the song's index
+  } else {
+    console.warn("Song not found in the current playlist.");
+  }
 }
 
 export function nextSong() {
@@ -42,6 +47,13 @@ export function previousSong() {
 }
 
 export function shufflePlaylist() {
-  currentPlaylist = originalPlaylist.slice().sort(() => Math.random() - 0.5); // Shuffle the playlist
-  currentIndex = 0; // Reset index after shuffling
+  if (get(isShuffleEnabled)) {
+    currentPlaylist = originalPlaylist.slice();
+    currentIndex = 0;
+    isShuffleEnabled.set(false);
+  } else {
+    currentPlaylist = currentPlaylist.sort(() => Math.random() - 0.5);
+    currentIndex = 0;
+    isShuffleEnabled.set(true);
+  }
 }

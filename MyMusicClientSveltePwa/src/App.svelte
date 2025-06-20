@@ -5,15 +5,23 @@
   import { updateStores } from "./lib/scripts/api.js";
   import { initPlaybackAudio, playOrPauseAudio } from "./lib/scripts/playback.js";
   import { nextSong, previousSong } from "./lib/scripts/playlist.js";
+  // @ts-ignore
+  import {initializeMediaSession} from "./lib/scripts/mediasession.js";
   import PlayerBarComponent from "./lib/components/PlayerBarComponent.svelte";
+  import Modals from "./lib/components/Modals.svelte";
 
-  $: $route;
-  $: $component;
+ // @ts-ignore
+  // @ts-ignore
+    $: $route;
+ // @ts-ignore
+  // @ts-ignore
+    $: $component;
 
   onMount(() => {
     async function async() {
       await updateStores();
       initPlaybackAudio();
+      initializeMediaSession();
       initializeRoute();
 
       // setInterval( async () => {
@@ -23,15 +31,19 @@
     async();
   });
 
+  // @ts-ignore
+  // @ts-ignore
   function next(){
     playOrPauseAudio(nextSong())
   }
+  // @ts-ignore
+  // @ts-ignore
   function prev() {
     playOrPauseAudio(previousSong())
   }
 </script>
 
-<div class="app-layout">
+<div class="app-layout bg-dark">
   <!-- Sticky Top Bar -->
   <header class="top-bar">
     <div class="container-fluid h-100">{$route}</div>
@@ -50,14 +62,17 @@
   <!-- Sticky Bottom Bar -->
   <footer class="bottom-bar">
     <div class="row w-100">
-      <button class="col-4 btn btn-dark" on:click={prev}>Prev</button>
-      <button class="col-4 btn btn-dark" on:click={() => setRoute("/Home")}>Home</button>
-      <button class="col-4 btn btn-dark" on:click={next}>Next</button>
+      <div class="col-6">
+        <button aria-label="settings" class="btn btn-dark w-100"><i class="fa-solid fa-gear"></i></button>
+      </div>
+      <div class="col-6">
+        <button aria-label="home" class="btn btn-dark w-100" on:click={() => setRoute("/Home")}><i class="fa-solid fa-house"></i></button>
+      </div>
     </div>
   </footer>
 </div>
 
-<audio id="audio-player" preload="auto" style="display: none;"></audio>
+<Modals />
 
 <style>
   .app-layout {
@@ -87,7 +102,7 @@
     top: 0;
     z-index: 10;
     text-align: center;
-    border-bottom: 0.2rem solid #ffffff;
+    border-bottom: 0.2rem solid #5bbd99;
     border-bottom-left-radius: 1.5rem;
     border-bottom-right-radius: 1.5rem;
   }
@@ -107,15 +122,15 @@
     z-index: 10;
     display: flex;
     justify-content: center;
-    border-top: 0.2rem solid #ffffff;
+    border-top: 0.2rem solid #5bbd99;
     border-top-left-radius: 1.5rem;
     border-top-right-radius: 1.5rem;
     height: 9rem; /* Optional: define fixed height if needed for padding calc */
   }
 
   .bottom-bar button {
-    background-color: black;
     font-weight: bolder;
-    border: 0.1rem solid #ffffff !important;
+    border: 0.1rem solid #5bbd99 !important;
+    background-color: #343a40 !important;
   }
 </style>
