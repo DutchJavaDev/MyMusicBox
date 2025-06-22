@@ -74,6 +74,8 @@
 
 <Modals />
 
+<audio id="audio-player" style="display: none;"></audio>
+
 <style>
   .app-layout {
     display: flex;
@@ -125,7 +127,7 @@
     border-top: 0.2rem solid #5bbd99;
     border-top-left-radius: 1.5rem;
     border-top-right-radius: 1.5rem;
-    height: 9rem; /* Optional: define fixed height if needed for padding calc */
+    height: 3.8rem; /* Optional: define fixed height if needed for padding calc */
   }
 
   .bottom-bar button {
