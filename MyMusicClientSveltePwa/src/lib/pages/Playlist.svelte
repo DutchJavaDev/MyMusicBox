@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { writable } from "svelte/store";
   import SongComponent from "../components/SongComponent.svelte";
-  import { getPlaylistSongs } from "../scripts/api";
+ import { getPlaylistSongs } from "../scripts/api";
 
   let songs = writable([]);
   export let playlistId = -1;
