@@ -29,6 +29,11 @@ export function initializeRoute() {
 
   component.set(routes.get(window.location.pathname));
   componentParams.set(parameters);
+
+  if (path === "/") {
+    path = "/Home";
+  }
+
   route.set(path.split("/")[1]);
 }
 
