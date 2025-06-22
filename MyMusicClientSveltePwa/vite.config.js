@@ -14,7 +14,7 @@ export default defineConfig({
         short_name: 'MyMusic Svelte PWA',
         description: 'A Progressive Web App for MyMusic Client built with Svelte',
         start_url: '/',
-        theme_color: '#ffffff',
+        theme_color: '#212529',
         icons: [
     {
       "src": "icons/icon-48x48.png",

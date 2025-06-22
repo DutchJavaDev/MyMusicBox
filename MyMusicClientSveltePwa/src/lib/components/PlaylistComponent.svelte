@@ -1,14 +1,15 @@
 <script>
   // @ts-nocheck
   export let playlist = null;
-  import { getImageUrl, getPlaylistSongs } from "../scripts/api";
-  import { setRoute } from "../scripts/route.js";
+  
+  import { navigateTo } from "../scripts/route.js";
+  import { getImageUrl } from "../scripts/api";
   import { currentPlaylistId } from "../scripts/playlist.js";
-
+  
   $: $currentPlaylistId;
 
   async function viewPlaylist() {
-    setRoute(`/Playlist`, { playlistId : playlist.id });
+    navigateTo(`/Playlist`, { playlistId : playlist.id });
   }
 </script>
 

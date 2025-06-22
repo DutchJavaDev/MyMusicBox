@@ -1,53 +1,32 @@
 <!-- App.svelte -->
 <script>
   import { onMount } from "svelte";
-  import { initializeRoute, route, setRoute, component, componentParams } from "./lib/scripts/route.js";
+  import { initializeRoute, pathName, navigateTo, component, componentParams } from "./lib/scripts/route.js";
   import { updateStores } from "./lib/scripts/api.js";
-  import { initPlaybackAudio, playOrPauseAudio } from "./lib/scripts/playback.js";
-  import { nextSong, previousSong } from "./lib/scripts/playlist.js";
-  // @ts-ignore
-  import {initializeMediaSession} from "./lib/scripts/mediasession.js";
+  import { initPlaybackAudio } from "./lib/scripts/playback.js";
+  import { initializeMediaSession } from "./lib/scripts/mediasession.js";
   import PlayerBarComponent from "./lib/components/PlayerBarComponent.svelte";
   import Modals from "./lib/components/Modals.svelte";
+  import { initPlaylist } from "./lib/scripts/playlist.js";
 
- // @ts-ignore
-  // @ts-ignore
-    $: $route;
- // @ts-ignore
-  // @ts-ignore
-    $: $component;
+  $: $pathName;
+  $: $component;
 
   onMount(() => {
     async function async() {
       await updateStores();
+      initPlaylist();
       initPlaybackAudio();
       initializeMediaSession();
       initializeRoute();
-
-      // setInterval( async () => {
-      //   await updateStores();
-      // }, 1000 * 30); // Update every 30 seconds
     }
     async();
   });
-
-  // @ts-ignore
-  // @ts-ignore
-  function next(){
-    playOrPauseAudio(nextSong())
-  }
-  // @ts-ignore
-  // @ts-ignore
-  function prev() {
-    playOrPauseAudio(previousSong())
-  }
 </script>
 
 <div class="app-layout bg-dark">
   <!-- Sticky Top Bar -->
-  <header class="top-bar">
-    <div class="container-fluid h-100">{$route}</div>
-  </header>
+  <header class="top-bar"><div class="container-fluid h-100">{$pathName}</div></header>
 
   <!-- Scrollable Content -->
   <main class="scrollable-content">
@@ -66,13 +45,15 @@
         <button aria-label="settings" class="btn btn-dark w-100"><i class="fa-solid fa-gear"></i></button>
       </div>
       <div class="col-6">
-        <button aria-label="home" class="btn btn-dark w-100" on:click={() => setRoute("/Home")}><i class="fa-solid fa-house"></i></button>
+        <button aria-label="home" class="btn btn-dark w-100" on:click={() => navigateTo("/Home")}><i class="fa-solid fa-house"></i></button>
       </div>
     </div>
   </footer>
 </div>
 
 <Modals />
+
+<audio id="audio-player" style="display: none;"></audio>
 
 <style>
   .app-layout {
@@ -87,12 +68,6 @@
     max-height: 3rem;
     border: none !important;
   }
-
-  /* .player-bar img {
-    width: 4.5rem;
-    height: 4.5rem;
-    object-fit: contain;
-  } */
 
   .top-bar {
     flex: 0 0 auto;
@@ -125,7 +100,7 @@
     border-top: 0.2rem solid #5bbd99;
     border-top-left-radius: 1.5rem;
     border-top-right-radius: 1.5rem;
-    height: 9rem; /* Optional: define fixed height if needed for padding calc */
+    height: 3.8rem; /* Optional: define fixed height if needed for padding calc */
   }
 
   .bottom-bar button {
