@@ -1,6 +1,6 @@
 import { get, writable } from "svelte/store";
 import { nextSong, getCurrentPlaylistId } from "./playlist.js";
-import { updateMediaSessionMetadata } from "./mediasession.js";
+import { updateMediaSessionMetadata, updateMediaSessionPlaybackState } from "./mediasession.js";
 import { getPlaylistById } from "./api.js";
 
 let audioElement = null;
@@ -23,22 +23,25 @@ export function initPlaybackAudio() {
 
     audioElement.addEventListener("playing", () => {
         console.log("Audio is playing");
-        isPlaying.set(true);    
+        isPlaying.set(true);
+        updateMediaSessionPlaybackState(true);
     });
 
     audioElement.addEventListener("pause", () => {
         console.log("Audio is paused");
         isPlaying.set(false);
+        updateMediaSessionPlaybackState(false);
     });
 
     audioElement.addEventListener("ended", () => {
         console.log("Audio has ended");
         isPlaying.set(false);
+        updateMediaSessionPlaybackState(false);
         playPercentage.set(0);
         
         if (get(isRepeatEnabled)) {
-            audioElement.currentTime = 0; // Reset to start
-            audioElement.play(); // Replay the current song
+            audioElement.currentTime = 0;
+            audioElement.play();
         } else{
             playOrPauseAudio(nextSong());
         }

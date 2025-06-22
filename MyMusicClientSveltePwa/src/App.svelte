@@ -1,7 +1,7 @@
 <!-- App.svelte -->
 <script>
   import { onMount } from "svelte";
-  import { initializeRoute, route, setRoute, component, componentParams } from "./lib/scripts/route.js";
+  import { initializeRoute, pathName, navigateTo, component, componentParams } from "./lib/scripts/route.js";
   import { updateStores } from "./lib/scripts/api.js";
   import { initPlaybackAudio, playOrPauseAudio } from "./lib/scripts/playback.js";
   import { nextSong, previousSong } from "./lib/scripts/playlist.js";
@@ -10,9 +10,9 @@
   import PlayerBarComponent from "./lib/components/PlayerBarComponent.svelte";
   import Modals from "./lib/components/Modals.svelte";
 
- // @ts-ignore
+ // @ts-ignorerouteName
   // @ts-ignore
-    $: $route;
+    $: $pathName;
  // @ts-ignore
   // @ts-ignore
     $: $component;
@@ -45,8 +45,7 @@
 
 <div class="app-layout bg-dark">
   <!-- Sticky Top Bar -->
-  <header class="top-bar">
-    <div class="container-fluid h-100">{$route}</div>
+  <header class="top-bar"><div class="container-fluid h-100">{$pathName}</div>
   </header>
 
   <!-- Scrollable Content -->
@@ -66,11 +65,11 @@
         <button aria-label="settings" class="btn btn-dark w-100"><i class="fa-solid fa-gear"></i></button>
       </div>
       <div class="col-6">
-        <button aria-label="home" class="btn btn-dark w-100" on:click={() => setRoute("/Home")}><i class="fa-solid fa-house"></i></button>
+        <button aria-label="home" class= "btn btn-dark w-100" on:click={() => navigateTo("/Home")}><i class="fa-solid fa-house"></i></button>
       </div>
     </div>
   </footer>
-</div>
+</div>navigateTo
 
 <Modals />
 

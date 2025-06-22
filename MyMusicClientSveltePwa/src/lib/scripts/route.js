@@ -4,54 +4,60 @@ import Home from "../pages/Home.svelte";
 import NotFound from "../pages/NotFound.svelte";
 import Playlist from "../pages/Playlist.svelte";
 
-let routes = new Map([
+const componentsPathMap = new Map([
   ["/404", NotFound],
-  ["/Home", Home],["/", Home],
-  ["/Playlist", Playlist]
+  ["/Home", Home],
+  ["/", Home],
+  ["/Playlist", Playlist],
 ]);
 
-// TODO fix route value when path is /
-// Its empty string now, but should be "Home" or similar
-export let route = writable("Home");
-export let component = writable(routes.get("/Home"));
-export let componentParams = writable(getSearchParams());
+const NotFoundRoutePath = "/404";
+const NotFoundPathName = "404";
 
+
+export let pathName = writable("Home");
+export let component = writable(componentsPathMap.get(`/${pathName}`));
+export let componentParams = writable(getSearchParameters());
+
+// Initializes the route based on the current URL path and search parameters
+// If the path does not exist in the componentsPathMap, it sets the NotFound component
 export function initializeRoute() {
   let path = window.location.pathname;
-  let parameters = getSearchParams();
+  let parameters = getSearchParameters();
 
-  if (!routes.has(path)) {
-    component.set(routes.get("/404"));
+  if (!componentsPathMap.has(path)) {
+    component.set(componentsPathMap.get(NotFoundRoutePath));
     componentParams.set({ page: path });
-    route.set("404");
+    pathName.set(NotFoundPathName);
     return;
   }
 
-  component.set(routes.get(window.location.pathname));
+  component.set(componentsPathMap.get(window.location.pathname));
   componentParams.set(parameters);
 
   if (path === "/") {
     path = "/Home";
   }
 
-  route.set(path.split("/")[1]);
+  pathName.set(path.split("/")[1]);
 }
 
-export function setRoute(newRoute, parameters) {
-  if (!routes.has(newRoute)) {
-    component.set(routes.get("/404"));
+// Sets the current route and updates the component and parameters accordingly
+// If the route does not exist, it sets the NotFound component and parameters
+export function navigateTo(newRoute, parameters = null) {
+  if (!componentsPathMap.has(newRoute)) {
+    component.set(componentsPathMap.get(NotFoundRoutePath));
     componentParams.set({ page: newRoute });
-    route.set("404");
+    pathName.set(NotFoundPathName);
   } else {
-    component.set(routes.get(newRoute));
-    if(parameters != null)
-    {
+    component.set(componentsPathMap.get(newRoute));
+    if (parameters != null) {
       componentParams.set(parameters);
     }
-    route.set(newRoute.split("/")[1]);
+    pathName.set(newRoute.split("/")[1]);
   }
 
-  let URLSearchParams = createSearchParams(parameters);
+  let URLSearchParams = createSearchParameters(parameters);
 
   let url = `${newRoute}${URLSearchParams ? `?${URLSearchParams}` : ""}`;
 
@@ -62,7 +68,7 @@ export function setRoute(newRoute, parameters) {
   }
 }
 
-function getSearchParams() {
+function getSearchParameters() {
   const searchParams = new URLSearchParams(window.location.search);
   const result = {};
   for (const [key, value] of searchParams.entries()) {
@@ -83,11 +89,11 @@ function parseValue(value) {
   return value;
 }
 
-function createSearchParams(params) {
+function createSearchParameters(params) {
   const searchParams = new URLSearchParams();
   for (const key in params) {
     if (Array.isArray(params[key])) {
-      params[key].forEach(value => searchParams.append(key, value));
+      params[key].forEach((value) => searchParams.append(key, value));
     } else {
       searchParams.set(key, params[key]);
     }
