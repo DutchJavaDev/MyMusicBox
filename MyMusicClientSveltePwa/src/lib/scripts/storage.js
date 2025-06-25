@@ -6,6 +6,17 @@ const songsKey = `${storagePrefix}songs`;
 const currentSongKey = `${storagePrefix}currentSong`;
 const currentPlaylistKey = `${storagePrefix}currentPlaylist`;
 
+export function clearStorage() {
+    if (storageAvailable(storageType)) {
+        try {
+            localStorage.clear();
+            console.log("Local storage cleared.");
+        } catch (e) {
+            console.error("Error clearing localStorage:", e);
+        }
+    }
+}
+
 export function storePlaylists(playlists) {
     setItem(playlistsKey, playlists);
 }

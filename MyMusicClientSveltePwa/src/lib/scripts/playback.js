@@ -25,7 +25,6 @@ export function initPlaybackAudio() {
   const songCache = getCurrentSongStore();
   if (songCache && songCache.index !== undefined) {
     const song = getCurrentSong();
-    console.log(song)
     if (song) {
         playOrPauseAudio(song, false);
         setCurrentTime(songCache.time);
