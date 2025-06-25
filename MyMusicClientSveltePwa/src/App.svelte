@@ -8,6 +8,10 @@
   import PlayerBarComponent from "./lib/components/PlayerBarComponent.svelte";
   import Modals from "./lib/components/Modals.svelte";
   import { initPlaylist } from "./lib/scripts/playlist.js";
+  
+  // TODO remove this import when manual refresh logic is no longer needed
+  import { clearStorage } from "./lib/scripts/storage.js";
+  import { playlistsStore } from "./lib/scripts/api.js";
 
   $: $pathName;
   $: $component;
@@ -22,6 +26,14 @@
     }
     async();
   });
+
+  // This is a temporary function to handle refresh logic.
+  // It can be replaced with a more specific implementation later.
+  async function refresh() {
+    clearStorage();
+    playlistsStore.set([]);
+    await updateStores();
+  }
 </script>
 
 <div class="app-layout bg-dark">
@@ -42,7 +54,7 @@
   <footer class="bottom-bar">
     <div class="row w-100">
       <div class="col-6">
-        <button aria-label="settings" class="btn btn-dark w-100"><i class="fa-solid fa-gear"></i></button>
+        <button aria-label="empty storage" class="btn btn-dark w-100" on:click={refresh}><i class="fa-solid fa-trash"></i></button>
       </div>
       <div class="col-6">
         <button aria-label="home" class="btn btn-dark w-100" on:click={() => navigateTo("/Home")}><i class="fa-solid fa-house"></i></button>
