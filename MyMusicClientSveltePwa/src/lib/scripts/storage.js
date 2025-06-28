@@ -31,7 +31,6 @@ export function storeCurrentSong(index, time = 0) {
 
 export function storeCurrentPlaylist(playlist, id, shuffle = false, repeat = false) {
     let data = { playlist, id, shuffle, repeat };
-    console.log("Storing current playlist:", data);
     setItem(currentPlaylistKey, data);
 }
 
