@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { writable } from "svelte/store";
+import { writable, get } from "svelte/store";
 import { storePlaylists, storePlaylistSongs, getPlaylistsStore, getPlaylistSongsStore } from "./storage.js";
 
 const baseApiUrl = import.meta.env.VITE_BASE_API_URL;
@@ -9,21 +9,26 @@ let playlistsSongsMap = new Map();
 
 export const playlistsStore = writable([]);
 
-export async function updateStores() {
+export let writablePlaylistsStore = [];
+
+export async function initStores() {
   // check localStorage for playlists and songs
   // if not found, fetch from API
   let cachedPlaylists = getPlaylistsStore();
 
   if (cachedPlaylists.length > 0) {
     for (const playlist of cachedPlaylists) {
-      playlistsArray.push(playlist);  
+      playlistsArray.push(playlist);
       let songs = getPlaylistSongsStore(playlist.id);
       playlistsSongsMap.set(playlist.id, songs);
+
+      writablePlaylistsStore[playlist.id] = writable(songs);
     }
 
     playlistsStore.set(playlistsArray);
     console.log("Loaded playlists from localStorage");
   } else {
+    console.log("Fetching playlists from API");
     let playlists = await fetch(`${baseApiUrl}/playlist`)
       .then((response) => response.json())
       .then((data) => data.Data)
@@ -38,11 +43,56 @@ export async function updateStores() {
       playlistsSongsMap.set(playlist.id, songs);
 
       storePlaylistSongs(playlist.id, songs);
+
+      writablePlaylistsStore[playlist.id] = writable(songs);
     }
 
     playlistsStore.set(playlistsArray);
     storePlaylists(playlistsArray);
   }
+}
+
+export async function updateStores() {
+  // Update plaists
+  let cachedPlaylists = getPlaylistsStore();
+  const lastKnowPlaylistId = cachedPlaylists.at(-1).id;
+  let playlists = await fetchPlaylists(lastKnowPlaylistId);
+
+  for (const playlist of playlists) {
+    playlistsArray.push(playlist);
+  }
+
+  playlistsStore.set(playlistsArray);
+  storePlaylists(playlistsArray);
+
+  // Update songs for each playlist
+  console.log("starting to update songs for each playlist");
+  for (const playlist of playlistsArray) {
+    
+    let lastKnowSongPosition = playlistsSongsMap.get(playlist.id).length;
+
+    if (!lastKnowSongPosition) {
+      lastKnowSongPosition = 0; // Default to 0 if no songs are found
+    }
+
+    let songs = await fetchPlaylistSongs(playlist.id, lastKnowSongPosition);
+
+    if (songs.length > 0) {
+      // Add local notification for new songs?
+      console.log(`Found (${songs.length}) new songs for playlist ID: ${playlist.id} with last known song position: ${lastKnowSongPosition}`);
+      playlistsSongsMap.set(playlist.id, [...playlistsSongsMap.get(playlist.id), ...songs]);
+      storePlaylistSongs(playlist.id, playlistsSongsMap.get(playlist.id));
+
+      let songList = get(writablePlaylistsStore[playlist.id]);
+
+      for (const song of songs) {
+        songList.push(song);
+      }
+
+      writablePlaylistsStore[playlist.id].set(songList);
+    }
+  }
+  console.log("Finished updating songs for each playlist");
 }
 
 export function getImageUrl(imagePath) {
@@ -69,8 +119,16 @@ export function getPlaylistById(playlistId) {
   }
 }
 
-async function fetchPlaylistSongs(playlistId) {
-  let songs = await fetch(`${baseApiUrl}/playlist/${playlistId}`)
+async function fetchPlaylists(lastKnowPlaylistId) {
+  let playlists = await fetch(`${baseApiUrl}/playlist?lastKnowPlaylistId=${lastKnowPlaylistId}`)
+    .then((response) => response.json())
+    .then((data) => data.Data)
+    .catch((error) => console.error("Error fetching playlists:", error));
+  return playlists;
+}
+
+async function fetchPlaylistSongs(playlistId, lastKnowSongId = 0) {
+  let songs = await fetch(`${baseApiUrl}/playlist/${playlistId}?lastKnowSongPosition=${lastKnowSongId}`)
     .then((response) => response.json())
     .then((data) => data.Data)
     .catch((error) => console.error("Error fetching playlist songs:", error));
