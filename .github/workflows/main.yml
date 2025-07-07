@@ -27,6 +27,7 @@ jobs:
         run: npm version patch --no-git-tag-version
 
       - name: Commit and push version bump
+        working-directory: MyMusicClientSveltePwa
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
