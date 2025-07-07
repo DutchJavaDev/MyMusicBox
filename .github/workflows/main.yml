@@ -2,9 +2,12 @@
 name: Auto Bump Version
 
 on:
-  push:
-    branches:    
-      - '!main'
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
 
 permissions:
   contents: write
@@ -22,37 +25,27 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          
+
       - name: Install Node dependencies
         working-directory: MyMusicClientSveltePwa
         run: npm ci
 
-      - name: Bump version
+      - name: Bump version (no commit)
         working-directory: MyMusicClientSveltePwa
         run: npm version patch --no-git-tag-version
 
-      - name: Configure Git
+      # Optional: Commit version bump to the PR branch (not to main)
+      - name: Commit version bump to PR branch
+        working-directory: MyMusicClientSveltePwa
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git fetch origin ${{ github.head_ref }}
+            git checkout -b temp-pr-branch origin/${{ github.head_ref }}
 
-      - name: Commit version bump
-        run: |
-          git add MyMusicClientSveltePwa/package.json MyMusicClientSveltePwa/package-lock.json
-          git commit -m "chore: bump version"
-          echo "BRANCH_NAME=version-bump-$(date +%s)" >> $GITHUB_ENV
+            git add package.json package-lock.json
+            git commit -m "chore: bump version"
 
-      - name: Create new branch and push
-        run: |
-          git checkout -b ${{ env.BRANCH_NAME }}
-          git push origin ${{ env.BRANCH_NAME }}
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: bump version"
-          title: "chore: bump version"
-          body: "This PR bumps the version automatically."
-          branch: ${{ env.BRANCH_NAME }}
-          base: main
+            git push origin temp-pr-branch:${{ github.head_ref }}
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
