@@ -15,6 +15,8 @@
   $: $pathName;
   $: $component;
 
+  let intervalId;
+
   onMount(() => {
     async function async() {
       await initStores();
@@ -31,7 +33,7 @@
     const fetchInterval = 1000 * 15; // 15 seconds
     let isRunning = false;
 
-    const intervalId = setInterval(async () => {
+    intervalId = setInterval(async () => {
       if (isRunning) return; // Prevent concurrent executions
       
       isRunning = true; 
@@ -49,9 +51,11 @@
   // This is a temporary function to handle refresh logic.
   // It can be replaced with a more specific implementation later.
   async function refresh() {
-    // clearStorage();
-    // playlistsStore.set([]);
-    // await updateStores();
+    clearInterval(intervalId);
+    clearStorage();
+    playlistsStore.set([]);
+    await initStores();
+    backgroundFetch();
   }
 </script>
 
