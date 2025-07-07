@@ -38,10 +38,14 @@ jobs:
       - name: Commit version bump to PR branch
         working-directory: MyMusicClientSveltePwa
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          git commit -m "chore: bump version"
-          git push origin HEAD:${{ github.head_ref }}
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git fetch origin ${{ github.head_ref }}
+            git checkout -b temp-pr-branch origin/${{ github.head_ref }}
+
+            git add package.json package-lock.json
+            git commit -m "chore: bump version"
+
+            git push origin temp-pr-branch:${{ github.head_ref }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
