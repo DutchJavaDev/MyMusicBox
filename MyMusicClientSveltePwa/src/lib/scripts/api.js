@@ -4,17 +4,17 @@ import { storePlaylists, storePlaylistSongs, getPlaylistsStore, getPlaylistSongs
 
 const baseApiUrl = import.meta.env.VITE_BASE_API_URL;
 
-let playlistsArray = new Array();
-let playlistsSongsMap = new Map();
+const playlistsArray = new Array();
+const playlistsSongsMap = new Map();
 
 export const playlistsStore = writable([]);
 
-export let writablePlaylistsStore = [];
+export const writablePlaylistsStore = [];
 
 export async function initStores() {
   // check localStorage for playlists and songs
   // if not found, fetch from API
-  let cachedPlaylists = getPlaylistsStore();
+  const cachedPlaylists = getPlaylistsStore();
 
   if (cachedPlaylists.length > 0) {
     for (const playlist of cachedPlaylists) {
@@ -29,17 +29,17 @@ export async function initStores() {
     console.log("Loaded playlists from localStorage");
   } else {
     console.log("Fetching playlists from API");
-    let playlists = await fetch(`${baseApiUrl}/playlist`)
+    const playlists = await fetch(`${baseApiUrl}/playlist`)
       .then((response) => response.json())
       .then((data) => data.Data)
       .catch((error) => console.error("Error fetching playlists:", error));
 
-    playlistsArray = [];
+    playlistsArray.length = 0;;
     playlistsSongsMap.clear();
 
     for (const playlist of playlists) {
       playlistsArray.push(playlist);
-      let songs = await fetchPlaylistSongs(playlist.id);
+      const songs = await fetchPlaylistSongs(playlist.id);
       playlistsSongsMap.set(playlist.id, songs);
 
       storePlaylistSongs(playlist.id, songs);
@@ -54,9 +54,9 @@ export async function initStores() {
 
 export async function updateStores() {
   // Update plaists
-  let cachedPlaylists = getPlaylistsStore();
+  const cachedPlaylists = getPlaylistsStore();
   const lastKnowPlaylistId = cachedPlaylists.at(-1).id;
-  let playlists = await fetchPlaylists(lastKnowPlaylistId);
+  const playlists = await fetchPlaylists(lastKnowPlaylistId);
 
   for (const playlist of playlists) {
     playlistsArray.push(playlist);
@@ -69,13 +69,13 @@ export async function updateStores() {
   console.log("starting to update songs for each playlist");
   for (const playlist of playlistsArray) {
     
-    let lastKnowSongPosition = playlistsSongsMap.get(playlist.id).length;
+    const lastKnowSongPosition = playlistsSongsMap.get(playlist.id).length;
 
     if (!lastKnowSongPosition) {
       lastKnowSongPosition = 0; // Default to 0 if no songs are found
     }
 
-    let songs = await fetchPlaylistSongs(playlist.id, lastKnowSongPosition);
+    const songs = await fetchPlaylistSongs(playlist.id, lastKnowSongPosition);
 
     if (songs.length > 0) {
       // Add local notification for new songs?
@@ -83,7 +83,7 @@ export async function updateStores() {
       playlistsSongsMap.set(playlist.id, [...playlistsSongsMap.get(playlist.id), ...songs]);
       storePlaylistSongs(playlist.id, playlistsSongsMap.get(playlist.id));
 
-      let songList = get(writablePlaylistsStore[playlist.id]);
+      const songList = get(writablePlaylistsStore[playlist.id]);
 
       for (const song of songs) {
         songList.push(song);
@@ -120,7 +120,7 @@ export function getPlaylistById(playlistId) {
 }
 
 async function fetchPlaylists(lastKnowPlaylistId) {
-  let playlists = await fetch(`${baseApiUrl}/playlist?lastKnowPlaylistId=${lastKnowPlaylistId}`)
+  const playlists = await fetch(`${baseApiUrl}/playlist?lastKnowPlaylistId=${lastKnowPlaylistId}`)
     .then((response) => response.json())
     .then((data) => data.Data)
     .catch((error) => console.error("Error fetching playlists:", error));
@@ -128,7 +128,7 @@ async function fetchPlaylists(lastKnowPlaylistId) {
 }
 
 async function fetchPlaylistSongs(playlistId, lastKnowSongId = 0) {
-  let songs = await fetch(`${baseApiUrl}/playlist/${playlistId}?lastKnowSongPosition=${lastKnowSongId}`)
+  const songs = await fetch(`${baseApiUrl}/playlist/${playlistId}?lastKnowSongPosition=${lastKnowSongId}`)
     .then((response) => response.json())
     .then((data) => data.Data)
     .catch((error) => console.error("Error fetching playlist songs:", error));
