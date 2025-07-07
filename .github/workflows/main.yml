@@ -19,7 +19,7 @@ jobs:
           node-version: '18'
           
       - name: PwaApp
-        run: cd MyMusicClientSveltePwa
+        run: ls -l MyMusicClientSveltePwa
 
       - name: Install dependencies
         run: npm ci
