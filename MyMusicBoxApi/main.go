@@ -27,7 +27,7 @@ func main() {
 
 	engine := gin.Default()
 
-	engine.SetTrustedProxies(nil)
+	engine.SetTrustedProxies([]string{"127.0.0.1"})
 
 	if configuration.Config.UseDevUrl {
 		engine.Use(cors.Default())

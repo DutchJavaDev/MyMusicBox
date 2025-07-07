@@ -13,8 +13,16 @@ func FetchPlaylists(ctx *gin.Context) {
 	db := database.PostgresDb{}
 	defer db.CloseConnection()
 
+	lastKnowPlaylistIdQuery := ctx.Query("lastKnowPlaylistId")
+
+	lastKnowPlaylistId := 0
+
+	if lastKnowPlaylistIdQuery != "" {
+		lastKnowPlaylistId, _ = strconv.Atoi(lastKnowPlaylistIdQuery)
+	}
+
 	if db.OpenConnection() {
-		playlists, err := db.FetchPlaylists(ctx.Request.Context())
+		playlists, err := db.FetchPlaylists(ctx.Request.Context(), lastKnowPlaylistId)
 		if err != nil {
 			ctx.JSON(500, models.ErrorResponse(err))
 			return
@@ -31,6 +39,14 @@ func FetchPlaylistSongs(ctx *gin.Context) {
 
 	playlistIdParameter := ctx.Param("playlistId")
 
+	lastKnowSongPosition := 0
+
+	lastKnowSongPositionQuery := ctx.Query("lastKnowSongPosition")
+
+	if lastKnowSongPositionQuery != "" {
+		lastKnowSongPosition, _ = strconv.Atoi(lastKnowSongPositionQuery)
+	}
+
 	if playlistIdParameter == "" {
 		ctx.JSON(500, models.ErrorResponse("No playlistId inrequest"))
 		return
@@ -39,7 +55,7 @@ func FetchPlaylistSongs(ctx *gin.Context) {
 	playlistId, _ := strconv.Atoi(playlistIdParameter)
 
 	if db.OpenConnection() {
-		songs, err := db.FetchPlaylistSongs(ctx.Request.Context(), playlistId)
+		songs, err := db.FetchPlaylistSongs(ctx.Request.Context(), playlistId, lastKnowSongPosition)
 		if err != nil {
 			ctx.JSON(500, models.ErrorResponse(err))
 			return

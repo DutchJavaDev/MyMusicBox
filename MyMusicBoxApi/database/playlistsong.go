@@ -7,12 +7,16 @@ import (
 	"musicboxapi/models"
 )
 
-func (pdb *PostgresDb) FetchPlaylistSongs(ctx context.Context, playlistId int) (songs []models.Song, error error) {
+func (pdb *PostgresDb) FetchPlaylistSongs(ctx context.Context, playlistId int, lastKnowPosition int) (songs []models.Song, error error) {
 
-	query := `SELECT s.Id, s.Name, s.Path, s.ThumbnailPath, s.Duration, s.SourceId, s.UpdatedAt, CreatedAt FROM Song s
-	          INNER JOIN PlaylistSong ps ON ps.PlaylistId = $1
-			  WHERE ps.SongId = s.Id
-			  order by ps.Position` // order by playlist position
+	// query := `SELECT s.Id, s.Name, s.Path, s.ThumbnailPath, s.Duration, s.SourceId, s.UpdatedAt, CreatedAt FROM Song s
+	//           INNER JOIN PlaylistSong ps ON ps.PlaylistId = $1
+	// 		  WHERE ps.SongId = s.Id
+	// 		  order by ps.Position` // order by playlist position
+
+	query := `SELECT s.Id, s.Name, s.Path, s.ThumbnailPath, s.Duration, s.SourceId, s.UpdatedAt, s.CreatedAt FROM playlistsong ps
+			 INNER JOIN song s ON s.id = ps.songid
+			 WHERE ps.playlistid = $1 AND ps.position > $2`
 
 	statement, err := pdb.connection.Prepare(query)
 	defer statement.Close()
@@ -22,7 +26,7 @@ func (pdb *PostgresDb) FetchPlaylistSongs(ctx context.Context, playlistId int) (
 		return nil, err
 	}
 
-	rows, err := statement.QueryContext(ctx, playlistId)
+	rows, err := statement.QueryContext(ctx, playlistId, lastKnowPosition)
 	defer rows.Close()
 
 	if err != nil {

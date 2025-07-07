@@ -7,10 +7,10 @@ import (
 	"musicboxapi/models"
 )
 
-func (pdb *PostgresDb) FetchPlaylists(ctx context.Context) (playlists []models.Playlist, error error) {
-	query := "SELECT Id, Name, ThumbnailPath, Description, CreationDate FROM Playlist" // order by?
+func (pdb *PostgresDb) FetchPlaylists(ctx context.Context, lastKnowPlaylistId int) (playlists []models.Playlist, error error) {
+	query := "SELECT Id, Name, ThumbnailPath, Description, CreationDate FROM Playlist WHERE Id > $1 ORDER BY Id" // order by?
 
-	rows, err := pdb.connection.QueryContext(ctx, query)
+	rows, err := pdb.connection.QueryContext(ctx, query, lastKnowPlaylistId)
 	defer rows.Close()
 
 	if err != nil {
