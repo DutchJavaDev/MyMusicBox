@@ -1,4 +1,3 @@
-# .github/workflows/bump-version.yml
 name: Auto Bump Version
 
 on:
@@ -15,6 +14,7 @@ permissions:
 
 jobs:
   bump:
+    if: contains(github.head_ref, 'frontend')
     runs-on: ubuntu-latest
 
     steps:
@@ -34,7 +34,6 @@ jobs:
         working-directory: MyMusicClientSveltePwa
         run: npm version patch --no-git-tag-version
 
-      # Optional: Commit version bump to the PR branch (not to main)
       - name: Commit version bump to PR branch
         working-directory: MyMusicClientSveltePwa
         run: |
