@@ -3,7 +3,10 @@ name: Auto Bump Version
 
 on:
   push:
-    branches: [main]  # or 'release/*' if you prefer
+    branches: [main] 
+
+permissions:
+  contents: write 
 
 jobs:
   bump:
