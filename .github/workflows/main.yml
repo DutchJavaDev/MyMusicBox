@@ -3,7 +3,8 @@ name: Auto Bump Version
 
 on:
   push:
-    branches: [main] 
+    branches:    
+      - 'master'
 
 permissions:
   contents: write 
