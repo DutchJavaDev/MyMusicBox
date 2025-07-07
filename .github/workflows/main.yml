@@ -4,6 +4,9 @@ name: Auto Bump Version
 on:
   push:
     branches:    
+      #- '*'      
+      #- '*/*'      
+      #- '**'        
       - 'main'
 
 permissions:
@@ -38,3 +41,5 @@ jobs:
           git add package.json package-lock.json
           git commit -m "chore: bump version"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
