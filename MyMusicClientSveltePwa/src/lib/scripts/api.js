@@ -69,7 +69,7 @@ export async function updateStores() {
   console.log("starting to update songs for each playlist");
   for (const playlist of playlistsArray) {
     
-    const lastKnowSongPosition = playlistsSongsMap.get(playlist.id).length;
+    let lastKnowSongPosition = playlistsSongsMap.get(playlist.id).length;
 
     if (!lastKnowSongPosition) {
       lastKnowSongPosition = 0; // Default to 0 if no songs are found

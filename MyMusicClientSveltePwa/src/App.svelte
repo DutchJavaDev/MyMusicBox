@@ -17,6 +17,9 @@
 
   let intervalId;
 
+  // @ts-ignore
+  const version = __APP_VERSION__;
+
   onMount(() => {
     async function async() {
       await initStores();
@@ -61,7 +64,9 @@
 
 <div class="app-layout bg-dark">
   <!-- Sticky Top Bar -->
-  <header class="top-bar"><div class="container-fluid h-100">{$pathName}</div></header>
+  <header class="top-bar">
+    <div class="container-fluid h-100">{$pathName} <span style="font-size: 0.8rem;">(v{version})</span></div>
+  </header>
 
   <!-- Scrollable Content -->
   <main class="scrollable-content">
