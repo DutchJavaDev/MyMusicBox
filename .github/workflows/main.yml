@@ -4,7 +4,7 @@ name: Auto Bump Version
 on:
   push:
     branches:    
-      - 'main'
+      - '!main'
 
 permissions:
   contents: write
