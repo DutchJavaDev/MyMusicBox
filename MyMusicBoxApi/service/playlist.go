@@ -49,7 +49,7 @@ func downloadPlaylist(
 	defer db.CloseConnection()
 
 	// Check if exists, if not then create
-	existingPlaylists, _ := db.FetchPlaylists(context.Background())
+	existingPlaylists, _ := db.FetchPlaylists(context.Background(), 0)
 
 	playlistExists := false
 	playlistId := -1
