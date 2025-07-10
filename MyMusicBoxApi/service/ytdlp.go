@@ -31,7 +31,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 	imagesFolder := fmt.Sprintf("%s/images", storageFolderName)
 	fileExtension := config.OutputExtension
 
-	if !dirExists(storageFolderName) {
+	if !pathExists(storageFolderName) {
 		err := os.Mkdir(storageFolderName, fs.ModePerm|fs.ModeDir)
 		if err != nil {
 			logging.Error(err.Error())
@@ -39,7 +39,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		}
 	}
 
-	if !dirExists(imagesFolder) {
+	if !pathExists(imagesFolder) {
 		err := os.Mkdir(imagesFolder, fs.ModePerm|fs.ModeDir)
 		if err != nil {
 			logging.Error(err.Error())
@@ -94,6 +94,25 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			}
 			return
 		}
+
+		// Check if the files have been downloaded, if not stop going further to prevent panic
+		if !fileExists(idsFileName) ||
+			!fileExists(namesFileName) ||
+			!fileExists(durationFileName) ||
+			!fileExists(playlistTitleFileName) ||
+			!fileExists(playlistIdFileName) {
+
+			errorJosn, _ := json.Marshal(models.ErrorResponse("Ytdlp files were not donwloaded, stopping task here"))
+
+			// Set Task state -> Error
+			err = db.UpdateTaskLogError(int(models.Error), errorJosn, time.Now(), taskId)
+			if err != nil {
+				logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
+			}
+
+			return
+		}
+
 		db.CloseConnection()
 
 		downloadPlaylist(
@@ -127,8 +146,6 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			PrintToFile("%(id)s", idsFileName).
 			PrintToFile("%(title)s", namesFileName).
 			PrintToFile("%(duration)s", durationFileName).
-			PrintToFile("%(playlist_title)s", playlistTitleFileName).
-			PrintToFile("%(playlist_id)s", playlistIdFileName).
 			//sudo apt install aria2
 			Downloader("aria2c").
 			DownloaderArgs("aria2c:-x 16 -s 16 -j 16").
@@ -148,9 +165,25 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		             WHERE Id = $4`
 
 			// Set Task state -> Error
-			json, err := json.Marshal(result.OutputLogs)
+			outputlogJson, err := json.Marshal(result.OutputLogs)
 
-			err = db.NonScalarQuery(query, int(models.Error), json, time.Now(), taskId)
+			err = db.NonScalarQuery(query, int(models.Error), outputlogJson, time.Now(), taskId)
+			if err != nil {
+				logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
+			}
+
+			return
+		}
+
+		// Check if the files have been downloaded, if not stop going further to prevent panic
+		if !fileExists(idsFileName) ||
+			!fileExists(namesFileName) ||
+			!fileExists(durationFileName) {
+
+			errorJosn, _ := json.Marshal(models.ErrorResponse("Ytdlp files were not donwloaded, stopping task here"))
+
+			// Set Task state -> Error
+			err = db.UpdateTaskLogError(int(models.Error), errorJosn, time.Now(), taskId)
 			if err != nil {
 				logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 			}
@@ -196,9 +229,8 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		query := `UPDATE TaskLog
 		             SET Status = $1, OutputLog = $2, EndTime = $3
 		             WHERE Id = $4`
-		json, err := json.Marshal(result.OutputLogs)
-
-		err = db.NonScalarQuery(query, int(models.Done), json, time.Now(), taskId)
+		outputJson, err := json.Marshal(result.OutputLogs)
+		err = db.NonScalarQuery(query, int(models.Done), outputJson, time.Now(), taskId)
 		if err != nil {
 			logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 		}
@@ -227,10 +259,16 @@ func readLines(path string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
-func dirExists(path string) bool {
+func pathExists(path string) bool {
 	info, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		return false
 	}
-	return err == nil && info.IsDir()
+	return err == nil && (info.IsDir())
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	// No error, file exists
+	return err == nil
 }

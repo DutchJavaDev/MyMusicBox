@@ -53,7 +53,6 @@ func downloadPlaylist(
 
 	playlistExists := false
 	playlistId := -1
-	downloadCounter := 0
 
 	for _, playlist := range existingPlaylists {
 		if playlist.Name == playlistNames[0] {
@@ -66,7 +65,7 @@ func downloadPlaylist(
 	_playlistId, _ := readLines(playlistIdFileName)
 
 	if !playlistExists {
-		playlistId, _ = db.InsertPlaylist(models.Playlist{
+		_newPlaylistId, err := db.InsertPlaylist(models.Playlist{
 			Name:          playlistNames[0],
 			Description:   "Custom playlist",
 			ThumbnailPath: fmt.Sprintf("%s.jpg", _playlistId[0]),
@@ -74,6 +73,13 @@ func downloadPlaylist(
 			IsPublic:      true,
 			UpdatedAt:     time.Now(),
 		})
+
+		if err != nil {
+			logging.Error(fmt.Sprintf("[Creating custom playlist error]: %s", err.Error()))
+			return
+		}
+
+		playlistId = _newPlaylistId
 	}
 
 	// Special case, thumbnail is written to root directory
@@ -112,7 +118,6 @@ func downloadPlaylist(
 	for id := range downloadCount {
 		name := names[id]
 		if canDownload(name) {
-			downloadCounter++
 			ytdlpInstance := defaultSettings.Clone()
 
 			result, err := ytdlpInstance.Run(context.Background(), fmt.Sprintf("https://www.youtube.com/watch?v=%s", ids[id]))

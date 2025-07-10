@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"musicboxapi/configuration"
 	"musicboxapi/logging"
 	"os"
 	"strings"
@@ -20,7 +21,13 @@ type PostgresDb struct {
 
 func (pdb *PostgresDb) OpenConnection() (created bool) {
 
-	baseConnectionString := "user=postgres dbname=postgres password=%s host=127.0.0.1 port=5432 sslmode=disable"
+	baseConnectionString := ""
+
+	if configuration.Config.UseDevUrl {
+		baseConnectionString = "user=postgres dbname=postgres password=%s host=127.0.0.1 port=5433 sslmode=disable"
+	} else {
+		baseConnectionString = "user=postgres dbname=postgres password=%s host=127.0.0.1 port=5432 sslmode=disable"
+	}
 
 	connectionString := fmt.Sprintf(baseConnectionString, os.Getenv("POSTGRES_PASSWORD"))
 
@@ -68,6 +75,10 @@ func (pdb *PostgresDb) NonScalarQuery(query string, params ...any) (error error)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("[NonScalarQuery] Exec error: %s", err.Error()))
+		logging.Error(fmt.Sprintf("Query: %s", query))
+		for index := range params {
+			logging.Error(params[index])
+		}
 		return err
 	}
 

@@ -133,7 +133,7 @@ CREATE INDEX idx_playlistsong_song ON PlaylistSong(SongId);
 -- Main playlist for all songs
 -- Should not show up in playlist list, instead under tab all songs 
 INSERT INTO Playlist (Name, Description, ThumbnailPath, IsPublic) VALUES
-('Library', 'Default playlist for all', 'https://picsum.photos/100', FALSE);
+('Library', 'Default playlist for all', '', FALSE);
 
 -- =============================================
 -- SECTION 7: SAMPLE DATA

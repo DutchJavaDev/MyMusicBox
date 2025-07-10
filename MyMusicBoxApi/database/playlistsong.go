@@ -16,7 +16,7 @@ func (pdb *PostgresDb) FetchPlaylistSongs(ctx context.Context, playlistId int, l
 
 	query := `SELECT s.Id, s.Name, s.Path, s.ThumbnailPath, s.Duration, s.SourceId, s.UpdatedAt, s.CreatedAt FROM playlistsong ps
 			 INNER JOIN song s ON s.id = ps.songid
-			 WHERE ps.playlistid = $1 AND ps.position > $2`
+			 WHERE ps.playlistid = $1 AND ps.position >= $2`
 
 	statement, err := pdb.connection.Prepare(query)
 	defer statement.Close()
