@@ -28,6 +28,13 @@ func (pdb *PostgresDb) EndTaskLog(taskId int, nStatus int, data []byte) error {
 	return pdb.NonScalarQuery(query, nStatus, data, time.Now(), taskId)
 }
 
+func (pdb *PostgresDb) UpdateTaskLogError(params ...any) error {
+	query := `UPDATE TaskLog
+		             SET Status = $1, OutputLog = $2, EndTime = $3
+		             WHERE Id = $4`
+	return pdb.NonScalarQuery(query, params...)
+}
+
 func (pdb *PostgresDb) GetTaskLogs(ctx context.Context) ([]models.TaskLog, error) {
 	query := `SELECT Id, StartTime, EndTime, Status, OutputLog FROM TaskLog ORDER BY Id desc` // get the latest first
 

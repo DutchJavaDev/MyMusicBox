@@ -8,6 +8,7 @@ require (
 	github.com/ProtonMail/go-crypto v1.3.0 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/ulikunitz/xz v0.5.12 // indirect
 )
 
 require (
@@ -25,7 +26,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lib/pq v1.10.9
-	github.com/lrstanley/go-ytdlp v0.0.0-20250610000944-a2284ab714d8
+	github.com/lrstanley/go-ytdlp v1.1.1-0.20250710012800-43387ad4d4a9
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
