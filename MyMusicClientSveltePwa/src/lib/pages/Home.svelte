@@ -10,9 +10,8 @@
 
 {#if $playlistsStore.length > 0}
   {#each $playlistsStore as playlist}
-  <PlaylistComponent {playlist} />
-{/each}
+    <PlaylistComponent {playlist} />
+  {/each}
 {:else}
   <p class="text-center">Working.....</p>
 {/if}
-

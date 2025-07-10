@@ -1,0 +1,50 @@
+name: Auto Bump Version
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    if: contains(github.head_ref, 'frontend')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Node dependencies
+        working-directory: MyMusicClientSveltePwa
+        run: npm ci
+
+      - name: Bump version (no commit)
+        working-directory: MyMusicClientSveltePwa
+        run: npm version patch --no-git-tag-version
+
+      - name: Commit version bump to PR branch
+        working-directory: MyMusicClientSveltePwa
+        run: |
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git fetch origin ${{ github.head_ref }}
+            git checkout -b temp-pr-branch origin/${{ github.head_ref }}
+
+            git add package.json package-lock.json
+            git commit -m "chore: bump version"
+
+            git push origin temp-pr-branch:${{ github.head_ref }}
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

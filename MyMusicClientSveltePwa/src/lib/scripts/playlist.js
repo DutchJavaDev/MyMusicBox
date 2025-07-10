@@ -32,20 +32,14 @@ export function getCurrentPlaylistId() {
 }
 
 export function setSongs(playlistId) {
-  if (get(currentPlaylistId) === playlistId) {
-    return; // No need to update if the same playlist is set
-  }
   currentPlaylistId.set(playlistId); // Update the current playlist ID
   originalPlaylist = getPlaylistSongs(playlistId);
   currentPlaylist = originalPlaylist.slice(); // Create a copy of the original playlist
-  currentIndex = 0; // Reset index when setting new songs
-
   storeCurrentPlaylist(currentPlaylist, playlistId, get(isShuffleEnabled), get(isRepeatEnabled));
 }
 
 export function getCurrentSong() {
   let song = currentPlaylist[currentIndex];
-  storeCurrentSong(currentIndex, 0);
   return song;
 }
 
