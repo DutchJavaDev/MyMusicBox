@@ -1,0 +1,16 @@
+[Unit]
+Description=My Music Api
+After=network.target
+
+[Service]
+ExecStart=/home/admin/mymusicbox_production/musicboxapi
+WorkingDirectory=/home/admin/mymusicbox_production
+Restart=always
+RestartSec=5
+User=root
+Environment=ENV=production
+Environment=POSTGRES_PASSWORD=
+Environment=CORS_ORIGIN=
+
+[Install]
+WantedBy=multi-user.target

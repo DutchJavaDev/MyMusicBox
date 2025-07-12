@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ -f go_program.pid ]; then
+    PID=$(cat go_program.pid)
+    echo "Killing process with PID $PID"
+    sudo kill "$PID"
+    rm go_program.pid
+else
+    echo "PID file not found. Process might not be running or already terminated."
+fi
