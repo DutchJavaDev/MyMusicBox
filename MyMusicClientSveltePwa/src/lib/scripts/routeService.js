@@ -21,7 +21,7 @@ export let componentParams = writable(getSearchParameters());
 
 // Initializes the route based on the current URL path and search parameters
 // If the path does not exist in the componentsPathMap, it sets the NotFound component
-export function initializeRoute() {
+export function initializeRouteService() {
   let path = window.location.pathname;
   let parameters = getSearchParameters();
 

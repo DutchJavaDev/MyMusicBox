@@ -1,13 +1,12 @@
 <script>
   import { onMount } from "svelte";
   import PlaylistComponent from "../components/PlaylistComponent.svelte";
-  import { playlistsStore } from "../scripts/api";
+  import { playlistsStore } from "../scripts/playlistService.js";
 
   $: $playlistsStore;
 
   onMount(() => {});
 </script>
-
 {#if $playlistsStore.length > 0}
   {#each $playlistsStore as playlist}
     <PlaylistComponent {playlist} />

@@ -1,12 +1,9 @@
 <script>
+// @ts-nocheck
+  import { getImageUrl } from "../scripts/api";
+  import { navigateTo } from "../scripts/routeService.js";
   // @ts-nocheck
   export let playlist = null;
-  
-  import { navigateTo } from "../scripts/route.js";
-  import { getImageUrl } from "../scripts/api";
-  import { currentPlaylistId } from "../scripts/playlist.js";
-  
-  $: $currentPlaylistId;
 
   async function viewPlaylist() {
     navigateTo(`/Playlist`, { playlistId : playlist.id });
@@ -15,7 +12,7 @@
 
 <div class="playlist-component">
   {#if playlist}
-    <button on:click={viewPlaylist} class="playlist-item btn w-100 border border-3" style="--url: url({getImageUrl(playlist.thumbnailPath)}); {$currentPlaylistId && $currentPlaylistId === playlist.id ? "border-color: #5bbd99 !important;" : ""}">
+    <button on:click={viewPlaylist} class="playlist-item btn w-100 border border-3" style="--url: url({getImageUrl(playlist.thumbnailPath)}); {true ? "border-color: #5bbd99 !important;" : ""}">
       <h3>{playlist.name}</h3>
       <p>{playlist.description}</p>
     </button>

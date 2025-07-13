@@ -1,65 +1,32 @@
 <!-- App.svelte -->
 <script>
-  import { onDestroy, onMount } from "svelte";
-  import { initializeRoute, pathName, navigateTo, component, componentParams } from "./lib/scripts/route.js";
-  import { initPlaybackAudio } from "./lib/scripts/playback.js";
-  import { initializeMediaSession } from "./lib/scripts/mediasession.js";
+  import { onMount } from "svelte";
+  import { initializeRouteService, pathName, navigateTo, component, componentParams } from "./lib/scripts/routeService.js";
   import PlayerBarComponent from "./lib/components/PlayerBarComponent.svelte";
   import Modals from "./lib/components/Modals.svelte";
-  import { initPlaylist } from "./lib/scripts/playlist.js";
-  
-  // TODO remove this import when manual refresh logic is no longer needed
-  import { clearStorage } from "./lib/scripts/storage.js";
-  import { playlistsStore, initStores, updateStores } from "./lib/scripts/api.js";
+  import { initializePlaylistService } from "./lib/scripts/playlistService.js";
+  import { initializePlaybackService } from "./lib/scripts/playbackService.js";
+  import { initializeMediaSessionService } from "./lib/scripts/mediasessionService.js";
 
   $: $pathName;
   $: $component;
-
-  let intervalId;
 
   // @ts-ignore
   const version = __APP_VERSION__;
 
   onMount(() => {
-    async function async() {
-      await initStores();
-      initPlaylist();
-      initPlaybackAudio();
-      initializeMediaSession();
-      initializeRoute();
-      backgroundFetch();
+    async function initializeServices() {
+      initializeRouteService();
+      await initializePlaylistService();
+      initializePlaybackService();
+      initializeMediaSessionService();
     }
-    async();
+    initializeServices();
   });
-
-  async function backgroundFetch() {
-    const fetchInterval = 1000 * 15; // 15 seconds
-    let isRunning = false;
-
-    intervalId = setInterval(async () => {
-      if (isRunning) return; // Prevent concurrent executions
-      
-      isRunning = true; 
-
-      try {
-        await updateStores();
-      } catch (error) {
-        console.error("Error during background fetch:", error);
-      } finally {
-        isRunning = false;
-      }
-    }, fetchInterval);
-  }
 
   // This is a temporary function to handle refresh logic.
   // It can be replaced with a more specific implementation later.
-  async function refresh() {
-    clearInterval(intervalId);
-    clearStorage();
-    playlistsStore.set([]);
-    await initStores();
-    backgroundFetch();
-  }
+  async function refresh() {}
 </script>
 
 <div class="app-layout bg-dark">

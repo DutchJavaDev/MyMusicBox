@@ -1,10 +1,26 @@
 // @ts-ignore
 const storageType = "localStorage";
-const storagePrefix = "mmb_";
-const playlistsKey = `${storagePrefix}playlists`;
-const songsKey = `${storagePrefix}songs`;
-const currentSongKey = `${storagePrefix}currentSong`;
-const currentPlaylistKey = `${storagePrefix}currentPlaylist`;
+const cachedPlaylistsKey = "cachedPlaylists";
+const cachedPlaylistSongsKey = "cachedPlaylistSongs_";
+
+export function getCachedPlaylists() {
+  return getItem(cachedPlaylistsKey) || [];
+}
+
+export function setPlaylists(playlists) {
+  setItem(cachedPlaylistsKey, playlists);
+}
+
+// Create update function to update the songs in it
+export function setPlaylistSongs(playlistId, songs) {
+  const key = `${cachedPlaylistSongsKey}${playlistId}`;
+  setItem(key, songs);
+}
+
+export function getCachedPlaylistSongs(playlistId) {
+  const key = `${cachedPlaylistSongsKey}${playlistId}`;
+  return getItem(key) || [];
+}
 
 export function clearStorage() {
     if (storageAvailable(storageType)) {
@@ -17,23 +33,6 @@ export function clearStorage() {
     }
 }
 
-export function storePlaylists(playlists) {
-    setItem(playlistsKey, playlists);
-}
-
-export function storePlaylistSongs(playlistId, songs) {
-    setItem(`${songsKey}_${playlistId}`, songs);
-}
-
-export function storeCurrentSong(index, time = 0) {
-    setItem(currentSongKey, { index, time });
-}
-
-export function storeCurrentPlaylist(playlist, id, shuffle = false, repeat = false) {
-    let data = { playlist, id, shuffle, repeat };
-    setItem(currentPlaylistKey, data);
-}
-
 function setItem(key, value) {
   if (storageAvailable(storageType)) {
     try {
@@ -42,22 +41,6 @@ function setItem(key, value) {
       console.error("Error setting item in localStorage:", e);
     }
   }
-}
-
-export function getPlaylistsStore() {
-  return getItem(playlistsKey) || [];
-}
-
-export function getPlaylistSongsStore(playlistId) {
-  return getItem(`${songsKey}_${playlistId}`) || [];    
-}
-
-export function getCurrentSongStore() {
-  return getItem(currentSongKey) || { index: 0, time: 0 };   
-}
-
-export function getCurrentPlaylist() {
-  return getItem(currentPlaylistKey) || { playlist: null, shuffle: false, repeat: false };
 }
 
 function getItem(key) {
