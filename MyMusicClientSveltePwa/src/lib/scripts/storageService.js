@@ -1,25 +1,76 @@
 // @ts-ignore
 const storageType = "localStorage";
-const cachedPlaylistsKey = "cachedPlaylists";
-const cachedPlaylistSongsKey = "cachedPlaylistSongs_";
-
-export function getCachedPlaylists() {
-  return getItem(cachedPlaylistsKey) || [];
-}
+const PlaylistsKey = "cachedPlaylists";
+const PlaylistSongsKey = "cachedPlaylistSongs_";
+const PlaybackStateKey = "playbackState";
+const CurrentPlaylistIdKey = "currentPlaylistId";
+const CurrentSongIndexKey = "currentSongIndex";
+const CurrentShuffeldPlaylistKey = "currentShuffledPlaylist";
+const CurrentSongTimeKey = "currentSongTime";
 
 export function setPlaylists(playlists) {
-  setItem(cachedPlaylistsKey, playlists);
+  setItem(PlaylistsKey, playlists);
 }
 
-// Create update function to update the songs in it
 export function setPlaylistSongs(playlistId, songs) {
-  const key = `${cachedPlaylistSongsKey}${playlistId}`;
+  const key = `${PlaylistSongsKey}${playlistId}`;
   setItem(key, songs);
 }
 
+export function setPlaybackState(isLoopingEnabled, isShuffledEnabled) {
+  const playbackState = {
+    isLoopingEnabled,
+    isShuffledEnabled,
+  };
+  setItem(PlaybackStateKey, playbackState);
+}
+
+export function setCurrentPlaylistId(playlistId) {
+  setItem(CurrentPlaylistIdKey, playlistId);
+}
+
+export function setCurrentSongIndex(index) {
+  setItem(CurrentSongIndexKey, index);
+}
+
+export function setCurrentShuffledPlaylist(shuffledPlaylist) {
+  setItem(CurrentShuffeldPlaylistKey, shuffledPlaylist);
+}
+
+export function setCurrentSongTime(seconds) {
+  setItem(CurrentSongTimeKey, seconds);
+}
+
+export function getCachedPlaylists() {
+  return getItem(PlaylistsKey) || [];
+}
+
 export function getCachedPlaylistSongs(playlistId) {
-  const key = `${cachedPlaylistSongsKey}${playlistId}`;
+  const key = `${PlaylistSongsKey}${playlistId}`;
   return getItem(key) || [];
+}
+
+export function getPlaybackState() {
+  return getItem(PlaybackStateKey) || {
+    isLoopingEnabled: false,
+    isShuffledEnabled: false,
+  };
+}
+
+export function getCurrentPlaylistId() {
+  return getItem(CurrentPlaylistIdKey) || 0;
+}
+
+export function getCurrentSongIndex() {
+  return getItem(CurrentSongIndexKey) || 0;
+}
+
+export function getCurrentShuffledPlaylist() {
+  return getItem(CurrentShuffeldPlaylistKey) || [];
+}
+
+export function getCurrentSongTime() {
+  return getItem(CurrentSongTimeKey) || 0;
 }
 
 export function clearStorage() {
