@@ -1,23 +1,26 @@
 <script>
-  import { isPlaying, currentSong, playOrPauseAudio, playPercentage, toggleRepeat, isRepeatEnabled, setCurrentTime } from "../scripts/playback.js";
-  import { getImageUrl } from "../scripts/api.js";
-  import { nextSong, previousSong, shufflePlaylist, isShuffleEnabled } from "../scripts/playlist.js";
+// @ts-nocheck
 
-  $: $isPlaying;
+  import { isPlaying, currentSong, 
+           playPercentage, setCurrentTime, 
+           nextSong, previousSong, 
+           isShuffledEnabled, isLoopingEnabled, 
+           toggleShuffle, playOrPauseSong,
+           toggleLoop } from "../scripts/playbackService";
+  import { getImageUrl } from "../scripts/api";
+  import { get } from "svelte/store";
+  import { isTimerEnabled, timeLeft, toggleSleepTimer } from "../scripts/sleeptimerService";
+
   $: $currentSong;
+  $: $isPlaying;
   $: $playPercentage;
-  $: $isShuffleEnabled;
-  $: $isRepeatEnabled;
-
-  function next() {
-    playOrPauseAudio(nextSong());
-  }
-  function prev() {
-    playOrPauseAudio(previousSong());
-  }
-
+  $: $isShuffledEnabled;
+  $: $isLoopingEnabled;
+  $: $isTimerEnabled;
+  $: $timeLeft;
+  
   function togglePlay() {
-    playOrPauseAudio(null);
+    playOrPauseSong(get(currentSong).id);
   }
 
   function seekEvent(event) {
@@ -34,8 +37,8 @@
 </script>
 
 <!-- Modal -->
-{#if $currentSong}
-  <div class="modal fade" id="songControlModal" tabindex="-1" aria-labelledby="songControlModalLabel" aria-hidden="true">
+{#if $currentSong && $currentSong.id !== -999} <!-- Ensure currentSong is valid -->
+  <div class="modal fade" id="songControlModal" tabindex="-1" aria-labelledby="songControlModalLabel" aria-hidden="false">
     <div class="modal-dialog modal-fullscreen-sm-down">
       <div class="modal-content bg-dark">
         <div class="modal-body">
@@ -55,7 +58,7 @@
               <div class="col-12">
                 <div class="row mt-4">
                   <div class="col-4">
-                    <button aria-label="previous song" on:click={prev} class="btn btn-dark w-100">
+                    <button aria-label="previous song" on:click={previousSong} class="btn btn-dark w-100">
                       <i class="fa-solid fa-backward fa-2xl"></i>
                     </button>
                   </div>
@@ -71,7 +74,7 @@
                   </div>
 
                   <div class="col-4">
-                    <button aria-label="next song" on:click={next} class="btn btn-dark w-100">
+                    <button aria-label="next song" on:click={nextSong} class="btn btn-dark w-100">
                       <i class="fa-solid fa-forward fa-2xl"></i>
                     </button>
                   </div>
@@ -81,23 +84,23 @@
               <div class="col-12">
                 <div class="row mt-5">
                   <div class="col-4">
-                    <button disabled aria-label="sleep timer" type="button" class="btn btn-dark w-100">
-                      <i class="fa-solid fa-stopwatch-20" style="color: white !important;">
-                        <span style="font-size: 0.5rem;">
-                            &nbsp;TODO
+                    <button on:click={toggleSleepTimer} aria-label="sleep timer" type="button" class="btn btn-dark w-100">
+                      <i class="fa-solid fa-stopwatch-20" style="{$isTimerEnabled ? "color: #5bbd99;" : "color:white;"}">
+                        <span style="font-size: 0.8rem;">
+                            &nbsp;{$isTimerEnabled ? $timeLeft : ""}
                       </span>
                     </i>
                     </button>
                   </div>
 
                   <div class="col-4">
-                    <button on:click={shufflePlaylist} aria-label="shuffle playlist" type="button" class="btn btn-dark w-100">
-                      <i class="fa-solid fa-shuffle" style="{$isShuffleEnabled ? "color: #5bbd99;" : "color:white;"}"></i>
+                    <button on:click={toggleShuffle} aria-label="shuffle playlist" type="button" class="btn btn-dark w-100">
+                      <i class="fa-solid fa-shuffle" style="{$isShuffledEnabled ? "color: #5bbd99;" : "color:white;"}"></i>
                     </button>
                   </div>
                   <div class="col-4">
-                    <button on:click={toggleRepeat} aria-label="repeat song" type="button" class="btn btn-dark w-100">
-                      <i class="fa-solid fa-repeat" style="{$isRepeatEnabled ? "color: #5bbd99;" : "color:white;"}"></i>
+                    <button on:click={toggleLoop} aria-label="repeat song" type="button" class="btn btn-dark w-100">
+                      <i class="fa-solid fa-repeat" style="{$isLoopingEnabled ? "color: #5bbd99;" : "color:white;"}"></i>
                     </button>
                   </div>
                 </div>

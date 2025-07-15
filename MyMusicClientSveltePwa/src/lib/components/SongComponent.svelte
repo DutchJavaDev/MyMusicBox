@@ -1,29 +1,33 @@
 <script>
-import { playOrPauseAudio, currentSong, isPlaying } from "../scripts/playback.js";
-import { setSongs, setCurrentSong, getCurrentSong } from "../scripts/playlist.js"
+// @ts-nocheck
 
-export let song;
-export let playlistId;
+  import { getContext, onMount, setContext } from "svelte";
+  import { currentSong, isPlaying } from "../scripts/playbackService";
 
-$: $currentSong;
-$: $isPlaying;
+  export let song;
 
-function playSong() {
-  setSongs(playlistId);
-  setCurrentSong(song);
-  playOrPauseAudio(getCurrentSong());
-}
+  let playOrPauseSong;
+
+  onMount(() => {
+    playOrPauseSong = getContext("playOrPauseSong");
+  });
+
+  $: $isPlaying;
+  $: $currentSong;
 </script>
 
 {#if song}
   <div class="row mb-3 song-component">
-    <div class="col-10 bg-dark border border-1 rounded rounded-2" style="{$currentSong && $currentSong.id === song.id && $isPlaying ? "border-color:#5bbd99 !important;" : ""}">
+    <div class="col-10 bg-dark border border-1 rounded rounded-2" style={$currentSong && $currentSong.id === song.id ? "border-color:#5bbd99 !important;" : ""}>
       <div class="text-lg-start">
-        <p style="{$currentSong && $currentSong.id === song.id && $isPlaying ? "color:#5bbd99;" : ""}">{song.name}</p>
+        <p style={$currentSong && $currentSong.id === song.id ? "color:#5bbd99;" : ""}>{song.name}</p>
       </div>
     </div>
     <div class="col-2">
-      <button on:click={playSong} class="btn btn-dark play-button">
+      <button
+        on:click={() => playOrPauseSong(song.id)}
+        class="btn btn-dark play-button"
+      >
         {#if $currentSong && $currentSong.id === song.id && $isPlaying}
           <i class="fa-solid fa-pause"></i>
         {:else}

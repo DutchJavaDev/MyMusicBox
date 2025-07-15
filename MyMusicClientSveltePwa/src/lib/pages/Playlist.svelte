@@ -1,30 +1,34 @@
 <script>
   // @ts-nocheck
-
-  import { onDestroy, onMount } from "svelte";
   import { writable } from "svelte/store";
+  import { onDestroy, onMount, setContext } from "svelte";
+  import { getCachedPlaylistSongs } from "../scripts/storageService";
+  import { playOrPauseSong, setPlaylists } from "../scripts/playbackService";
   import SongComponent from "../components/SongComponent.svelte";
-  import { getPlaylistSongs, writablePlaylistsStore } from "../scripts/api";
-  import { setSongs } from "../scripts/playlist";
-  import { on } from "svelte/events";
 
-  let songs = writable([]);
+  const updateIntervalTimeOut = 1000; // Update every second
+  let intervalId
+
   export let playlistId = -1;
 
-  let intervalId;
-
-  $: writablePlaylistsStore[playlistId];
+  let songs = writable([]);
 
   onMount(() => {
-    songs.set(getPlaylistSongs(playlistId));
-    writablePlaylistsStore[playlistId].subscribe((value) => {
-      songs.set(value);
-    });
+    songs.set(getCachedPlaylistSongs(playlistId));
+    setContext("playOrPauseSong", playOrPause);
 
+    intervalId = setInterval(() => {
+      songs.set(getCachedPlaylistSongs(playlistId));
+      setPlaylists(playlistId);
+    }, updateIntervalTimeOut);
   });
 
+  function playOrPause(songId) {
+    setPlaylists(playlistId);
+    playOrPauseSong(songId);
+  }
+
   onDestroy(() => {
-    console.log("Cleaning up interval for playlist songs");
     clearInterval(intervalId);
   });
 </script>

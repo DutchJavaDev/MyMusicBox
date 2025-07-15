@@ -1,19 +1,23 @@
 <script>
-  import { isPlaying, currentSong, playOrPauseAudio, playPercentage } from "../scripts/playback.js";
+  // @ts-nocheck
+  import { get } from "svelte/store";
+  import { isPlaying, currentSong, playOrPauseSong, playPercentage } from "../scripts/playbackService";
 
-  $: $isPlaying;
   $: $currentSong;
+  $: $isPlaying;
   $: $playPercentage;
 
   function togglePlay() {
-    playOrPauseAudio(null);
+    if(get(currentSong)){
+      playOrPauseSong(get(currentSong).id);
+    }
   }
 </script>
 
 <div class="container-fluid player-bar mb-2 rounded rounded-5">
   <div class="row space-between">
     <div class="col-9 rounded-end rounded-end-0 rounded-5 border border-1 border-white" style="background: linear-gradient(to right, gray {$playPercentage}%, #5bbd99 {$playPercentage}%);">
-      <button type="button" class="btn clickable-text rounded-end rounded-end-0 rounded-5" data-bs-toggle="modal" data-bs-target="#songControlModal">
+      <button type="button" class="btn clickable-text rounded-end rounded-end-0 rounded-5" data-bs-toggle="{$currentSong ? "modal" : ""}" data-bs-target="{$currentSong ? "#songControlModal" : ""}">
         {#if $currentSong}
           {$currentSong.name}
         {:else}
@@ -23,7 +27,7 @@
     </div>
     <div class="col-3 border-start border-2">
       <button on:click={togglePlay} class="btn btn-dark border border-1 border-white play-button rounded-end rounded-end-5 w-100">
-        {#if $isPlaying}
+        {#if $currentSong && $isPlaying}
           <i class="fa-solid fa-pause"></i>
         {:else}
           <i class="fa-solid fa-play"></i>
@@ -38,7 +42,7 @@
     font-size: 0.85rem;
     max-height: 2.8rem;
     min-height: 2.8rem;
-    width: 100%;;
+    width: 100%;
     font-weight: bold;
     color: white;
     display: -webkit-box;
@@ -50,7 +54,7 @@
     margin-bottom: 2px;
   }
 
-  .player-bar{
+  .player-bar {
     background-color: gray !important;
   }
 
