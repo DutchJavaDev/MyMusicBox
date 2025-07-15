@@ -1,6 +1,6 @@
 <!-- App.svelte -->
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { initializeRouteService, pathName, navigateTo, component, componentParams } from "./lib/scripts/routeService.js";
   import PlayerBarComponent from "./lib/components/PlayerBarComponent.svelte";
   import Modals from "./lib/components/Modals.svelte";
@@ -60,7 +60,7 @@
 
 <Modals />
 
-<audio id="audio-player" style="display: none;"></audio>
+<audio id="audio-player" preload="none" style="display: none;"></audio>
 
 <style>
   .app-layout {
