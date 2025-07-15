@@ -3,6 +3,7 @@ import { writable } from "svelte/store";
 import Home from "../pages/Home.svelte";
 import NotFound from "../pages/NotFound.svelte";
 import Playlist from "../pages/Playlist.svelte";
+import { getSearchParameters, createSearchParameters } from "../scripts/util";
 
 const componentsPathMap = new Map([
   ["/404", NotFound],
@@ -68,35 +69,4 @@ export function navigateTo(newRoute, parameters = null) {
   }
 }
 
-function getSearchParameters() {
-  const searchParams = new URLSearchParams(window.location.search);
-  const result = {};
-  for (const [key, value] of searchParams.entries()) {
-    if (result[key]) {
-      // If key already exists, convert to array or push into existing array
-      result[key] = Array.isArray(result[key]) ? [...result[key], parseValue(value)] : [result[key], parseValue(value)];
-    } else {
-      result[key] = parseValue(value);
-    }
-  }
-  return result;
-}
 
-function parseValue(value) {
-  if (value === "true") return true;
-  if (value === "false") return false;
-  if (!isNaN(value) && value.trim() !== "") return Number(value);
-  return value;
-}
-
-function createSearchParameters(params) {
-  const searchParams = new URLSearchParams();
-  for (const key in params) {
-    if (Array.isArray(params[key])) {
-      params[key].forEach((value) => searchParams.append(key, value));
-    } else {
-      searchParams.set(key, params[key]);
-    }
-  }
-  return searchParams.toString();
-}
