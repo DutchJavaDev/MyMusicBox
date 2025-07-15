@@ -1,4 +1,6 @@
 <script>
+// @ts-nocheck
+
   import { isPlaying, currentSong, 
            playPercentage, setCurrentTime, 
            nextSong, previousSong, 
@@ -7,12 +9,15 @@
            toggleLoop } from "../scripts/playbackService";
   import { getImageUrl } from "../scripts/api";
   import { get } from "svelte/store";
+  import { isTimerEnabled, timeLeft, toggleSleepTimer } from "../scripts/sleeptimerService";
 
   $: $currentSong;
   $: $isPlaying;
   $: $playPercentage;
   $: $isShuffledEnabled;
   $: $isLoopingEnabled;
+  $: $isTimerEnabled;
+  $: $timeLeft;
   
   function togglePlay() {
     playOrPauseSong(get(currentSong).id);
@@ -32,7 +37,7 @@
 </script>
 
 <!-- Modal -->
-{#if $currentSong}
+{#if $currentSong && $currentSong.id !== -999} <!-- Ensure currentSong is valid -->
   <div class="modal fade" id="songControlModal" tabindex="-1" aria-labelledby="songControlModalLabel" aria-hidden="false">
     <div class="modal-dialog modal-fullscreen-sm-down">
       <div class="modal-content bg-dark">
@@ -79,10 +84,10 @@
               <div class="col-12">
                 <div class="row mt-5">
                   <div class="col-4">
-                    <button disabled aria-label="sleep timer" type="button" class="btn btn-dark w-100">
-                      <i class="fa-solid fa-stopwatch-20" style="color: white !important;">
-                        <span style="font-size: 0.5rem;">
-                            &nbsp;TODO
+                    <button on:click={toggleSleepTimer} aria-label="sleep timer" type="button" class="btn btn-dark w-100">
+                      <i class="fa-solid fa-stopwatch-20" style="{$isTimerEnabled ? "color: #5bbd99;" : "color:white;"}">
+                        <span style="font-size: 0.8rem;">
+                            &nbsp;{$isTimerEnabled ? $timeLeft : ""}
                       </span>
                     </i>
                     </button>
