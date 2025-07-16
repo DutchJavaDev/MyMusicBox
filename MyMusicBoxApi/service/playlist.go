@@ -96,7 +96,7 @@ func downloadPlaylist(
 		ExtractAudio().
 		AudioQuality("0").
 		AudioFormat(fileExtension).
-		PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
+		// PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
 		DownloadArchive(archiveFileName).
 		WriteThumbnail().
 		ConcurrentFragments(10).

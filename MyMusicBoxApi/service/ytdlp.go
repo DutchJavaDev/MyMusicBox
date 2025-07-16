@@ -137,7 +137,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			ExtractAudio().
 			AudioQuality("0").
 			AudioFormat(fileExtension).
-			PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
+			// PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
 			DownloadArchive(archiveFileName).
 			WriteThumbnail().
 			ConcurrentFragments(10).
