@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"musicboxapi/configuration"
+	"musicboxapi/database"
 	"musicboxapi/http"
 	"musicboxapi/logging"
 	"os"
@@ -14,63 +14,59 @@ import (
 )
 
 func main() {
+	database.CreateDatabasConnectionPool()
+	defer database.DbInstance.Close()
+
 	// If yt-dlp isn't installed yet, download and cache it for further use.
-	go ytdlp.MustInstall(context.TODO(), nil)
+	ytdlp.MustInstall(context.TODO(), nil)
 
-	configuration.LoadConfig()
+	configuration.LoadConfiguration()
 
-	if configuration.Config.UseDevUrl {
-		gin.SetMode(gin.DebugMode)
+	setGinMode()
+
+	ginEngine := gin.Default()
+
+	// Trust nginx
+	ginEngine.SetTrustedProxies([]string{"127.0.0.1"})
+
+	ginEngine.Use(corsMiddelWare())
+
+	// V1 API
+	apiv1Group := ginEngine.Group(configuration.GetApiGroupUrl("v1"))
+	http.V1Endpoints(apiv1Group)
+
+	if configuration.Config.DevPort != "" {
+		devPort := "127.0.0.1:" + configuration.Config.DevPort
+		logging.Info("Running on development port")
+		ginEngine.Run(devPort)
 	} else {
-		gin.SetMode(gin.ReleaseMode)
+		ginEngine.Run() // listen and serve on 0.0.0.0:8080
 	}
+}
 
-	engine := gin.Default()
-
-	engine.SetTrustedProxies([]string{"127.0.0.1"})
-
+func corsMiddelWare() gin.HandlerFunc {
 	if configuration.Config.UseDevUrl {
-		engine.Use(cors.Default())
-		logging.Warning("CORS is enabled for all origins")
+		return cors.Default()
 	} else {
-
 		origin := os.Getenv("CORS_ORIGIN")
-
 		// Use Default cors
 		if len(origin) == 0 {
-			engine.Use(cors.Default())
 			logging.Warning("CORS is enabled for all origins")
+			return cors.Default()
 		} else {
 			strictCors := cors.New(cors.Config{
 				AllowAllOrigins: false,
 				AllowOrigins:    []string{origin}, // move to env
 			})
-			engine.Use(strictCors)
+			return strictCors
 		}
 	}
+}
 
-	apiv1Group := engine.Group(configuration.GetApiGroupUrl("v1"))
-	apiv1Group.GET("/songs", http.FetchSongs)
-	apiv1Group.GET("/playlist", http.FetchPlaylists)
-	apiv1Group.GET("/playlist/:playlistId", http.FetchPlaylistSongs)
-	apiv1Group.GET("/play/:sourceId", http.Play)
-	apiv1Group.GET("/tasklogs", http.FetchTaskLogs)
-
-	apiv1Group.POST("/playlist", http.InsertPlaylist)
-	apiv1Group.POST("/playlistsong/:playlistId/:songId", http.InsertPlaylistSong)
-	apiv1Group.POST("/download", http.DownloadRequest)
-
-	apiv1Group.DELETE("/playlist/:playlistId", http.DeletePlaylist)
-	apiv1Group.DELETE("playlistsong/:playlistId/:songId", http.DeletePlaylistSong)
-
-	// Serving static files
-	apiv1Group.Static("/images", fmt.Sprintf("%s/%s", configuration.Config.SourceFolder, "images"))
-
-	if configuration.Config.DevPort != "" {
-		devPort := "127.0.0.1:" + configuration.Config.DevPort
-		logging.Info("Running on development port")
-		engine.Run(devPort)
+func setGinMode() {
+	if configuration.Config.UseDevUrl {
+		gin.SetMode(gin.DebugMode)
 	} else {
-		engine.Run() // listen and serve on 0.0.0.0:8080
+		gin.SetMode(gin.ReleaseMode)
 	}
 }
