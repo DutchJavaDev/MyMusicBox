@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"musicboxapi/database"
 	"musicboxapi/models"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func FetchTaskLogs(ctx *gin.Context) {
-	db := database.PostgresDb{}
-	defer db.CloseConnection()
+	tasklogTable := database.NewTasklogTableInstance()
 
-	logs, err := db.GetTaskLogs(ctx.Request.Context())
+	logs, err := tasklogTable.GetTaskLogs(ctx.Request.Context())
 
 	if err != nil {
-		ctx.JSON(500, models.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err.Error()))
 	}
 
-	ctx.JSON(200, models.OkResponse(logs, fmt.Sprintf("%d", len(logs))))
+	ctx.JSON(http.StatusOK, models.OkResponse(logs, fmt.Sprintf("%d", len(logs))))
 }

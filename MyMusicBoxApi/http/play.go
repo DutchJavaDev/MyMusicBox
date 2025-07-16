@@ -15,8 +15,8 @@ func Play(ctx *gin.Context) {
 	sourceId := ctx.Param("sourceId")
 
 	if sourceId == "" {
-		ctx.Status(404)
-		logging.Warning(fmt.Sprintf("[Play] No sourceId in request"))
+		ctx.Status(http.StatusInternalServerError)
+		logging.Warning("No sourceId in request")
 		return
 	}
 
@@ -25,16 +25,16 @@ func Play(ctx *gin.Context) {
 	file, err := os.Open(path)
 
 	if err != nil {
-		logging.Error(fmt.Sprintf("[Play] Failed to read file, %s", err.Error()))
-		ctx.JSON(500, models.ErrorResponse(err))
+		logging.Error(fmt.Sprintf("Failed to read file, %s", err.Error()))
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
 	}
 	defer file.Close()
 
 	fileInfo, err := file.Stat()
 	if err != nil {
-		logging.Error(fmt.Sprintf("[Play] Failed could not get fileinfo: %s", err.Error()))
-		ctx.JSON(500, models.ErrorResponse(err))
+		logging.Error(fmt.Sprintf("Failed could not get fileinfo: %s", err.Error()))
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
 	}
 

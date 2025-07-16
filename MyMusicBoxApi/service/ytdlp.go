@@ -57,9 +57,8 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		playlistIdFileName,
 	}
 
-	db := database.PostgresDb{}
-	db.OpenConnection()
-	defer db.CloseConnection()
+	tasklogTable := database.NewTasklogTableInstance()
+	songTable := database.NewSongTableInstance()
 
 	if isPlaylist {
 		dlp := ytdlp.New().
@@ -83,7 +82,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			// Set Task state -> Error
 			json, err := json.Marshal(result.OutputLogs)
 
-			err = db.EndTaskLog(taskId, int(models.Error), json)
+			err = tasklogTable.EndTaskLog(taskId, int(models.Error), json)
 			if err != nil {
 				logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 			}
@@ -105,15 +104,13 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			errorJosn, _ := json.Marshal(models.ErrorResponse("Ytdlp files were not donwloaded, stopping task here"))
 
 			// Set Task state -> Error
-			err = db.UpdateTaskLogError(int(models.Error), errorJosn, time.Now(), taskId)
+			err = tasklogTable.UpdateTaskLogError(int(models.Error), errorJosn, time.Now(), taskId)
 			if err != nil {
 				logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 			}
 
 			return
 		}
-
-		db.CloseConnection()
 
 		downloadPlaylist(
 			taskId,
@@ -137,7 +134,6 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			ExtractAudio().
 			AudioQuality("0").
 			AudioFormat(fileExtension).
-			// PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
 			DownloadArchive(archiveFileName).
 			WriteThumbnail().
 			ConcurrentFragments(10).
@@ -154,7 +150,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			Cookies("selenium/cookies_netscape")
 
 		// Update task status
-		db.UpdateTaskLogStatus(taskId, int(models.Downloading))
+		tasklogTable.UpdateTaskLogStatus(taskId, int(models.Downloading))
 
 		// Start download
 		result, err := dlp.Run(context.Background(), downloadRequest.Url)
@@ -167,7 +163,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			// Set Task state -> Error
 			outputlogJson, err := json.Marshal(result.OutputLogs)
 
-			err = db.NonScalarQuery(query, int(models.Error), outputlogJson, time.Now(), taskId)
+			err = tasklogTable.NonScalarQuery(query, int(models.Error), outputlogJson, time.Now(), taskId)
 			if err != nil {
 				logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 			}
@@ -183,7 +179,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			errorJosn, _ := json.Marshal(models.ErrorResponse("Ytdlp files were not donwloaded, stopping task here"))
 
 			// Set Task state -> Error
-			err = db.UpdateTaskLogError(int(models.Error), errorJosn, time.Now(), taskId)
+			err = tasklogTable.UpdateTaskLogError(int(models.Error), errorJosn, time.Now(), taskId)
 			if err != nil {
 				logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 			}
@@ -192,7 +188,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		}
 
 		// Set task state -> Updating
-		db.UpdateTaskLogStatus(taskId, int(models.Updating))
+		tasklogTable.UpdateTaskLogStatus(taskId, int(models.Updating))
 
 		//Read output files -> update song table
 		ids, _ := readLines(idsFileName)
@@ -208,7 +204,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		song.SourceId = ids[indexId]
 		song.Path = fmt.Sprintf("%s/%s.%s", storageFolderName, ids[indexId], fileExtension)
 		song.ThumbnailPath = fmt.Sprintf("%s.jpg", ids[indexId])
-		err = db.InsertSong(&song)
+		err = songTable.InsertSong(&song)
 
 		if err != nil {
 			// song.id might be not set..... :)
@@ -230,7 +226,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		             SET Status = $1, OutputLog = $2, EndTime = $3
 		             WHERE Id = $4`
 		outputJson, err := json.Marshal(result.OutputLogs)
-		err = db.NonScalarQuery(query, int(models.Done), outputJson, time.Now(), taskId)
+		err = tasklogTable.NonScalarQuery(query, int(models.Done), outputJson, time.Now(), taskId)
 		if err != nil {
 			logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 		}
