@@ -80,3 +80,4 @@ music_dev/
 *.db
 *.env
 database/data
+*.pid
