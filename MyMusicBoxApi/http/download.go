@@ -4,6 +4,7 @@ import (
 	"musicboxapi/database"
 	"musicboxapi/models"
 	"musicboxapi/service"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -13,31 +14,26 @@ func DownloadRequest(ctx *gin.Context) {
 	var request models.DownloadRequestModel
 	err := ctx.ShouldBindBodyWithJSON(&request)
 
-	// If it contains &list= it will download but it will not update the database for all entries or create the playlist entry
-	if strings.Contains(request.Url, "&list=") && strings.Contains(request.Url, "watch?") {
-		ctx.JSON(500, models.ErrorResponse(gin.H{"error": "Url format is wrong, contains watch instead of playlist="}))
+	if err != nil {
+		ctx.JSON(500, models.ErrorResponse(err))
 		return
 	}
 
-	if err != nil {
-		ctx.JSON(500, models.ErrorResponse(err))
-	} else {
-		db := database.PostgresDb{}
-		defer db.CloseConnection()
-
-		if db.OpenConnection() {
-			// Insert a new task
-			taskId, err := db.InsertTaskLog()
-
-			if err != nil {
-				ctx.JSON(500, models.ErrorResponse(err))
-				return
-			}
-
-			go service.StartDownloadTask(taskId, request)
-			ctx.JSON(200, models.OkResponse(gin.H{"taskId": taskId}, "Started task"))
-		} else {
-			ctx.JSON(500, models.ErrorResponse(db.Error))
-		}
+	// If it contains &list= it will download but it will not update the database for all entries or create the playlist entry
+	if strings.Contains(request.Url, "&list=") && strings.Contains(request.Url, "watch?") {
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(gin.H{"error": "Url format is wrong, contains watch instead of playlist="}))
+		return
 	}
+
+	tasklogTable := database.NewTasklogTableInstance()
+	// Insert a new task
+	taskId, err := tasklogTable.InsertTaskLog()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
+		return
+	}
+
+	go service.StartDownloadTask(taskId, request)
+	ctx.JSON(http.StatusOK, models.OkResponse(gin.H{"taskId": taskId}, "Started task"))
 }

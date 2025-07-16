@@ -40,16 +40,13 @@ func downloadPlaylist(
 	downloadCount := len(downloadIds)
 	playlistNames, _ := readLines(playlistTitleFileName)
 
-	db := database.PostgresDb{}
-
-	if !db.OpenConnection() {
-		logging.Error(fmt.Sprintf("[downloadPlaylist] failed to open database connection: %s", db.Error.Error()))
-		return
-	}
-	defer db.CloseConnection()
+	tasklogTable := database.NewTasklogTableInstance()
+	playlistTable := database.NewPlaylistTableInstance()
+	playlistsongTable := database.NewPlaylistsongTableInstance()
+	songTable := database.NewSongTableInstance()
 
 	// Check if exists, if not then create
-	existingPlaylists, _ := db.FetchPlaylists(context.Background(), 0)
+	existingPlaylists, _ := playlistTable.FetchPlaylists(context.Background(), 0)
 
 	playlistExists := false
 	playlistId := -1
@@ -65,7 +62,7 @@ func downloadPlaylist(
 	_playlistId, _ := readLines(playlistIdFileName)
 
 	if !playlistExists {
-		_newPlaylistId, err := db.InsertPlaylist(models.Playlist{
+		_newPlaylistId, err := playlistTable.InsertPlaylist(models.Playlist{
 			Name:          playlistNames[0],
 			Description:   "Custom playlist",
 			ThumbnailPath: fmt.Sprintf("%s.jpg", _playlistId[0]),
@@ -90,13 +87,12 @@ func downloadPlaylist(
 	}
 
 	// Update task status
-	db.UpdateTaskLogStatus(taskId, int(models.Downloading))
+	tasklogTable.UpdateTaskLogStatus(taskId, int(models.Downloading))
 
 	defaultSettings := ytdlp.New().
 		ExtractAudio().
 		AudioQuality("0").
 		AudioFormat(fileExtension).
-		// PostProcessorArgs("FFmpegExtractAudio:-b:a 160k").
 		DownloadArchive(archiveFileName).
 		WriteThumbnail().
 		ConcurrentFragments(10).
@@ -138,9 +134,9 @@ func downloadPlaylist(
 			song.Path = fmt.Sprintf("%s/%s.%s", storage, ids[id], fileExtension)
 			song.ThumbnailPath = fmt.Sprintf("%s.jpg", ids[id])
 
-			db.InsertSong(&song)
+			songTable.InsertSong(&song)
 
-			db.InsertPlaylistSong(playlistId, song.Id)
+			playlistsongTable.InsertPlaylistSong(playlistId, song.Id)
 
 			oldpath := fmt.Sprintf("%s/%s", storage, song.ThumbnailPath)
 			newpath := fmt.Sprintf("%s/%s", imagesFolder, song.ThumbnailPath)
@@ -157,7 +153,7 @@ func downloadPlaylist(
 		status = models.Error
 	}
 
-	err = db.EndTaskLog(taskId, int(status), json)
+	err = tasklogTable.EndTaskLog(taskId, int(status), json)
 	if err != nil {
 		logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 	}
