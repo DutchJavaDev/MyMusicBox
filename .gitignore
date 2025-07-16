@@ -79,5 +79,5 @@ music/
 music_dev/
 *.db
 *.env
-database/data
+dev_database/data
 *.pid

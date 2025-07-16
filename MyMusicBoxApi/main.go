@@ -14,13 +14,13 @@ import (
 )
 
 func main() {
+	configuration.LoadConfiguration()
+
 	database.CreateDatabasConnectionPool()
 	defer database.DbInstance.Close()
 
 	// If yt-dlp isn't installed yet, download and cache it for further use.
 	ytdlp.MustInstall(context.TODO(), nil)
-
-	configuration.LoadConfiguration()
 
 	setGinMode()
 
