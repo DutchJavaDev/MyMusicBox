@@ -50,3 +50,9 @@ type PlaylistSong struct {
 	Position   int       `json:"position,omitempty" db:"position"`
 	AddedAt    time.Time `json:"addedAt" db:"addedat"`
 }
+
+type MigrationFile struct {
+	Id        int       `json:"id" db:"id"`
+	Name      string    `json:"filename" db:"filename"`
+	AppliedOn time.Time `json:"appliedon" db:"appliedon"`
+}

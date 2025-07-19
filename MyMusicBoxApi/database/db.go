@@ -7,6 +7,8 @@ import (
 	"musicboxapi/configuration"
 	"musicboxapi/logging"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -33,6 +35,7 @@ func CreateDatabasConnectionPool() error {
 	var _ IPlaylistTable = (*PlaylistTable)(nil)
 	var _ IPlaylistsongTable = (*PlaylistsongTable)(nil)
 	var _ ITasklogTable = (*TasklogTable)(nil)
+	var _ IMigrationTable = (*MigrationTable)(nil)
 
 	baseConnectionString := "user=postgres dbname=postgres password=%s %s sslmode=disable"
 	password := os.Getenv("POSTGRES_PASSWORD")
@@ -135,4 +138,63 @@ func (base *BaseTable) NonScalarQuery(query string, params ...any) (error error)
 	}
 
 	return nil
+}
+
+func ApplyMigrations() {
+	migrationDir := "migration_scripts"
+
+	// files will be sorted by filename
+	// to make sure the migrations are executed in order
+	// this naming convention must be used
+	// 0 initial script.sql
+	// 1 update column.sql
+	// etc....
+	dirs, err := os.ReadDir(migrationDir)
+
+	if err != nil {
+		logging.Error(err.Error())
+		return
+	}
+
+	migrationTable := NewMigrationTableInstance()
+
+	lastMigrationFileName, _ := migrationTable.GetLastAppliedMigrationFileName()
+
+	// start at -1 if lastMigrationFileName is empty
+	// start applying from 0
+	if lastMigrationFileName == "" {
+		lastMigrationFileName = "-1 nomigrationapplied.sql"
+	}
+
+	lastMigrationId, _ := strconv.Atoi(strings.Split(lastMigrationFileName, " ")[0])
+
+	logging.Info(fmt.Sprintf("%d", lastMigrationId))
+
+	for _, i := range dirs {
+		path := filepath.Join(migrationDir, i.Name())
+
+		migrationId, _ := strconv.Atoi(strings.Split(i.Name(), "")[0])
+
+		if migrationId <= lastMigrationId {
+			continue
+		}
+
+		file, _ := os.ReadFile(path)
+
+		err := migrationTable.ApplyMigration(string(file))
+
+		if err != nil {
+			logging.Warning(fmt.Sprintf("Failed to apply %s", i.Name()))
+		} else {
+			err = migrationTable.Insert(i.Name(), string(file))
+
+			if err != nil {
+				logging.Error(fmt.Sprintf("Failed to insert migration entry %s: %s", i.Name(), err.Error()))
+				return
+			}
+
+			logging.Info(fmt.Sprintf("Applied %s", i.Name()))
+		}
+
+	}
 }

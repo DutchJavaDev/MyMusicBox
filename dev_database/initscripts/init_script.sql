@@ -20,6 +20,15 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- SECTION 2: CORE TABLES
 -- =============================================
 
+CREATE TABLE Migration (
+    Id SERIAL PRIMARY KEY,
+    FileName VARCHAR(75) NOT NULL,
+    Contents TEXT,
+    AppliedOn TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT filename_unique UNIQUE (FileName),
+    CONSTRAINT contents_unique UNIQUE (Contents)
+);
+
 CREATE TABLE Song (
     Id SERIAL PRIMARY KEY,
     Name VARCHAR(100) NOT NULL, --- fixed lenght title
