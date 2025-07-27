@@ -13,8 +13,6 @@
 /bin/
 /pkg/
 
-# Go modules
-go.sum
 
 # IDE/editor files
 .vscode/
