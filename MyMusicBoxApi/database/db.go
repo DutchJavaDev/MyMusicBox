@@ -150,6 +150,7 @@ func (base *BaseTable) NonScalarQuery(query string, params ...any) (error error)
 }
 
 func ApplyMigrations() {
+	logging.Info("Applying migrations...")
 	// files will be sorted by filename
 	// to make sure the migrations are executed in order
 	// this naming convention must be used
