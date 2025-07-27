@@ -1,23 +1,45 @@
 #!/bin/bash
 
 set -e  # Exit on error
-RELEASE_FOLDER="$HOME/mymusicbox_production"
+RELEASE_FOLDER="$HOME/mymusicbox_production_test"
 DATABASE_FOLDER="$RELEASE_FOLDER/database"
+SCRIPTS_FOLDER="$DATABASE_FOLDER/initscripts"
+IMAGES_FOLDER="$RELEASE_FOLDER/music/images"
+COOKIES_FOLDER="$RELEASE_FOLDER/selenium"
+MIGRATION_FOLDER="$RELEASE_FOLDER/migration_scripts"
+
+echo "=== Checking release folder ==="
+
+FOLDERS=(
+  "$RELEASE_FOLDER"
+  "$DATABASE_FOLDER"
+  "$SCRIPTS_FOLDER"
+  "$IMAGES_FOLDER"
+  "$COOKIES_FOLDER"
+  "$MIGRATION_FOLDER"
+)
+
+for folder in "${FOLDERS[@]}"; do
+  if [ ! -d "$folder" ]; then
+    mkdir -p "$folder"
+    echo "Created: $folder"
+  else
+    echo "Exists:  $folder"
+  fi
+done
+
+echo "=== Copying files ==="
+cp migration_scripts/* "$MIGRATION_FOLDER"
+cp default/* "$IMAGES_FOLDER"
+cp selenium/* "$COOKIES_FOLDER"
 
 echo "=== Updating executable ==="
 go build -buildvcs=false -o "$RELEASE_FOLDER"
 
-echo "=== Navigating to database folder ==="
-cd "$DATABASE_FOLDER"
+# echo "=== Restarting mymusic service ==="
+# sudo systemctl stop mymusic || echo "Service 'mymusic' was not running."
+# sudo systemctl daemon-reload
+# sudo systemctl start mymusic
 
-# Uncomment the following line if you want to restart Docker containers
-# echo "=== Starting Docker containers ==="
-# sudo docker compose up -d
-
-echo "=== Restarting mymusic service ==="
-sudo systemctl stop mymusic || echo "Service 'mymusic' was not running."
-sudo systemctl daemon-reload
-sudo systemctl start mymusic
-
-echo "=== Streaming logs ==="
-sudo journalctl -u mymusic.service -f
+# echo "=== Streaming logs ==="
+# sudo journalctl -u mymusic.service -f

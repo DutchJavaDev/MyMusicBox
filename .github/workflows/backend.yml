@@ -1,0 +1,33 @@
+name: Api Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  api_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24.3'
+          cache-dependency-path: MyMusicBoxApi/go.sum
+
+      - name: Tidy modules (sync go.mod & go.sum)
+        working-directory: MyMusicBoxApi
+        run: go mod tidy
+
+      - name: Test
+        working-directory: MyMusicBoxApi
+        run: go test -v ./...

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"musicboxapi/configuration"
 	"musicboxapi/database"
 	"musicboxapi/http"
@@ -16,8 +17,17 @@ import (
 func main() {
 	configuration.LoadConfiguration()
 
-	database.CreateDatabasConnectionPool()
+	err := database.CreateDatabasConnectionPool()
 	defer database.DbInstance.Close()
+
+	if err != nil {
+		errorMessage := fmt.Sprintf("Failed to create database connection: %s", err.Error())
+		logging.Error(errorMessage)
+		logging.ErrorStackTrace(err)
+		return
+	}
+
+	database.ApplyMigrations()
 
 	// If yt-dlp isn't installed yet, download and cache it for further use.
 	ytdlp.MustInstall(context.TODO(), nil)
