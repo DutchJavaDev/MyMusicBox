@@ -1,4 +1,4 @@
-name: Auto Bump Version
+name: Api Tests
 
 on:
   pull_request:
