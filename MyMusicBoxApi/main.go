@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"musicboxapi/configuration"
 	"musicboxapi/database"
+	"musicboxapi/http"
 	"musicboxapi/logging"
 	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/lrstanley/go-ytdlp"
 )
 
 func main() {
@@ -20,35 +23,35 @@ func main() {
 	if err != nil {
 		errorMessage := fmt.Sprintf("Failed to create database connection: %s", err.Error())
 		logging.Error(errorMessage)
-		logging.Error("Exiting")
+		logging.ErrorStackTrace(err)
 		return
 	}
 
 	database.ApplyMigrations()
 
 	// If yt-dlp isn't installed yet, download and cache it for further use.
-	// ytdlp.MustInstall(context.TODO(), nil)
+	ytdlp.MustInstall(context.TODO(), nil)
 
-	// setGinMode()
+	setGinMode()
 
-	// ginEngine := gin.Default()
+	ginEngine := gin.Default()
 
-	// // Trust nginx
-	// ginEngine.SetTrustedProxies([]string{"127.0.0.1"})
+	// Trust nginx
+	ginEngine.SetTrustedProxies([]string{"127.0.0.1"})
 
-	// ginEngine.Use(corsMiddelWare())
+	ginEngine.Use(corsMiddelWare())
 
-	// // V1 API
-	// apiv1Group := ginEngine.Group(configuration.GetApiGroupUrl("v1"))
-	// http.V1Endpoints(apiv1Group)
+	// V1 API
+	apiv1Group := ginEngine.Group(configuration.GetApiGroupUrl("v1"))
+	http.V1Endpoints(apiv1Group)
 
-	// if configuration.Config.DevPort != "" {
-	// 	devPort := "127.0.0.1:" + configuration.Config.DevPort
-	// 	logging.Info("Running on development port")
-	// 	ginEngine.Run(devPort)
-	// } else {
-	// 	ginEngine.Run() // listen and serve on 0.0.0.0:8080
-	// }
+	if configuration.Config.DevPort != "" {
+		devPort := "127.0.0.1:" + configuration.Config.DevPort
+		logging.Info("Running on development port")
+		ginEngine.Run(devPort)
+	} else {
+		ginEngine.Run() // listen and serve on 0.0.0.0:8080
+	}
 }
 
 func corsMiddelWare() gin.HandlerFunc {
