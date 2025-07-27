@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e  # Exit on error
-RELEASE_FOLDER="$HOME/mymusicbox_production_test"
+RELEASE_FOLDER="$HOME/mymusicbox_production"
 DATABASE_FOLDER="$RELEASE_FOLDER/database"
 SCRIPTS_FOLDER="$DATABASE_FOLDER/initscripts"
 IMAGES_FOLDER="$RELEASE_FOLDER/music/images"
@@ -36,10 +36,10 @@ cp selenium/* "$COOKIES_FOLDER"
 echo "=== Updating executable ==="
 go build -buildvcs=false -o "$RELEASE_FOLDER"
 
-# echo "=== Restarting mymusic service ==="
-# sudo systemctl stop mymusic || echo "Service 'mymusic' was not running."
-# sudo systemctl daemon-reload
-# sudo systemctl start mymusic
+echo "=== Restarting mymusic service ==="
+sudo systemctl stop mymusic || echo "Service 'mymusic' was not running."
+sudo systemctl daemon-reload
+sudo systemctl start mymusic
 
-# echo "=== Streaming logs ==="
-# sudo journalctl -u mymusic.service -f
+echo "=== Streaming logs ==="
+sudo journalctl -u mymusic.service -f
