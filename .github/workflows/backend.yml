@@ -16,14 +16,18 @@ jobs:
   api_test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.24.3'
-        cache-dependency-path: subdir/go.sum
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24.3'
+          cache-dependency-path: MyMusicBoxApi/go.sum  # Adjusted path for go.sum
 
-    - name: Test
-      working-directory: MyMusicBoxApi
-      run: go test -v ./...
+      - name: Install dependencies
+        working-directory: MyMusicBoxApi
+        run: go mod download
+
+      - name: Test
+        working-directory: MyMusicBoxApi
+        run: go test -v ./...
