@@ -8,7 +8,7 @@ import (
 type IMigrationTable interface {
 	Insert(filename string, contents string) (err error)
 	ApplyMigration(query string) (err error)
-	GetLastAppliedMigrationFileName() (fileName string, err error)
+	GetCurrentAppliedMigrationFileName() (fileName string, err error)
 }
 
 type MigrationTable struct {
@@ -34,40 +34,31 @@ func (mt *MigrationTable) ApplyMigration(query string) (err error) {
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("Failed to begin transaction: %s", err.Error()))
+		logging.ErrorStackTrace(err)
+		return err
 	}
 
 	_, err = transaction.Exec(query)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("Failed to execute migration, rolling back: %s", err.Error()))
-		rollbackErr := transaction.Rollback()
-
-		if rollbackErr != nil {
-			logging.Error(fmt.Sprintf("Failed to roll back: %s", rollbackErr.Error()))
-		}
+		logging.ErrorStackTrace(err)
+		return err
 	}
 
 	err = transaction.Commit()
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("Failed to commit migration, rolling back: %s", err.Error()))
-		rollbackErr := transaction.Rollback()
-
-		if rollbackErr != nil {
-			logging.Error(fmt.Sprintf("Failed to roll back: %s", rollbackErr.Error()))
-		}
+		logging.ErrorStackTrace(err)
+		return err
 	}
 
 	return err
 }
 
-func (mt *MigrationTable) GetLastAppliedMigrationFileName() (fileName string, err error) {
-
-	query := "SELECT filename FROM migration order by AppliedOn DESC LIMIT 1"
-
-	row := mt.DB.QueryRow(query)
-
+func (mt *MigrationTable) GetCurrentAppliedMigrationFileName() (fileName string, err error) {
+	row := mt.DB.QueryRow("SELECT filename FROM migration order by AppliedOn DESC LIMIT 1")
 	scanError := row.Scan(&fileName)
-
 	return fileName, scanError
 }
