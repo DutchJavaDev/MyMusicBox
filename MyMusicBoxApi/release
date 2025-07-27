@@ -1,32 +1,41 @@
 #!/bin/bash
 set -e  # Exit immediately if a command exits with a non-zero status
 
+# https://stackoverflow.com/questions/5228345/how-can-i-reference-a-file-for-variables-using-bash
+# TODO move folders to single file and include that file in here and in update script
 RELEASE_FOLDER="$HOME/mymusicbox_production"
 DATABASE_FOLDER="$RELEASE_FOLDER/database"
 SCRIPTS_FOLDER="$DATABASE_FOLDER/initscripts"
 IMAGES_FOLDER="$RELEASE_FOLDER/music/images"
 COOKIES_FOLDER="$RELEASE_FOLDER/selenium"
+MIGRATION_FOLDER="$RELEASE_FOLDER/migration_scripts"
 
 echo "=== Setting up release folder ==="
-if [ ! -d "$RELEASE_FOLDER" ]; then
-    mkdir -p "$SCRIPTS_FOLDER"
-    mkdir -p "$IMAGES_FOLDER"
-    mkdir -p "$COOKIES_FOLDER"
-    echo "Created folder structure:"
-    echo "  - $RELEASE_FOLDER"
-    echo "  - $DATABASE_FOLDER"
-    echo "  - $SCRIPTS_FOLDER"
-    echo "  - $IMAGES_FOLDER"
-    echo "  - $COOKIES_FOLDER"
-else
-    echo "Release folder already exists."
-fi
 
-echo "=== Copying database files ==="
-cp ../database/docker-compose-release.yml "$DATABASE_FOLDER/docker-compose.yml"
-cp ../database/initscripts/* "$SCRIPTS_FOLDER"
-cp default/default_playlist_cover.png "$IMAGES_FOLDER/default_playlist_cover.png"
+FOLDERS=(
+  "$RELEASE_FOLDER"
+  "$DATABASE_FOLDER"
+  "$SCRIPTS_FOLDER"
+  "$IMAGES_FOLDER"
+  "$COOKIES_FOLDER"
+  "$MIGRATION_FOLDER"
+)
+
+for folder in "${FOLDERS[@]}"; do
+  if [ ! -d "$folder" ]; then
+    mkdir -p "$folder"
+    echo "Created: $folder"
+  else
+    echo "Exists:  $folder"
+  fi
+done
+
+echo "=== Copying files ==="
+cp ../dev_database/docker-compose-release.yml "$DATABASE_FOLDER/docker-compose.yml"
+cp ../dev_database/initscripts/* "$SCRIPTS_FOLDER"
+cp default/* "$IMAGES_FOLDER"
 cp selenium/* "$COOKIES_FOLDER"
+cp migration_scripts/* "$MIGRATION_FOLDER"
 
 echo "=== Building executable ==="
 go build -buildvcs=false -o "$RELEASE_FOLDER"
