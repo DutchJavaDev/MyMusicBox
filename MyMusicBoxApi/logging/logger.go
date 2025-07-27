@@ -16,6 +16,10 @@ func Error(a any) {
 	log(fmt.Sprintf("\033[31m[API Error]\033[0m %s", a))
 }
 
+func ErrorStackTrace(e error) {
+	fmt.Printf("e: %v\n", e)
+}
+
 func log(text string) {
 	fmt.Println(text)
 }
