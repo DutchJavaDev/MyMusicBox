@@ -93,6 +93,14 @@ export function initializePlaybackService() {
 
     playPercentage.set(percentage);
   });
+
+  audioElement.addEventListener("loadeddata", async (e) => {
+    // Safe to play audio now
+    await audioElement.play();
+  });
+  audioElement.addEventListener("error", (e) => {
+    console.error("Error loading audio:", e);
+  });
 }
 
 export function nextSong() {
@@ -121,11 +129,10 @@ export function playOrPauseSong(songId) {
     isPlaying.set(false); // set to false since this is a new song
     setCurrentSongIndex(songIndex);
   }
-
-  if (get(isPlaying)) {
+  else if (get(isPlaying)) {
     audioElement.pause();
-  } else {
-    audioElement.play(); // https://developer.chrome.com/blog/play-request-was-interrupted
+  }else {
+    audioElement.play();
   }
 }
 
