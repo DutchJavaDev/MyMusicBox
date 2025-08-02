@@ -8,7 +8,7 @@ import { getCachedPlaylistSongs, getCachedPlaylists,
          getCurrentSongIndex, setCurrentSongIndex, setCurrentSongTime,
          getCurrentSongTime } from "./storageService";
 import { shuffleArray } from "./util";
-import { updateMediaSessionMetadata, updateMediaSessionPlaybackState } from "./mediasessionService";
+import { updateMediaSessionMetadata, updateMediaSessionPlaybackState, updatePositionState } from "./mediasessionService";
 
 export let currentSong = writable({id: -999, title: "", artist: "", album: "", source_id: ""});
 export let isPlaying = writable(false);
@@ -52,7 +52,6 @@ export function initializePlaybackService() {
     playOrPauseSong(playlistSongs[songIndex].id);
   }
 
-
   audioElement.addEventListener("play", () => {
     isPlaying.set(true);
     updateMediaSessionPlaybackState(true);
@@ -65,7 +64,7 @@ export function initializePlaybackService() {
     updateMediaSessionPlaybackState(false);
     if (get(isLoopingEnabled)) {
       audioElement.currentTime = 0;
-      audioElement.play();
+      audioElement.load();
     } else {
       nextSong();
     }
@@ -90,7 +89,7 @@ export function initializePlaybackService() {
     }
 
     setCurrentSongTime(audioElement.currentTime);
-
+    updatePositionState(audioElement.currentTime, audioElement.duration);
     playPercentage.set(percentage);
   });
 
@@ -132,6 +131,7 @@ export function playOrPauseSong(songId) {
   else if (get(isPlaying)) {
     audioElement.pause();
   }else {
+    // data is already loaded, just play
     audioElement.play();
   }
 }
@@ -174,6 +174,9 @@ export function setPlaylists(playlistId) {
     // and update playlistSongs accordingly if shuffle is enabled
     return; // Already set to this playlist
   }
+  isLoopingEnabled.set(false);
+  isShuffledEnabled.set(false);
+  setPlaybackState(false, false);
   currentPlaylistId = playlistId;
   originalPlaylistSongs = getCachedPlaylistSongs(playlistId);
   playlistSongs = originalPlaylistSongs;

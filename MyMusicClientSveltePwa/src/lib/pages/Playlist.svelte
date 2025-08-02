@@ -19,7 +19,6 @@
 
     intervalId = setInterval(() => {
       songs.set(getCachedPlaylistSongs(playlistId));
-      setPlaylists(playlistId);
     }, updateIntervalTimeOut);
   });
 
