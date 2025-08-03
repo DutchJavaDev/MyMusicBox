@@ -15,7 +15,6 @@ permissions:
 jobs:
   api_test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -31,40 +30,14 @@ jobs:
 
       - name: Run tests with coverage
         working-directory: MyMusicBoxApi
-        run: |
-          go test -v -coverprofile=coverage.out ./...
-          go tool cover -func=coverage.out > coverage.txt
+        run: go test -v -coverprofile=coverage.out ./...
 
-      - name: Post test coverage to PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const coverage = fs.readFileSync('MyMusicBoxApi/coverage.txt', 'utf8');
-            const lines = coverage.trim().split('\n');
-            const totalLine = lines[lines.length - 1];
-            const percentage = totalLine.split('\t').pop();
+      - name: Show coverage summary
+        working-directory: MyMusicBoxApi
+        run: go tool cover -func=coverage.out
 
-            const body = `### 🧪 Go Test Coverage\n\n\`\`\`\n${totalLine}\n\`\`\``;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
-
-      - name: Generate coverage badge
-        uses: ncruces/go-coverage-report@v0.4.1
-        with:
-          coverage-file: MyMusicBoxApi/coverage.out
-          output: .github/badges/coverage.svg
-          token: ${{ secrets.GITHUB_TOKEN }}
-          # Optional: Add a GIST_ID secret if you want to publish the badge externally
-          # gist: ${{ secrets.GIST_ID }}
-
-      - name: Upload coverage badge as artifact (optional)
+      - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-badge
-          path: .github/badges/coverage.svg
+          name: coverage-report
+          path: MyMusicBoxApi/coverage.out
