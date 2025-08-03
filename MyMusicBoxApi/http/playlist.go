@@ -10,7 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func FetchPlaylists(ctx *gin.Context) {
+type PlaylistHandler struct {
+	PlaylistTable database.IPlaylistTable
+}
+
+func (handler *PlaylistHandler) FetchPlaylists(ctx *gin.Context) {
 	lastKnowPlaylistIdQuery := ctx.Query("lastKnowPlaylistId")
 
 	lastKnowPlaylistId := 0
@@ -19,9 +23,7 @@ func FetchPlaylists(ctx *gin.Context) {
 		lastKnowPlaylistId, _ = strconv.Atoi(lastKnowPlaylistIdQuery)
 	}
 
-	playlistTable := database.NewPlaylistTableInstance()
-
-	playlists, err := playlistTable.FetchPlaylists(ctx.Request.Context(), lastKnowPlaylistId)
+	playlists, err := handler.PlaylistTable.FetchPlaylists(ctx.Request.Context(), lastKnowPlaylistId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
@@ -30,7 +32,7 @@ func FetchPlaylists(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, models.OkResponse(playlists, fmt.Sprintf("Found %d playlist", len(playlists))))
 }
 
-func InsertPlaylist(ctx *gin.Context) {
+func (hanlder *PlaylistHandler) InsertPlaylist(ctx *gin.Context) {
 	var playlist models.Playlist
 
 	err := ctx.ShouldBindBodyWithJSON(&playlist)
@@ -40,9 +42,7 @@ func InsertPlaylist(ctx *gin.Context) {
 		return
 	}
 
-	playlistTable := database.NewPlaylistTableInstance()
-
-	playlistId, err := playlistTable.InsertPlaylist(playlist)
+	playlistId, err := hanlder.PlaylistTable.InsertPlaylist(playlist)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
@@ -52,13 +52,8 @@ func InsertPlaylist(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, models.OkResponse(gin.H{"playlistId": playlistId}, "Created new playlist"))
 }
 
-func DeletePlaylist(ctx *gin.Context) {
+func (handler *PlaylistHandler) DeletePlaylist(ctx *gin.Context) {
 	playlistIdParameter := ctx.Param("playlistId")
-
-	if playlistIdParameter == "" {
-		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse("playlistId is empty"))
-		return
-	}
 
 	id, err := strconv.Atoi(playlistIdParameter)
 
@@ -67,9 +62,7 @@ func DeletePlaylist(ctx *gin.Context) {
 		return
 	}
 
-	playlistTable := database.NewPlaylistTableInstance()
-
-	err = playlistTable.DeletePlaylist(id)
+	err = handler.PlaylistTable.DeletePlaylist(id)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))

@@ -16,7 +16,7 @@ type SongTable struct {
 	BaseTable
 }
 
-func NewSongTableInstance() *SongTable {
+func NewSongTableInstance() ISongTable {
 	return &SongTable{
 		BaseTable: NewBaseTableInstance(),
 	}
