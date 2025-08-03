@@ -9,10 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func FetchTaskLogs(ctx *gin.Context) {
-	tasklogTable := database.NewTasklogTableInstance()
+type TaskLogHandler struct {
+	TasklogTable database.ITasklogTable
+}
 
-	logs, err := tasklogTable.GetTaskLogs(ctx.Request.Context())
+func (handler *TaskLogHandler) FetchTaskLogs(ctx *gin.Context) {
+
+	logs, err := handler.TasklogTable.GetTaskLogs(ctx.Request.Context())
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err.Error()))

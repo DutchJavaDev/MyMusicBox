@@ -10,27 +10,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func FetchPlaylistSongs(ctx *gin.Context) {
+type PlaylistSongHandler struct {
+	PlaylistsongTable database.IPlaylistsongTable
+}
+
+func (handler *PlaylistSongHandler) FetchPlaylistSongs(ctx *gin.Context) {
 	playlistIdParameter := ctx.Param("playlistId")
 
 	lastKnowSongPosition := 0
 
+	// Optional
 	lastKnowSongPositionQuery := ctx.Query("lastKnowSongPosition")
 
 	if lastKnowSongPositionQuery != "" {
 		lastKnowSongPosition, _ = strconv.Atoi(lastKnowSongPositionQuery)
 	}
 
-	if playlistIdParameter == "" {
-		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse("No playlistId inrequest"))
+	playlistId, err := strconv.Atoi(playlistIdParameter)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
 	}
 
-	playlistId, _ := strconv.Atoi(playlistIdParameter)
-
-	playlistsongTable := database.NewPlaylistsongTableInstance()
-
-	songs, err := playlistsongTable.FetchPlaylistSongs(ctx.Request.Context(), playlistId, lastKnowSongPosition)
+	songs, err := handler.PlaylistsongTable.FetchPlaylistSongs(ctx.Request.Context(), playlistId, lastKnowSongPosition)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
@@ -38,26 +41,25 @@ func FetchPlaylistSongs(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, models.OkResponse(songs, fmt.Sprintf("Found %d songs in playlist %d", len(songs), playlistId)))
 }
 
-func InsertPlaylistSong(ctx *gin.Context) {
+func (handler *PlaylistSongHandler) InsertPlaylistSong(ctx *gin.Context) {
 	playlistIdParameter := ctx.Param("playlistId")
 	songIdParameter := ctx.Param("songId")
 
-	if playlistIdParameter == "" {
-		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse("playlistId is empty"))
+	playlistId, err := strconv.Atoi(playlistIdParameter)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
 	}
 
-	if songIdParameter == "" {
-		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse("songId is empty"))
+	songId, err := strconv.Atoi(songIdParameter)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
 	}
 
-	playlistId, _ := strconv.Atoi(playlistIdParameter)
-	songId, _ := strconv.Atoi(songIdParameter)
-
-	playlistsongTable := database.NewPlaylistsongTableInstance()
-
-	id, err := playlistsongTable.InsertPlaylistSong(playlistId, songId)
+	id, err := handler.PlaylistsongTable.InsertPlaylistSong(playlistId, songId)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
@@ -66,26 +68,26 @@ func InsertPlaylistSong(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, models.OkResponse(gin.H{"playlistSongId": id}, fmt.Sprintf("Added song %d to playlist %d", songId, playlistId)))
 }
 
-func DeletePlaylistSong(ctx *gin.Context) {
+func (handler *PlaylistSongHandler) DeletePlaylistSong(ctx *gin.Context) {
 	playlistIdParameter := ctx.Param("playlistId")
 	songIdParameter := ctx.Param("songId")
 
-	if playlistIdParameter == "" {
-		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse("playlistId is empty"))
+	playlistId, err := strconv.Atoi(playlistIdParameter)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
 	}
 
-	if songIdParameter == "" {
-		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse("songId is empty"))
+	songId, err := strconv.Atoi(songIdParameter)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
 	}
 
-	playlistId, _ := strconv.Atoi(playlistIdParameter)
-	songId, _ := strconv.Atoi(songIdParameter)
+	err = handler.PlaylistsongTable.DeletePlaylistSong(playlistId, songId)
 
-	playlistsongTable := database.NewPlaylistsongTableInstance()
-
-	err := playlistsongTable.DeletePlaylistSong(playlistId, songId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return

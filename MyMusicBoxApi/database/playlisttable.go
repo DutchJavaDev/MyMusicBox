@@ -17,7 +17,7 @@ type PlaylistTable struct {
 	BaseTable
 }
 
-func NewPlaylistTableInstance() *PlaylistTable {
+func NewPlaylistTableInstance() IPlaylistTable {
 	return &PlaylistTable{
 		BaseTable: NewBaseTableInstance(),
 	}
