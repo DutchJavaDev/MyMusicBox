@@ -3,7 +3,7 @@
   import { writable } from "svelte/store";
   import { onDestroy, onMount, setContext } from "svelte";
   import { getCachedPlaylistSongs } from "../scripts/storageService";
-  import { playOrPauseSong, setPlaylists } from "../scripts/playbackService";
+  import { playOrPauseSong, setPlaylists, updateCurrentPlaylist } from "../scripts/playbackService";
   import SongComponent from "../components/SongComponent.svelte";
 
   const updateIntervalTimeOut = 1000; // Update every second
@@ -19,6 +19,7 @@
 
     intervalId = setInterval(() => {
       songs.set(getCachedPlaylistSongs(playlistId));
+      updateCurrentPlaylist(playlistId);
     }, updateIntervalTimeOut);
   });
 

@@ -165,6 +165,17 @@ export function setCurrentTime(seconds) {
   audioElement.currentTime = seconds;
 }
 
+export function updateCurrentPlaylist(playlistId){
+if (currentPlaylistId === playlistId) {
+    // update current playlist
+    originalPlaylistSongs = getCachedPlaylistSongs(playlistId);
+
+    // Todo get the difference between originalPlaylistSongs and playlistSongs
+    // and update playlistSongs accordingly if shuffle is enabled
+    return; // Already set to this playlist
+  }
+}
+
 export function setPlaylists(playlistId) {
   if (currentPlaylistId === playlistId) {
     // update current playlist
