@@ -28,6 +28,16 @@ jobs:
         working-directory: MyMusicBoxApi
         run: go mod tidy
 
-      - name: Test
+      - name: Run tests with coverage
         working-directory: MyMusicBoxApi
-        run: go test -v ./...
+        run: go test -v -coverprofile=coverage.out ./...
+
+      - name: Show coverage summary
+        working-directory: MyMusicBoxApi
+        run: go tool cover -func=coverage.out
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: MyMusicBoxApi/coverage.out
