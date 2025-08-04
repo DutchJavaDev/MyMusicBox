@@ -26,37 +26,37 @@ func NewTasklogTableInstance() *TasklogTable {
 	}
 }
 
-func (tt *TasklogTable) InsertTaskLog() (lastInsertedId int, error error) {
+func (table *TasklogTable) InsertTaskLog() (lastInsertedId int, error error) {
 	query := `INSERT INTO TaskLog (Status) VALUES($1) RETURNING Id`
 
-	lastInsertedId, err := tt.InsertWithReturningId(query, int(models.Pending))
+	lastInsertedId, err := table.InsertWithReturningId(query, int(models.Pending))
 
 	return lastInsertedId, err
 }
 
-func (tt *TasklogTable) UpdateTaskLogStatus(taskId int, nStatus int) (error error) {
+func (table *TasklogTable) UpdateTaskLogStatus(taskId int, nStatus int) (error error) {
 	query := `UPDATE TaskLog SET Status = $1 WHERE Id = $2`
 
-	return tt.NonScalarQuery(query, nStatus, taskId)
+	return table.NonScalarQuery(query, nStatus, taskId)
 }
 
-func (tt *TasklogTable) EndTaskLog(taskId int, nStatus int, data []byte) error {
+func (table *TasklogTable) EndTaskLog(taskId int, nStatus int, data []byte) error {
 	query := `UPDATE TaskLog SET Status = $1, OutputLog = $2, EndTime = $3 WHERE Id = $4`
 
-	return tt.NonScalarQuery(query, nStatus, data, time.Now(), taskId)
+	return table.NonScalarQuery(query, nStatus, data, time.Now(), taskId)
 }
 
-func (tt *TasklogTable) UpdateTaskLogError(params ...any) error {
+func (table *TasklogTable) UpdateTaskLogError(params ...any) error {
 	query := `UPDATE TaskLog
 		             SET Status = $1, OutputLog = $2, EndTime = $3
 		             WHERE Id = $4`
-	return tt.NonScalarQuery(query, params...)
+	return table.NonScalarQuery(query, params...)
 }
 
-func (tt *TasklogTable) GetTaskLogs(ctx context.Context) ([]models.TaskLog, error) {
+func (table *TasklogTable) GetTaskLogs(ctx context.Context) ([]models.TaskLog, error) {
 	query := `SELECT Id, StartTime, EndTime, Status, OutputLog FROM TaskLog ORDER BY Id desc` // get the latest first
 
-	rows, err := tt.DB.QueryContext(ctx, query)
+	rows, err := table.QueryRowsContex(ctx, query)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("QueryRow error: %s", err.Error()))

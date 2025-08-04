@@ -24,20 +24,12 @@ func NewPlaylistsongTableInstance() IPlaylistsongTable {
 	}
 }
 
-func (pt *PlaylistsongTable) FetchPlaylistSongs(ctx context.Context, playlistId int, lastKnowPosition int) (songs []models.Song, error error) {
+func (table *PlaylistsongTable) FetchPlaylistSongs(ctx context.Context, playlistId int, lastKnowPosition int) (songs []models.Song, error error) {
 	query := `SELECT s.Id, s.Name, s.Path, s.ThumbnailPath, s.Duration, s.SourceId, s.UpdatedAt, s.CreatedAt FROM playlistsong ps
 			 INNER JOIN song s ON s.id = ps.songid
 			 WHERE ps.playlistid = $1 AND ps.position >= $2`
 
-	statement, err := pt.DB.Prepare(query)
-
-	if err != nil {
-		logging.Error(fmt.Sprintf("Prepared statement error: %s", err.Error()))
-		return nil, err
-	}
-	defer statement.Close()
-
-	rows, err := statement.QueryContext(ctx, playlistId, lastKnowPosition)
+	rows, err := table.QueryRowsContex(ctx, query, playlistId, lastKnowPosition)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("QueryRow error: %s", err.Error()))
@@ -63,10 +55,10 @@ func (pt *PlaylistsongTable) FetchPlaylistSongs(ctx context.Context, playlistId 
 	return songs, nil
 }
 
-func (pt *PlaylistsongTable) InsertPlaylistSong(playlistId int, songId int) (lastInsertedId int, error error) {
+func (table *PlaylistsongTable) InsertPlaylistSong(playlistId int, songId int) (lastInsertedId int, error error) {
 	query := `INSERT INTO PlaylistSong (SongId, PlaylistId) VALUES($1, $2) RETURNING SongId`
 
-	lastInsertedId, err := pt.InsertWithReturningId(query,
+	lastInsertedId, err := table.InsertWithReturningId(query,
 		songId,
 		playlistId,
 	)
@@ -74,18 +66,18 @@ func (pt *PlaylistsongTable) InsertPlaylistSong(playlistId int, songId int) (las
 	return lastInsertedId, err
 }
 
-func (pt *PlaylistsongTable) DeleteAllPlaylistSongs(playlistId int) (error error) {
+func (table *PlaylistsongTable) DeleteAllPlaylistSongs(playlistId int) (error error) {
 	query := `DELETE FROM PlaylistSong WHERE PlaylistId = $1`
 
-	err := pt.NonScalarQuery(query, playlistId)
+	err := table.NonScalarQuery(query, playlistId)
 
 	return err
 }
 
-func (pt *PlaylistsongTable) DeletePlaylistSong(playlistId int, songId int) (error error) {
+func (table *PlaylistsongTable) DeletePlaylistSong(playlistId int, songId int) (error error) {
 	query := `DELETE FROM PlaylistSong WHERE PlaylistId = $1 and SongId = $2`
 
-	err := pt.NonScalarQuery(query, playlistId, songId)
+	err := table.NonScalarQuery(query, playlistId, songId)
 
 	return err
 }
