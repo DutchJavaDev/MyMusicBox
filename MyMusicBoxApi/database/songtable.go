@@ -22,11 +22,11 @@ func NewSongTableInstance() ISongTable {
 	}
 }
 
-func (st *SongTable) InsertSong(song *models.Song) (error error) {
+func (table *SongTable) InsertSong(song *models.Song) (error error) {
 
 	query := `INSERT INTO Song (name, sourceid, path, thumbnailPath, duration) VALUES ($1, $2, $3, $4, $5) RETURNING Id`
 
-	lastInsertedId, err := st.InsertWithReturningId(query,
+	lastInsertedId, err := table.InsertWithReturningId(query,
 		song.Name,
 		song.SourceId,
 		song.Path,
@@ -47,11 +47,11 @@ func (st *SongTable) InsertSong(song *models.Song) (error error) {
 	return err
 }
 
-func (st *SongTable) FetchSongs(ctx context.Context) (songs []models.Song, error error) {
+func (table *SongTable) FetchSongs(ctx context.Context) (songs []models.Song, error error) {
 
 	query := "SELECT Id, Name, Path, ThumbnailPath, Duration, SourceId, UpdatedAt, CreatedAt FROM Song" // order by?
 
-	rows, err := st.DB.QueryContext(ctx, query)
+	rows, err := table.QueryRowsContex(ctx, query)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("QueryRow error: %s", err.Error()))

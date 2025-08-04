@@ -23,13 +23,14 @@ func NewPlaylistTableInstance() IPlaylistTable {
 	}
 }
 
-func (pt *PlaylistTable) FetchPlaylists(ctx context.Context, lastKnowPlaylistId int) (playlists []models.Playlist, error error) {
+func (table *PlaylistTable) FetchPlaylists(ctx context.Context, lastKnowPlaylistId int) (playlists []models.Playlist, error error) {
 	query := "SELECT Id, Name, ThumbnailPath, Description, CreationDate FROM Playlist WHERE Id > $1 ORDER BY Id" // order by?
 
-	rows, err := pt.DB.QueryContext(ctx, query, lastKnowPlaylistId)
+	rows, err := table.QueryRowsContex(ctx, query, lastKnowPlaylistId)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("QueryRow error: %s", err.Error()))
+		logging.ErrorStackTrace(err)
 		return nil, err
 	}
 
@@ -53,10 +54,10 @@ func (pt *PlaylistTable) FetchPlaylists(ctx context.Context, lastKnowPlaylistId 
 	return playlists, nil
 }
 
-func (pt *PlaylistTable) InsertPlaylist(playlist models.Playlist) (lastInsertedId int, error error) {
+func (table *PlaylistTable) InsertPlaylist(playlist models.Playlist) (lastInsertedId int, error error) {
 	query := `INSERT INTO Playlist (name, description, thumbnailPath) VALUES ($1, $2, $3) RETURNING Id`
 
-	lastInsertedId, err := pt.InsertWithReturningId(query,
+	lastInsertedId, err := table.InsertWithReturningId(query,
 		playlist.Name,
 		playlist.Description,
 		playlist.ThumbnailPath,
@@ -65,10 +66,10 @@ func (pt *PlaylistTable) InsertPlaylist(playlist models.Playlist) (lastInsertedI
 	return lastInsertedId, err
 }
 
-func (pt *PlaylistTable) DeletePlaylist(playlistId int) (error error) {
+func (table *PlaylistTable) DeletePlaylist(playlistId int) (error error) {
 	query := `DELETE FROM Playlist WHERE Id = $1`
 
-	err := pt.NonScalarQuery(query, playlistId)
+	err := table.NonScalarQuery(query, playlistId)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("Failed to delete playlist: %s", err.Error()))

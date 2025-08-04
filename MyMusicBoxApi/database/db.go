@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -147,6 +148,18 @@ func (base *BaseTable) NonScalarQuery(query string, params ...any) (error error)
 	}
 
 	return nil
+}
+
+func (base *BaseTable) QueryRow(query string) *sql.Row {
+	return base.DB.QueryRow(query)
+}
+
+func (base *BaseTable) QueryRowsContex(ctx context.Context, query string, params ...any) (*sql.Rows, error) {
+	return base.DB.QueryContext(ctx, query, params...)
+}
+
+func (base *BaseTable) QueryRows(query string) (*sql.Rows, error) {
+	return base.DB.QueryContext(context.Background(), query)
 }
 
 func ApplyMigrations() {
