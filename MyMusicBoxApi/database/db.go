@@ -37,6 +37,7 @@ func NewBaseTableInstance() BaseTable {
 	}
 }
 
+// Base
 func CreateDatabasConnectionPool() error {
 
 	// Will throw an error if its missing a method implementation from interface
