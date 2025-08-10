@@ -34,7 +34,11 @@ cp default/* "$IMAGES_FOLDER"
 cp selenium/* "$COOKIES_FOLDER"
 
 echo "=== Updating executable ==="
-go build -buildvcs=false -o "$RELEASE_FOLDER"
+go build -trimpath -buildvcs=false -ldflags="-s -w" -o "$RELEASE_FOLDER"
+
+echo "=== Reducing executable size ==="
+cd "$RELEASE_FOLDER"
+upx --best --lzma musicboxapi
 
 echo "=== Restarting mymusic service ==="
 sudo systemctl stop mymusic || echo "Service 'mymusic' was not running."
