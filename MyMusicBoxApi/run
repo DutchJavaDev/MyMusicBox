@@ -1,6 +1,33 @@
 #!/bin/bash
-./stop
+echo "=== Setting up folders ==="
+IMAGES_FOLDER="music_dev/images"
 
+FOLDERS=(
+  "$IMAGES_FOLDER"
+)
+
+for folder in "${FOLDERS[@]}"; do
+  if [ ! -d "$folder" ]; then
+    mkdir -p "$folder"
+    echo "Created: $folder"
+    
+    if [[ "music_dev/images" == $folder ]]; then
+        echo "Copied default image"
+        cp default/images/* "$IMAGES_FOLDER"
+    fi
+  else
+    echo "Exists:  $folder"
+  fi
+done
+
+# start dev database
+cd ..
+cd dev_database
+sudo docker compose up -d
+
+# run executable
+cd ..
+cd MyMusicBoxApi
 sudo go run main.go -port=8081 -devurl -sourceFolder="music_dev" -outputExtension="opus" &
 
 echo $! > go_program.pid
