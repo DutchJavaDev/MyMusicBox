@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# stop dev docker postgres
+cd ..
+cd dev_database
+sudo docker compose down
+
+# delete dev db files
+sudo rm -r data/
+
+# restart dev docker
+sudo docker compose up -d

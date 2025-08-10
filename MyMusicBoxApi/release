@@ -11,7 +11,6 @@ COOKIES_FOLDER="$RELEASE_FOLDER/selenium"
 MIGRATION_FOLDER="$RELEASE_FOLDER/migration_scripts"
 
 echo "=== Setting up release folder ==="
-
 FOLDERS=(
   "$RELEASE_FOLDER"
   "$DATABASE_FOLDER"
@@ -38,7 +37,11 @@ cp selenium/* "$COOKIES_FOLDER"
 cp migration_scripts/* "$MIGRATION_FOLDER"
 
 echo "=== Building executable ==="
-go build -buildvcs=false -o "$RELEASE_FOLDER"
+go build -trimpath -buildvcs=false -ldflags="-s -w" -o "$RELEASE_FOLDER"
+
+echo "=== Reducing executable size ==="
+cd "$RELEASE_FOLDER"
+upx --best --lzma musicboxapi
 
 echo "=== Starting Docker containers ==="
 cd "$DATABASE_FOLDER"
