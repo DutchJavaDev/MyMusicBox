@@ -50,7 +50,7 @@
                 </div>
               </div>
               <div class="col-12 text-center">
-                <img class="img-fluid border border-1 rounded rounded-2 mt-1" src={getImageUrl($currentSong.thumbnail_path)} alt="404" />
+                <img loading="lazy" class="img-fluid border border-1 rounded rounded-2 mt-1" src={getImageUrl($currentSong.thumbnail_path)} alt="404" />
               </div>
               <div class="col-12">
                 <input type="range" on:change={seekEvent} class="form-range mt-5" value={$playPercentage} min="0" max="100" step="1" />
