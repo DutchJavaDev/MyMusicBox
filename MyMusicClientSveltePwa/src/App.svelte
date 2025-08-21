@@ -26,10 +26,12 @@
 
   // This is a temporary function to handle refresh logic.
   // It can be replaced with a more specific implementation later.
-  async function refresh() {}
+  async function refresh() {
+    window.location.reload();
+  }
 </script>
 
-<div class="app-layout bg-dark">
+<div class="app-layout">
   <!-- Sticky Top Bar -->
   <header class="top-bar">
     <div class="container-fluid h-100">{$pathName} <span style="font-size: 0.8rem;">(v{version})</span></div>
@@ -49,7 +51,7 @@
   <footer class="bottom-bar">
     <div class="row w-100">
       <div class="col-6">
-        <button aria-label="empty storage" class="btn btn-dark w-100" on:click={refresh}><i class="fa-solid fa-trash"></i></button>
+        <button aria-label="empty storage" class="btn btn-dark w-100" on:click={refresh}><i class="fa-solid fa-arrows-rotate"></i></button>
       </div>
       <div class="col-6">
         <button aria-label="home" class="btn btn-dark w-100" on:click={() => navigateTo("/Home")}><i class="fa-solid fa-house"></i></button>
@@ -68,6 +70,7 @@
     flex-direction: column;
     height: 100vh;
     width: 100vw;
+    background-color: #121212;
   }
 
   .bottom-bar button {
@@ -84,7 +87,7 @@
     top: 0;
     z-index: 10;
     text-align: center;
-    border-bottom: 0.2rem solid #5bbd99;
+    border-bottom: 0.2rem solid #1CC558;
     border-bottom-left-radius: 1.5rem;
     border-bottom-right-radius: 1.5rem;
   }
@@ -94,6 +97,7 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 1rem 1rem 3rem; /* 👈 Important: bottom padding to make space for bottom bar */
+    background-color: #121212;
   }
 
   .bottom-bar {
@@ -104,7 +108,7 @@
     z-index: 10;
     display: flex;
     justify-content: center;
-    border-top: 0.2rem solid #5bbd99;
+    border-top: 0.2rem solid #1CC558;
     border-top-left-radius: 1.5rem;
     border-top-right-radius: 1.5rem;
     height: 3.8rem; /* Optional: define fixed height if needed for padding calc */
@@ -112,7 +116,7 @@
 
   .bottom-bar button {
     font-weight: bolder;
-    border: 0.1rem solid #5bbd99 !important;
+    border: 0.1rem solid #1CC558 !important;
     background-color: #343a40 !important;
   }
 </style>

@@ -2,7 +2,7 @@
 // @ts-nocheck
 
   import { getContext, onMount, setContext } from "svelte";
-  import { currentSong, isPlaying } from "../scripts/playbackService";
+  import { currentSong, isPlaying, isLoading } from "../scripts/playbackService";
 
   export let song;
 
@@ -14,13 +14,14 @@
 
   $: $isPlaying;
   $: $currentSong;
+  $: $isLoading;
 </script>
 
 {#if song}
   <div class="row mb-3 song-component">
-    <div class="col-10 bg-dark border border-1 rounded rounded-2" style={$currentSong && $currentSong.id === song.id ? "border-color:#5bbd99 !important;" : ""}>
+    <div class="col-10 border border-1 rounded rounded-2" style={$currentSong && $currentSong.id === song.id ? "border-color:#1CC558 !important;" : ""}>
       <div class="text-lg-start">
-        <p style={$currentSong && $currentSong.id === song.id ? "color:#5bbd99;" : ""}>{song.name}</p>
+        <p style={$currentSong && $currentSong.id === song.id ? "color:#1CC558;" : ""}>{song.name}</p>
       </div>
     </div>
     <div class="col-2">
@@ -30,6 +31,8 @@
       >
         {#if $currentSong && $currentSong.id === song.id && $isPlaying}
           <i class="fa-solid fa-pause"></i>
+        {:else if $isLoading && $currentSong.id === song.id}
+          <i class="fa-solid fa-spinner fa-spin"></i>  
         {:else}
           <i class="fa-solid fa-play"></i>
         {/if}
@@ -63,7 +66,7 @@
     width: 3rem;
     height: 3rem;
     display: flex;
-    color: #5bbd99;
+    color: #1CC558;
     align-items: center;
     justify-content: center;
   }

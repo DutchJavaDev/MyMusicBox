@@ -40,7 +40,7 @@
 {#if $currentSong && $currentSong.id !== -999} <!-- Ensure currentSong is valid -->
   <div class="modal fade" id="songControlModal" tabindex="-1" aria-labelledby="songControlModalLabel" aria-hidden="false">
     <div class="modal-dialog modal-fullscreen-sm-down">
-      <div class="modal-content bg-dark">
+      <div class="modal-content">
         <div class="modal-body">
           <div>
             <div class="row">
@@ -58,13 +58,13 @@
               <div class="col-12">
                 <div class="row mt-4">
                   <div class="col-4">
-                    <button aria-label="previous song" on:click={previousSong} class="btn btn-dark w-100">
+                    <button aria-label="previous song" on:click={previousSong} class="btn w-100">
                       <i class="fa-solid fa-backward fa-2xl"></i>
                     </button>
                   </div>
 
                   <div class="col-4">
-                    <button on:click={togglePlay} class="btn btn-dark w-100">
+                    <button on:click={togglePlay} class="btn w-100">
                       {#if $isPlaying}
                         <i class="fa-solid fa-pause fa-2xl"></i>
                       {:else}
@@ -74,7 +74,7 @@
                   </div>
 
                   <div class="col-4">
-                    <button aria-label="next song" on:click={nextSong} class="btn btn-dark w-100">
+                    <button aria-label="next song" on:click={nextSong} class="btn w-100">
                       <i class="fa-solid fa-forward fa-2xl"></i>
                     </button>
                   </div>
@@ -84,8 +84,8 @@
               <div class="col-12">
                 <div class="row mt-5">
                   <div class="col-4">
-                    <button on:click={toggleSleepTimer} aria-label="sleep timer" type="button" class="btn btn-dark w-100">
-                      <i class="fa-solid fa-stopwatch-20" style="{$isTimerEnabled ? "color: #5bbd99;" : "color:white;"}">
+                    <button on:click={toggleSleepTimer} aria-label="sleep timer" type="button" class="btn w-100">
+                      <i class="fa-solid fa-stopwatch-20" style="{$isTimerEnabled ? "color: #1CC558;" : "color:white;"}">
                         <span style="font-size: 0.8rem;">
                             &nbsp;{$isTimerEnabled ? $timeLeft : ""}
                       </span>
@@ -94,13 +94,13 @@
                   </div>
 
                   <div class="col-4">
-                    <button on:click={toggleShuffle} aria-label="shuffle playlist" type="button" class="btn btn-dark w-100">
-                      <i class="fa-solid fa-shuffle" style="{$isShuffledEnabled ? "color: #5bbd99;" : "color:white;"}"></i>
+                    <button on:click={toggleShuffle} aria-label="shuffle playlist" type="button" class="btn w-100">
+                      <i class="fa-solid fa-shuffle" style="{$isShuffledEnabled ? "color: #1CC558;" : "color:white;"}"></i>
                     </button>
                   </div>
                   <div class="col-4">
-                    <button on:click={toggleLoop} aria-label="repeat song" type="button" class="btn btn-dark w-100">
-                      <i class="fa-solid fa-repeat" style="{$isLoopingEnabled ? "color: #5bbd99;" : "color:white;"}"></i>
+                    <button on:click={toggleLoop} aria-label="repeat song" type="button" class="btn w-100">
+                      <i class="fa-solid fa-repeat" style="{$isLoopingEnabled ? "color: #1CC558;" : "color:white;"}"></i>
                     </button>
                   </div>
                 </div>
@@ -120,7 +120,7 @@
   img {
     height: 10rem;
     object-fit: contain;
-    border-color: #5bbd99 !important;
+    border-color: #1CC558 !important;
   }
 
   p{
@@ -131,7 +131,7 @@
   }
 
   i{
-    color: #5bbd99;
+    color: #1CC558;
     font-weight: bolder;
   }
 
@@ -140,11 +140,28 @@
   }
 
   .modal-footer button {
-    border-color: #5bbd99 !important;
-    background-color: #343a40 !important;
+    border-color: #1CC558 !important;
+    background-color: #343a4000 !important;
   }
 
 input[type="range"]::-webkit-slider-thumb {
-   background-color: #5bbd99;  
+   background-color: #1CC558;
 }
+
+input[type="range"]::-webkit-slider-runnable-track {
+   background-color: #ACACAC;
+}
+
+.modal-content {
+    background-color: #121212 !important;
+    color: white;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .form-range {
+    color: #1CC558;
+  }
 </style>
