@@ -1,11 +1,12 @@
 <script>
   // @ts-nocheck
   import { get } from "svelte/store";
-  import { isPlaying, currentSong, playOrPauseSong, playPercentage } from "../scripts/playbackService";
+  import { isPlaying, currentSong, playOrPauseSong, playPercentage, isLoading } from "../scripts/playbackService";
 
   $: $currentSong;
   $: $isPlaying;
   $: $playPercentage;
+  $: $isLoading;
 
   function togglePlay() {
     if(get(currentSong)){
@@ -16,7 +17,7 @@
 
 <div class="container-fluid player-bar mb-2 rounded rounded-5">
   <div class="row space-between">
-    <div class="col-9 rounded-end rounded-end-0 rounded-5 border border-1 border-white" style="background: linear-gradient(to right, gray {$playPercentage}%, #5bbd99 {$playPercentage}%);">
+    <div class="col-9 rounded-end rounded-end-0 rounded-5 border border-1 border-white" style="background: linear-gradient(to right, gray {$playPercentage}%, #1CC558 {$playPercentage}%);">
       <button type="button" class="btn clickable-text rounded-end rounded-end-0 rounded-5" data-bs-toggle="{$currentSong ? "modal" : ""}" data-bs-target="{$currentSong ? "#songControlModal" : ""}">
         {#if $currentSong}
           {$currentSong.name}
@@ -27,10 +28,12 @@
     </div>
     <div class="col-3 border-start border-2">
       <button on:click={togglePlay} class="btn btn-dark border border-1 border-white play-button rounded-end rounded-end-5 w-100">
-        {#if $currentSong && $isPlaying}
+        {#if $currentSong && $isPlaying && !$isLoading}
           <i class="fa-solid fa-pause"></i>
-        {:else}
+        {:else if !$isLoading && !$isPlaying}
           <i class="fa-solid fa-play"></i>
+        {:else if $isLoading}
+          <i class="fa-solid fa-spinner fa-spin"></i>
         {/if}
       </button>
     </div>
@@ -55,7 +58,7 @@
   }
 
   .player-bar {
-    background-color: gray !important;
+    background-color: rgb(0, 0, 0) !important;
   }
 
   .play-button {
@@ -65,7 +68,7 @@
     height: 100%;
     display: block !important;
     margin: 0;
-    color: #5bbd99;
+    color: #1CC558;
     font-weight: bolder;
   }
 

@@ -6,8 +6,9 @@
   import { playOrPauseSong, setPlaylists, updateCurrentPlaylist } from "../scripts/playbackService";
   import SongComponent from "../components/SongComponent.svelte";
 
-  const updateIntervalTimeOut = 1000; // Update every second
+  const updateIntervalTimeOut = 1500; // Update every second
   let intervalId
+  let updating = false
 
   export let playlistId = -1;
 
@@ -18,8 +19,12 @@
     setContext("playOrPauseSong", playOrPause);
 
     intervalId = setInterval(() => {
+
+      if (updating) return; // Prevent multiple updates at the same time
+      updating = true;
       songs.set(getCachedPlaylistSongs(playlistId));
       updateCurrentPlaylist(playlistId);
+      updating = false;
     }, updateIntervalTimeOut);
   });
 

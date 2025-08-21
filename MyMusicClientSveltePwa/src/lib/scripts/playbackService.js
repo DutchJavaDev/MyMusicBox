@@ -15,6 +15,7 @@ export let isPlaying = writable(false);
 export let playPercentage = writable(0);
 export let isShuffledEnabled = writable(false);
 export let isLoopingEnabled = writable(false);
+export let isLoading = writable(false);
 
 let audioElement = null;
 let currentPlaylistId = 0;
@@ -53,7 +54,6 @@ export function initializePlaybackService() {
   }
 
   audioElement.addEventListener("play", () => {
-    isPlaying.set(true);
     updateMediaSessionPlaybackState(true);
     const currentPlaylist = getCachedPlaylists().find(pl => pl.id === currentPlaylistId);
     updateMediaSessionMetadata(get(currentSong), currentPlaylist);
@@ -95,6 +95,8 @@ export function initializePlaybackService() {
 
   audioElement.addEventListener("loadeddata", async (e) => {
     // Safe to play audio now
+    isLoading.set(false);
+    isPlaying.set(true);
     await audioElement.play();
   });
   audioElement.addEventListener("error", (e) => {
@@ -127,6 +129,7 @@ export function playOrPauseSong(songId) {
     currentSong.set(playlistSongs.find((song) => song.id === songId));
     isPlaying.set(false); // set to false since this is a new song
     setCurrentSongIndex(songIndex);
+    isLoading.set(true);
   }
   else if (get(isPlaying)) {
     audioElement.pause();
@@ -169,7 +172,25 @@ export function updateCurrentPlaylist(playlistId){
 if (currentPlaylistId === playlistId) {
     // update current playlist
     originalPlaylistSongs = getCachedPlaylistSongs(playlistId);
-    playlistSongs = originalPlaylistSongs;
+    
+    // get difference between originalPlaylistSongs and playlistSongs
+    const newSongs = originalPlaylistSongs.filter(song => !playlistSongs.some(ps => ps.id === song.id));
+    
+    if (newSongs.length === 0) {
+      // No new songs, nothing to update
+      return;
+    }
+
+    if (get(isShuffledEnabled)) {
+      // shuffle the new songs and add them to the playlist
+      const shuffledNewSongs = shuffleArray(newSongs);
+      playlistSongs = [...playlistSongs, ...shuffledNewSongs];
+      setCurrentShuffledPlaylist(playlistSongs);
+    }
+    else{
+      playlistSongs = [...playlistSongs, ...newSongs];
+    }
+    // playlistSongs = originalPlaylistSongs;
     // Todo get the difference between originalPlaylistSongs and playlistSongs
     // and update playlistSongs accordingly if shuffle is enabled
     return; // Already set to this playlist
@@ -180,9 +201,24 @@ export function setPlaylists(playlistId) {
   if (currentPlaylistId === playlistId) {
     // update current playlist
     originalPlaylistSongs = getCachedPlaylistSongs(playlistId);
-    playlistSongs = originalPlaylistSongs;
-    // Todo get the difference between originalPlaylistSongs and playlistSongs
-    // and update playlistSongs accordingly if shuffle is enabled
+    
+    if (newSongs.length === 0) {
+      // No new songs, nothing to update
+      return;
+    }
+
+    // get difference between originalPlaylistSongs and playlistSongs
+    const newSongs = originalPlaylistSongs.filter(song => !playlistSongs.some(ps => ps.id === song.id));
+
+    if (get(isShuffledEnabled)) {
+      // shuffle the new songs and add them to the playlist
+      const shuffledNewSongs = shuffleArray(newSongs);
+      playlistSongs = [...playlistSongs, ...shuffledNewSongs];
+      setCurrentShuffledPlaylist(playlistSongs);
+    }
+    else{
+      playlistSongs = [...playlistSongs, ...newSongs];
+    }
     return; // Already set to this playlist
   }
   isLoopingEnabled.set(false);
