@@ -13,7 +13,7 @@ for folder in "${FOLDERS[@]}"; do
     
     if [[ "music_dev/images" == $folder ]]; then
         echo "Copied default image"
-        cp default/images/* "$IMAGES_FOLDER"
+        cp default/* "$IMAGES_FOLDER"
     fi
   else
     echo "Exists:  $folder"

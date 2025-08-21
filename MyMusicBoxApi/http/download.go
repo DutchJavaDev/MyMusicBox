@@ -1,7 +1,6 @@
 package http
 
 import (
-	"musicboxapi/database"
 	"musicboxapi/models"
 	"musicboxapi/service"
 	"net/http"
@@ -25,15 +24,15 @@ func DownloadRequest(ctx *gin.Context) {
 		return
 	}
 
-	tasklogTable := database.NewTasklogTableInstance()
+	//tasklogTable := database.NewTasklogTableInstance()
 	// Insert a new task
-	taskId, err := tasklogTable.InsertTaskLog()
+	// parentTask, err := tasklogTable.CreateParentTaskLog(request.Url)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
 	}
 
-	go service.StartDownloadTask(taskId, request)
-	ctx.JSON(http.StatusOK, models.OkResponse(gin.H{"taskId": taskId}, "Started task"))
+	go service.StartDownloadTask(request)
+	ctx.JSON(http.StatusOK, models.OkResponse(gin.H{"": ""}, "Created"))
 }

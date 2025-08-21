@@ -15,7 +15,7 @@ type TaskLogHandler struct {
 
 func (handler *TaskLogHandler) FetchTaskLogs(ctx *gin.Context) {
 
-	logs, err := handler.TasklogTable.GetTaskLogs(ctx.Request.Context())
+	logs, err := handler.TasklogTable.GetParentChildLogs(ctx.Request.Context())
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err.Error()))

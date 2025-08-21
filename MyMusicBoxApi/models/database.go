@@ -15,6 +15,7 @@ const (
 	Error
 )
 
+// TODO Delete
 type TaskLog struct {
 	Id        int              `json:"id" db:"id"`
 	StartTime time.Time        `json:"startTime" db:"starttime"`
@@ -55,4 +56,19 @@ type MigrationFile struct {
 	Id        int       `json:"id" db:"id"`
 	Name      string    `json:"filename" db:"filename"`
 	AppliedOn time.Time `json:"appliedon" db:"appliedon"`
+}
+
+type ParentTaskLog struct {
+	Id      int       `db:"id" json:"id"`
+	Url     string    `db:"url" json:"url"`
+	AddTime time.Time `db:"add_time" json:"add_time"`
+}
+
+type ChildTaskLog struct {
+	Id        int             `db:"id" json:"id"`
+	ParentId  int             `db:"parent_id" json:"parent_id"`
+	StartTime time.Time       `db:"start_time" json:"start_time"`
+	EndTime   *time.Time      `db:"end_time" json:"end_time,omitempty"`
+	Status    int             `db:"status" json:"status"`
+	OutputLog json.RawMessage `db:"output_log" json:"output_log"`
 }

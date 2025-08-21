@@ -13,21 +13,25 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/lrstanley/go-ytdlp"
 )
 
-func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) {
+func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
+
+	tasklogTable := database.NewTasklogTableInstance()
+	songTable := database.NewSongTableInstance()
+
+	parentTask, _ := tasklogTable.CreateParentTaskLog(downloadRequest.Url)
 
 	config := configuration.Config
 	storageFolderName := config.SourceFolder
 	archiveFileName := fmt.Sprintf("%s/video_archive", storageFolderName)
-	idsFileName := fmt.Sprintf("%s/ids.%d", storageFolderName, taskId)
-	namesFileName := fmt.Sprintf("%s/names.%d", storageFolderName, taskId)
-	durationFileName := fmt.Sprintf("%s/durations.%d", storageFolderName, taskId)
-	playlistTitleFileName := fmt.Sprintf("%s/playlist_title.%d", storageFolderName, taskId)
-	playlistIdFileName := fmt.Sprintf("%s/playlist_id.%d", storageFolderName, taskId)
+	idsFileName := fmt.Sprintf("%s/ids.%d", storageFolderName, parentTask.Id)
+	namesFileName := fmt.Sprintf("%s/names.%d", storageFolderName, parentTask.Id)
+	durationFileName := fmt.Sprintf("%s/durations.%d", storageFolderName, parentTask.Id)
+	playlistTitleFileName := fmt.Sprintf("%s/playlist_title.%d", storageFolderName, parentTask.Id)
+	playlistIdFileName := fmt.Sprintf("%s/playlist_id.%d", storageFolderName, parentTask.Id)
 	imagesFolder := fmt.Sprintf("%s/images", storageFolderName)
 	fileExtension := config.OutputExtension
 
@@ -57,9 +61,6 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		playlistIdFileName,
 	}
 
-	tasklogTable := database.NewTasklogTableInstance()
-	songTable := database.NewSongTableInstance()
-
 	if isPlaylist {
 		dlp := ytdlp.New().
 			DownloadArchive(archiveFileName).
@@ -82,7 +83,12 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			// Set Task state -> Error
 			json, err := json.Marshal(result.OutputLogs)
 
-			err = tasklogTable.EndTaskLog(taskId, int(models.Error), json)
+			errChildTask, err := tasklogTable.CreateChildTaskLog(parentTask)
+
+			errChildTask.OutputLog = json
+
+			err = tasklogTable.ChildTaskLogError(errChildTask)
+
 			if err != nil {
 				logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 			}
@@ -101,10 +107,14 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			!fileExists(playlistTitleFileName) ||
 			!fileExists(playlistIdFileName) {
 
-			errorJosn, _ := json.Marshal(models.ErrorResponse("Ytdlp files were not donwloaded, stopping task here"))
+			json, _ := json.Marshal(models.ErrorResponse("Ytdlp files were not donwloaded, stopping task here"))
 
-			// Set Task state -> Error
-			err = tasklogTable.UpdateTaskLogError(int(models.Error), errorJosn, time.Now(), taskId)
+			errChildTask, err := tasklogTable.CreateChildTaskLog(parentTask)
+
+			errChildTask.OutputLog = json
+
+			err = tasklogTable.ChildTaskLogError(errChildTask)
+
 			if err != nil {
 				logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 			}
@@ -113,7 +123,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		}
 
 		downloadPlaylist(
-			taskId,
+			parentTask,
 			storageFolderName,
 			archiveFileName,
 			idsFileName,
@@ -130,6 +140,13 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		}
 	} else {
 		// Normal download
+
+		childTask, err := tasklogTable.CreateChildTaskLog(parentTask)
+
+		if err != nil {
+			return
+		}
+
 		dlp := ytdlp.New().
 			ExtractAudio().
 			AudioQuality("0").
@@ -150,20 +167,25 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			Cookies("selenium/cookies_netscape")
 
 		// Update task status
-		tasklogTable.UpdateTaskLogStatus(taskId, int(models.Downloading))
+		childTask.Status = int(models.Downloading)
+
+		err = tasklogTable.UpdateChildTaskLogStatus(childTask)
+
+		if err != nil {
+			return
+		}
 
 		// Start download
 		result, err := dlp.Run(context.Background(), downloadRequest.Url)
 
 		if err != nil {
-			query := `UPDATE TaskLog
-		             SET Status = $1, OutputLog = $2, EndTime = $3
-		             WHERE Id = $4`
-
 			// Set Task state -> Error
-			outputlogJson, err := json.Marshal(result.OutputLogs)
+			json, err := json.Marshal(result.OutputLogs)
 
-			err = tasklogTable.NonScalarQuery(query, int(models.Error), outputlogJson, time.Now(), taskId)
+			childTask.OutputLog = json
+
+			err = tasklogTable.ChildTaskLogError(childTask)
+
 			if err != nil {
 				logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 			}
@@ -176,10 +198,12 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			!fileExists(namesFileName) ||
 			!fileExists(durationFileName) {
 
-			errorJosn, _ := json.Marshal(models.ErrorResponse("Ytdlp files were not donwloaded, stopping task here"))
+			json, _ := json.Marshal(models.ErrorResponse("Ytdlp files were not donwloaded, stopping task here"))
 
-			// Set Task state -> Error
-			err = tasklogTable.UpdateTaskLogError(int(models.Error), errorJosn, time.Now(), taskId)
+			childTask.OutputLog = json
+
+			err = tasklogTable.ChildTaskLogError(childTask)
+
 			if err != nil {
 				logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 			}
@@ -187,8 +211,14 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 			return
 		}
 
-		// Set task state -> Updating
-		tasklogTable.UpdateTaskLogStatus(taskId, int(models.Updating))
+		// Update task status
+		childTask.Status = int(models.Updating)
+
+		err = tasklogTable.UpdateChildTaskLogStatus(childTask)
+
+		if err != nil {
+			return
+		}
 
 		//Read output files -> update song table
 		ids, _ := readLines(idsFileName)
@@ -207,7 +237,7 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		err = songTable.InsertSong(&song)
 
 		if err != nil {
-			// song.id might be not set..... :)
+			// song.id might be not set..... :) ?
 			logging.Error(fmt.Sprintf("[StartDownloadTask] Failed to insert song (%d): %s", song.Id, err.Error()))
 		}
 
@@ -217,16 +247,15 @@ func StartDownloadTask(taskId int, downloadRequest models.DownloadRequestModel) 
 		err = os.Rename(oldpath, newpath)
 
 		if err != nil {
-			logging.Error(fmt.Sprintf("Failed to move song image to /images folder: %s", err.Error()))
+			logging.Error(fmt.Sprintf("Failed to move song image to / images folder: %s", err.Error()))
 		}
 
-		// Set task state -> Done
-		// Update task status
-		query := `UPDATE TaskLog
-		             SET Status = $1, OutputLog = $2, EndTime = $3
-		             WHERE Id = $4`
-		outputJson, err := json.Marshal(result.OutputLogs)
-		err = tasklogTable.NonScalarQuery(query, int(models.Done), outputJson, time.Now(), taskId)
+		json, err := json.Marshal(result.OutputLogs)
+
+		childTask.OutputLog = json
+		childTask.Status = int(models.Done)
+		err = tasklogTable.ChildTaskLogDone(childTask)
+
 		if err != nil {
 			logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 		}
