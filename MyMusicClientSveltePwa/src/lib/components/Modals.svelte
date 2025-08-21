@@ -143,6 +143,7 @@
     border-color: #1CC558 !important;
     background-color: #343a4000 !important;
   }
+  
 
 input[type="range"]::-webkit-slider-thumb {
    background-color: #1CC558;
