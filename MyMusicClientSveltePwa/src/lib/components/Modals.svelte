@@ -6,7 +6,7 @@
            nextSong, previousSong, 
            isShuffledEnabled, isLoopingEnabled, 
            toggleShuffle, playOrPauseSong,
-           toggleLoop } from "../scripts/playbackService";
+           toggleLoop, isLoading } from "../scripts/playbackService";
   import { getImageUrl } from "../scripts/api";
   import { get } from "svelte/store";
   import { isTimerEnabled, timeLeft, toggleSleepTimer } from "../scripts/sleeptimerService";
@@ -18,6 +18,7 @@
   $: $isLoopingEnabled;
   $: $isTimerEnabled;
   $: $timeLeft;
+  $: $isLoading
   
   function togglePlay() {
     playOrPauseSong(get(currentSong).id);
@@ -67,6 +68,8 @@
                     <button on:click={togglePlay} class="btn w-100">
                       {#if $isPlaying}
                         <i class="fa-solid fa-pause fa-2xl"></i>
+                      {:else if $isLoading}
+                        <i class="fa-solid fa-spinner fa-spin fa-2xl"></i>
                       {:else}
                         <i class="fa-solid fa-play fa-2xl"></i>
                       {/if}
@@ -143,7 +146,7 @@
     border-color: #1CC558 !important;
     background-color: #343a4000 !important;
   }
-  
+
 
 input[type="range"]::-webkit-slider-thumb {
    background-color: #1CC558;
