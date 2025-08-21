@@ -201,14 +201,14 @@ export function setPlaylists(playlistId) {
   if (currentPlaylistId === playlistId) {
     // update current playlist
     originalPlaylistSongs = getCachedPlaylistSongs(playlistId);
+
+    // get difference between originalPlaylistSongs and playlistSongs
+    const newSongs = originalPlaylistSongs.filter(song => !playlistSongs.some(ps => ps.id === song.id));
     
     if (newSongs.length === 0) {
       // No new songs, nothing to update
       return;
     }
-
-    // get difference between originalPlaylistSongs and playlistSongs
-    const newSongs = originalPlaylistSongs.filter(song => !playlistSongs.some(ps => ps.id === song.id));
 
     if (get(isShuffledEnabled)) {
       // shuffle the new songs and add them to the playlist
