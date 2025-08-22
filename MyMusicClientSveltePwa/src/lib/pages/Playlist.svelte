@@ -39,13 +39,13 @@
 </script>
 
 {#if $songs.length > 0}
-  <div class="playlist-page">
-    <div class="playlist-songs">
+  <div class="row">
       {#each $songs as song}
-        <SongComponent {song} {playlistId} />
+        <div class="col-12 col-lg-4">
+          <SongComponent {song} {playlistId} />
+        </div>
       {/each}
     </div>
-  </div>
 {:else}
   <p>No songs in playlist.</p>
 {/if}

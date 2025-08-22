@@ -119,6 +119,10 @@ export function previousSong() {
 export function playOrPauseSong(songId) {
   const _currentSong = get(currentSong);
 
+  if (songId === null || songId === undefined) {
+    songId = playlistSongs[0].id; // Default to first song if no songId provided
+  }
+
   if (!_currentSong || _currentSong.id != songId) {
     // new song selected
     playPercentage.set(0);
