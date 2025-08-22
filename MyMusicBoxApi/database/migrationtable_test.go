@@ -64,7 +64,6 @@ func TestApplyMigration(t *testing.T) {
 	query := "DROP DATABSE migration"
 
 	mock.ExpectBegin()
-	mock.ExpectPrepare(query)
 	mock.ExpectExec(query).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
