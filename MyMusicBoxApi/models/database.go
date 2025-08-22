@@ -15,15 +15,6 @@ const (
 	Error
 )
 
-// TODO Delete
-type TaskLog struct {
-	Id        int              `json:"id" db:"id"`
-	StartTime time.Time        `json:"startTime" db:"starttime"`
-	EndTime   *time.Time       `json:"endTime,omitempty" db:"endtime"`     // Nullable
-	Status    int              `json:"status" db:"status"`                 // Expected to be 0–4
-	OutputLog *json.RawMessage `json:"outputLog,omitempty" db:"outputlog"` // JSONB field
-}
-
 type Song struct {
 	Id            int       `json:"id" db:"id"`
 	Name          string    `json:"name" db:"name"`
@@ -68,7 +59,7 @@ type ChildTaskLog struct {
 	Id        int             `db:"id" json:"id"`
 	ParentId  int             `db:"parent_id" json:"parent_id"`
 	StartTime time.Time       `db:"start_time" json:"start_time"`
-	EndTime   *time.Time      `db:"end_time" json:"end_time,omitempty"`
+	EndTime   time.Time       `db:"end_time" json:"end_time,omitempty"`
 	Status    int             `db:"status" json:"status"`
 	OutputLog json.RawMessage `db:"output_log" json:"output_log"`
 }
