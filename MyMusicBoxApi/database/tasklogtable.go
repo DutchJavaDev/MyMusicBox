@@ -2,11 +2,13 @@ package database
 
 import (
 	"context"
+	"musicboxapi/logging"
 	"musicboxapi/models"
 )
 
 type ITasklogTable interface {
-	GetParentChildLogs(ctx context.Context) ([]models.ParentTaskLog, error)
+	GetParentLogs(ctx context.Context) ([]models.ParentTaskLog, error)
+	GetChildLogs(ctx context.Context, parentId int) ([]models.ChildTaskLog, error)
 	CreateParentTaskLog(url string) (models.ParentTaskLog, error)
 	CreateChildTaskLog(parent models.ParentTaskLog) (models.ChildTaskLog, error)
 	UpdateChildTaskLogStatus(child models.ChildTaskLog) error
@@ -23,8 +25,59 @@ func NewTasklogTableInstance() *TasklogTable {
 		BaseTable: NewBaseTableInstance(),
 	}
 }
-func (table *TasklogTable) GetParentChildLogs(ctx context.Context) ([]models.ParentTaskLog, error) {
-	return make([]models.ParentTaskLog, 0), nil
+func (table *TasklogTable) GetParentLogs(ctx context.Context) ([]models.ParentTaskLog, error) {
+	query := "SELECT * FROM ParentTaskLog ORDER BY AddTime desc"
+
+	rows, err := table.QueryRowsContex(ctx, query)
+
+	if err != nil {
+		return make([]models.ParentTaskLog, 0), nil
+	}
+
+	defer rows.Close()
+
+	var parentLog models.ParentTaskLog
+	logs := make([]models.ParentTaskLog, 0)
+
+	for rows.Next() {
+		err := rows.Scan(&parentLog.Id, &parentLog.Url, &parentLog.AddTime)
+
+		if err != nil {
+			logging.ErrorStackTrace(err)
+			continue
+		}
+
+		logs = append(logs, parentLog)
+	}
+
+	return logs, nil
+}
+func (table *TasklogTable) GetChildLogs(ctx context.Context, parentId int) ([]models.ChildTaskLog, error) {
+	query := "SELECT * FROM ChildTaskLog WHERE ParentId = $1 ORDER BY StartTime desc"
+
+	rows, err := table.QueryRowsContex(ctx, query, parentId)
+
+	if err != nil {
+		return make([]models.ChildTaskLog, 0), nil
+	}
+
+	defer rows.Close()
+
+	var childLog models.ChildTaskLog
+	logs := make([]models.ChildTaskLog, 0)
+
+	for rows.Next() {
+		err := rows.Scan(&childLog.Id, &childLog.ParentId, &childLog.StartTime, &childLog.EndTime, &childLog.Status, &childLog.OutputLog)
+
+		if err != nil {
+			logging.ErrorStackTrace(err)
+			continue
+		}
+
+		logs = append(logs, childLog)
+	}
+
+	return logs, nil
 }
 func (table *TasklogTable) CreateParentTaskLog(url string) (models.ParentTaskLog, error) {
 	query := "INSERT INTO ParentTaskLog (Url) Values($1) RETURNING Id"
