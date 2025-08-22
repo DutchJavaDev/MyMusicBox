@@ -16,7 +16,7 @@ import (
 )
 
 func downloadPlaylist(
-	taskId int,
+	parentTask models.ParentTaskLog,
 	storage string,
 	archiveFileName string,
 	idsFileName string,
@@ -72,6 +72,15 @@ func downloadPlaylist(
 		})
 
 		if err != nil {
+
+			errorChildLog, err := tasklogTable.CreateChildTaskLog(parentTask)
+
+			json, err := json.Marshal(err)
+
+			errorChildLog.OutputLog = json
+
+			tasklogTable.ChildTaskLogError(errorChildLog)
+
 			logging.Error(fmt.Sprintf("[Creating custom playlist error]: %s", err.Error()))
 			return
 		}
@@ -85,9 +94,6 @@ func downloadPlaylist(
 		newpath := fmt.Sprintf("%s/%s.jpg", imagesFolder, _playlistId[0])
 		_ = os.Rename(oldpath, newpath)
 	}
-
-	// Update task status
-	tasklogTable.UpdateTaskLogStatus(taskId, int(models.Downloading))
 
 	defaultSettings := ytdlp.New().
 		ExtractAudio().
@@ -105,26 +111,33 @@ func downloadPlaylist(
 		Output(storage + "/%(id)s.%(ext)s").
 		Cookies("selenium/cookies_netscape")
 
-	var outputLogs map[string]string
-
-	outputLogs = make(map[string]string)
-
-	hasError := false
-
 	for id := range downloadCount {
 		name := names[id]
 		if canDownload(name) {
+
+			childTask, _ := tasklogTable.CreateChildTaskLog(parentTask)
+
+			childTask.Status = int(models.Downloading)
+
+			tasklogTable.UpdateChildTaskLogStatus(childTask)
+
 			ytdlpInstance := defaultSettings.Clone()
 
 			result, err := ytdlpInstance.Run(context.Background(), fmt.Sprintf("https://www.youtube.com/watch?v=%s", ids[id]))
 
-			outputLogs[ids[id]] = result.Stdout
+			// outputLogs[ids[id]] = result.Stdout
 
 			if err != nil {
-				hasError = true
+				json, _ := json.Marshal(result.Stdout)
+				childTask.OutputLog = json
+				tasklogTable.ChildTaskLogError(childTask)
 				logging.Error(fmt.Sprintf("Failed to download %s, error:%s", ids[id], err.Error()))
 				continue
 			}
+
+			childTask.Status = int(models.Updating)
+
+			tasklogTable.UpdateChildTaskLogStatus(childTask)
 
 			var song models.Song
 
@@ -142,20 +155,13 @@ func downloadPlaylist(
 			newpath := fmt.Sprintf("%s/%s", imagesFolder, song.ThumbnailPath)
 
 			_ = os.Rename(oldpath, newpath)
+
+			json, _ := json.Marshal(result.OutputLogs)
+
+			childTask.OutputLog = json
+
+			tasklogTable.ChildTaskLogDone(childTask)
 		}
-	}
-
-	json, err := json.Marshal(outputLogs)
-
-	status := models.Done
-
-	if hasError {
-		status = models.Error
-	}
-
-	err = tasklogTable.EndTaskLog(taskId, int(status), json)
-	if err != nil {
-		logging.Error(fmt.Sprintf("Failed to update tasklog: %s", err.Error()))
 	}
 }
 

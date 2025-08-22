@@ -30,7 +30,22 @@ func (table *MigrationTable) Insert(filename string, contents string) (err error
 }
 
 func (table *MigrationTable) ApplyMigration(query string) (err error) {
-	return table.NonScalarQuery(query)
+
+	transaction, err := table.DB.Begin()
+
+	if err != nil {
+		logging.Error(fmt.Sprintf("Failed to creare transaction %s", err.Error()))
+		return
+	}
+
+	_, err = transaction.Exec(query)
+
+	if err != nil {
+		logging.Error(fmt.Sprintf("Failed to execute query %s", err.Error()))
+		return
+	}
+
+	return transaction.Commit()
 }
 
 func (table *MigrationTable) GetCurrentAppliedMigrationFileName() (fileName string, err error) {

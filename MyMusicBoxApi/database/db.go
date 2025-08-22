@@ -20,8 +20,8 @@ const ReturningIdParameter = "RETURNING"
 const ReturningIdParameterLower = "returning"
 const DatabaseDriver = "postgres"
 const MigrationFolder = "migration_scripts"
-const MaxOpenConnections = 10
-const MaxIdleConnections = 5
+const MaxOpenConnections = 15
+const MaxIdleConnections = 10
 const MaxConnectionIdleTimeInMinutes = 10
 const MaxConnectionLifeTimeInMinutes = 10
 
@@ -164,7 +164,7 @@ func (base *BaseTable) QueryRows(query string) (*sql.Rows, error) {
 }
 
 func ApplyMigrations() {
-	logging.Info("Applying migrations...")
+	logging.Info("Checking for database migration files")
 	// files will be sorted by filename
 	// to make sure the migrations are executed in order
 	// this naming convention must be used
