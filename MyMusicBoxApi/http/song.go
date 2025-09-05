@@ -14,6 +14,11 @@ type SongHandler struct {
 	SongTable database.ISongTable
 }
 
+// @Produce json
+// @Description Returns data for all songs
+// @Success 200 {object} models.Song
+// @Failure 500 {object} models.ApiResponseModel
+// @Router /api/v1/songs [get]
 func (handler *SongHandler) FetchSongs(ctx *gin.Context) {
 	songs, err := handler.SongTable.FetchSongs(ctx.Request.Context())
 	if err != nil {

@@ -14,6 +14,13 @@ type PlaylistSongHandler struct {
 	PlaylistsongTable database.IPlaylistsongTable
 }
 
+// @Produce json
+// @Param playlistId   path      int  true  "Id of playlist"
+// @Param lastKnowSongPosition   path      int  false  "Last song that is know by the client, pass this in to only get the latest songs"
+// @Description Returns data for a playlist, if lastKnowSongPosition then only songs added after lastKnowSongPosition
+// @Success 200 {object} models.Song
+// @Failure 500 {object} models.ApiResponseModel
+// @Router /api/v1/playlist/:playlistId [get]
 func (handler *PlaylistSongHandler) FetchPlaylistSongs(ctx *gin.Context) {
 	playlistIdParameter := ctx.Param("playlistId")
 

@@ -11,6 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Produce json
+// @Param sourceId path string true "Id of song/file to serve using http 206 partial content"
+// @Description Enables playback for song/file using http 206 partial content
+// @Success 200 "serve song/file with range request (http 206)"
+// @Failure 500 {object} models.ApiResponseModel
+// @Router /api/v1/play/:sourceId [get]
 func Play(ctx *gin.Context) {
 	sourceId := ctx.Param("sourceId")
 

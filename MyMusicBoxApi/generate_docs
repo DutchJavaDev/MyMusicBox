@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# need to fix gopath...
+sudo /root/go/bin/swag init

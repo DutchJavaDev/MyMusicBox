@@ -1,0 +1,156 @@
+basePath: /api/v1
+definitions:
+  models.ApiResponseModel:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  models.DownloadRequestModel:
+    properties:
+      url:
+        type: string
+    type: object
+  models.Playlist:
+    properties:
+      creationDate:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      isPublic:
+        type: boolean
+      name:
+        type: string
+      thumbnailPath:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Song:
+    properties:
+      created_at:
+        type: string
+      duration:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      path:
+        type: string
+      source_id:
+        type: string
+      thumbnail_path:
+        type: string
+      updated_at:
+        type: string
+    type: object
+info:
+  contact: {}
+  title: MusicBoxApi API
+  version: "1.0"
+paths:
+  /api/v1/download:sourceId:
+    get:
+      description: Enables playback for song/file using http 206 partial content
+      parameters:
+      - description: message/rfc8259 see models.DownloadRequestModel
+        in: body
+        name: download
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "0":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.DownloadRequestModel'
+        "200":
+          description: serve song/file with range request (http 206)
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ApiResponseModel'
+  /api/v1/play/:sourceId:
+    get:
+      description: Enables playback for song/file using http 206 partial content
+      parameters:
+      - description: Id of song/file to serve using http 206 partial content
+        in: path
+        name: sourceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: serve song/file with range request (http 206)
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ApiResponseModel'
+  /api/v1/playlist:
+    get:
+      description: Returns data for all playlist, if lastKnowPlaylistId then only
+        the playlist after lastKnowPlaylistId
+      parameters:
+      - description: Last know playlist id by the client, default is 0
+        in: path
+        name: lastKnowPlaylistId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Playlist'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ApiResponseModel'
+  /api/v1/playlist/:playlistId:
+    get:
+      description: Returns data for a playlist, if lastKnowSongPosition then only
+        songs added after lastKnowSongPosition
+      parameters:
+      - description: Id of playlist
+        in: path
+        name: playlistId
+        required: true
+        type: integer
+      - description: Last song that is know by the client, pass this in to only get
+          the latest songs
+        in: path
+        name: lastKnowSongPosition
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Song'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ApiResponseModel'
+  /api/v1/songs:
+    get:
+      description: Returns data for all songs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Song'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ApiResponseModel'
+swagger: "2.0"

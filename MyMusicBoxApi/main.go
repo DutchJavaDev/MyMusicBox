@@ -14,6 +14,9 @@ import (
 	"github.com/lrstanley/go-ytdlp"
 )
 
+// @title MusicBoxApi API
+// @version 1.0
+// @BasePath  /api/v1
 func main() {
 	configuration.LoadConfiguration()
 
