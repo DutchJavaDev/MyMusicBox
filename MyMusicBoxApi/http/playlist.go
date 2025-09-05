@@ -14,6 +14,12 @@ type PlaylistHandler struct {
 	PlaylistTable database.IPlaylistTable
 }
 
+// @Produce json
+// @Param lastKnowPlaylistId   path      int  false  "Last know playlist id by the client, default is 0"
+// @Description Returns data for all playlist, if lastKnowPlaylistId then only the playlist after lastKnowPlaylistId
+// @Success 200 {object} models.Playlist
+// @Failure 500 {object} models.ApiResponseModel
+// @Router /api/v1/playlist [get]
 func (handler *PlaylistHandler) FetchPlaylists(ctx *gin.Context) {
 	lastKnowPlaylistIdQuery := ctx.Query("lastKnowPlaylistId")
 

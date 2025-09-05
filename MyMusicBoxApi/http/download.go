@@ -9,6 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Accepts json
+// @Produce json
+// @Param download body string true "message/rfc8259 see models.DownloadRequestModel"
+// @Description Enables playback for song/file using http 206 partial content
+// @Success 200 "serve song/file with range request (http 206)"
+// @Success 0 {object} models.DownloadRequestModel
+// @Failure 500 {object} models.ApiResponseModel
+// @Router /api/v1/download:sourceId [get]
 func DownloadRequest(ctx *gin.Context) {
 	var request models.DownloadRequestModel
 	err := ctx.ShouldBindBodyWithJSON(&request)
