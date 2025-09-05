@@ -6,5 +6,7 @@ This project aims to create not just a music player but a universal music search
 
 [![Api Tests](https://github.com/DutchJavaDev/MyMusicBox/actions/workflows/backend.yml/badge.svg)](https://github.com/DutchJavaDev/MyMusicBox/actions/workflows/backend.yml)
 
-<img width="1700" height="1100" alt="image" src="https://github.com/user-attachments/assets/46c28474-9b18-4c26-bad8-dc4dda5b4387" />
+### Database schema
+<img width="546" height="467" alt="image" src="https://github.com/user-attachments/assets/b1f3813b-997b-4423-84d8-886970106500" />
+
 
