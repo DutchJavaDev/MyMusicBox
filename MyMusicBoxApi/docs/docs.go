@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/download:sourceId": {
+        "/api/v1/download": {
             "get": {
                 "description": "Enables playback for song/file using http 206 partial content",
                 "produces": [

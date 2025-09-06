@@ -16,7 +16,7 @@ import (
 // @Success 200 "serve song/file with range request (http 206)"
 // @Success 0 {object} models.DownloadRequestModel
 // @Failure 500 {object} models.ApiResponseModel
-// @Router /api/v1/download:sourceId [get]
+// @Router /api/v1/download [get]
 func DownloadRequest(ctx *gin.Context) {
 	var request models.DownloadRequestModel
 	err := ctx.ShouldBindBodyWithJSON(&request)

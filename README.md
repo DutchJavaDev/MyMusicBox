@@ -13,7 +13,7 @@ This project aims to create not just a music player but a universal music search
 ## Version: 1.0
 
 
-### /api/v1/download:sourceId
+### /api/v1/download
 
 #### GET
 ##### Description:
