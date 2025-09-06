@@ -1,4 +1,7 @@
 #!/bin/bash
 
-# need to fix gopath...
-sudo /root/go/bin/swag init
+# yml to readme
+# https://swagger-markdown-ui.netlify.app/
+
+# works for me
+sudo $HOME/go/bin/swag init
