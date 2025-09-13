@@ -1,4 +1,6 @@
 const baseApiUrl = import.meta.env.VITE_BASE_API_URL;
+const staticImageUrl = import.meta.env.VITE_STATIC_IMAGE_URL;
+const staticAudioUrl = import.meta.env.VITE_STATIC_AUDIO_URL;
 
 export async function fetchPlaylists() {
     try {
@@ -57,9 +59,9 @@ export async function fetchPlaylistSongs(playlistId) {
 }
 
 export function getImageUrl(path) {
-    return `${baseApiUrl}/images/${path}`;
+    return `${staticImageUrl}/${path}`;
 }
 
 export function getPlaybackUrl(source_id) {
-    return `${baseApiUrl}/play/${source_id}`;
+    return `${staticAudioUrl}/${source_id}.opus`; // Assuming all audio files are in .opus format
 }
