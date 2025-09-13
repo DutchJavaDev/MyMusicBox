@@ -49,11 +49,11 @@
 
   <!-- Sticky Bottom Bar -->
   <footer class="bottom-bar">
-    <div class="row w-100">
-      <div class="col-6">
+    <div class="row w-100 justify-content-center align-items-center">
+      <div class="col-4 col-lg-4 col-md-4 col-sm-4">
         <button aria-label="empty storage" class="btn btn-dark w-100" on:click={refresh}><i class="fa-solid fa-arrows-rotate"></i></button>
       </div>
-      <div class="col-6">
+      <div class="col-4 col-lg-4 col-md-4 col-sm-4">	
         <button aria-label="home" class="btn btn-dark w-100" on:click={() => navigateTo("/Home")}><i class="fa-solid fa-house"></i></button>
       </div>
     </div>

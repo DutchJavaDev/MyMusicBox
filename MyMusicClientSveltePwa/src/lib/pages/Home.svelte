@@ -8,9 +8,13 @@
   onMount(() => {});
 </script>
 {#if $playlistsStore.length > 0}
-  {#each $playlistsStore as playlist}
-    <PlaylistComponent {playlist} />
-  {/each}
+<div class="row">
+   {#each $playlistsStore as playlist}
+      <div class="col-12 col-lg-4 col-md-4 col-sm-6">
+        <PlaylistComponent {playlist} />
+      </div>
+    {/each}
+</div>
 {:else}
   <p class="text-center">Working.....</p>
 {/if}
