@@ -61,7 +61,6 @@ export function initializePlaybackService() {
 
   audioElement.addEventListener("ended", () => {
     isPlaying.set(false);
-    updateMediaSessionPlaybackState(false);
     if (get(isLoopingEnabled)) {
       audioElement.currentTime = 0;
       audioElement.load();
@@ -75,10 +74,10 @@ export function initializePlaybackService() {
     updateMediaSessionPlaybackState(false);
   });
 
-  audioElement.addEventListener("playing", () => {
-    isPlaying.set(true);
-    updateMediaSessionPlaybackState(true);
-  });
+  // audioElement.addEventListener("playing", () => {
+  //   isPlaying.set(true);
+  //   updateMediaSessionPlaybackState(true);
+  // });
 
   audioElement.addEventListener("timeupdate", () => {
     const percentage = (audioElement.currentTime / audioElement.duration) * 100;
@@ -99,6 +98,7 @@ export function initializePlaybackService() {
     isPlaying.set(true);
     await audioElement.play();
   });
+
   audioElement.addEventListener("error", (e) => {
     console.error("Error loading audio:", e);
   });
@@ -118,6 +118,10 @@ export function previousSong() {
 
 export function playOrPauseSong(songId) {
   const _currentSong = get(currentSong);
+
+  if (songId === null || songId === undefined) {
+    songId = playlistSongs[0].id; // Default to first song if no songId provided
+  }
 
   if (!_currentSong || _currentSong.id != songId) {
     // new song selected

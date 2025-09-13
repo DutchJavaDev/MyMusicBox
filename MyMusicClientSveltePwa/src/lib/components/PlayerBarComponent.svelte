@@ -17,7 +17,7 @@
 
 <div class="container-fluid player-bar mb-2 rounded rounded-5">
   <div class="row space-between">
-    <div class="col-9 rounded-end rounded-end-0 rounded-5 border border-1 border-white" style="background: linear-gradient(to right, gray {$playPercentage}%, #1CC558 {$playPercentage}%);">
+    <div class="col-9 col-md-10 col-lg-11 rounded-end rounded-end-0 rounded-5" style="background: linear-gradient(to right, gray {$playPercentage}%, #1CC558 {$playPercentage}%);">
       <button type="button" class="btn clickable-text rounded-end rounded-end-0 rounded-5" data-bs-toggle="{$currentSong ? "modal" : ""}" data-bs-target="{$currentSong ? "#songControlModal" : ""}">
         {#if $currentSong}
           {$currentSong.name}
@@ -26,8 +26,8 @@
         {/if}
       </button>
     </div>
-    <div class="col-3 border-start border-2">
-      <button on:click={togglePlay} class="btn btn-dark border border-1 border-white play-button rounded-end rounded-end-5 w-100">
+    <div class="col-3 col-md-2 col-lg-1 border-start border-2">
+      <button on:click={togglePlay} class="btn btn-dark play-button rounded-end rounded-end-5 w-100">
         {#if $currentSong && $isPlaying && !$isLoading}
           <i class="fa-solid fa-pause"></i>
         {:else if !$isLoading && !$isPlaying}
