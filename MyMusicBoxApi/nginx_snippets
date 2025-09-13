@@ -1,0 +1,19 @@
+# Serve only .opus files under /play
+location ~ ^/play/(.*.opus)$ {
+    alias [path_to_file_location]/$1; # $1 is filename from url, must end with .opus
+
+    # Tell browsers and CDNs to cache for 30 days
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000, immutable";
+
+    add_header Accept-Ranges bytes;
+}
+
+# Serve only .opus files under /play
+location ~ ^/image/(.*.jpg)$ {
+    alias [path_to_file_location]/$1; # $1 is filename from url, must end with .jgp
+
+    # Tell browsers and CDNs to cache for 30 days
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000, immutable";
+}

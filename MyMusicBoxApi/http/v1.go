@@ -27,7 +27,12 @@ func V1Endpoints(apiv1Group *gin.RouterGroup) {
 
 	apiv1Group.GET("/playlist", playlistHandler.FetchPlaylists)
 	apiv1Group.GET("/playlist/:playlistId", playlistSongHandler.FetchPlaylistSongs)
-	apiv1Group.GET("/play/:sourceId", Play)
+
+	// If nginx is not configured to handle http 206
+	if configuration.Config.UsePlayUrl {
+		apiv1Group.GET("/play/:sourceId", Play)
+	}
+
 	apiv1Group.GET("/tasklogs", taskLogHandler.FetchParentTaskLogs)
 	apiv1Group.GET("/tasklogs/:parentId", taskLogHandler.FetchChildTaskLogs)
 
@@ -38,6 +43,9 @@ func V1Endpoints(apiv1Group *gin.RouterGroup) {
 	apiv1Group.DELETE("/playlist/:playlistId", playlistHandler.DeletePlaylist)
 	apiv1Group.DELETE("playlistsong/:playlistId/:songId", playlistSongHandler.DeletePlaylistSong)
 
-	// Serving static files
-	apiv1Group.Static("/images", filepath.Join(configuration.Config.SourceFolder, "images"))
+	// If nginx is not configured to handle it
+	if configuration.Config.UseImageUrl {
+		// Serving static files
+		apiv1Group.Static("/images", filepath.Join(configuration.Config.SourceFolder, "images"))
+	}
 }
