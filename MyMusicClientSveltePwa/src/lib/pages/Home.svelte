@@ -10,7 +10,7 @@
 {#if $playlistsStore.length > 0}
 <div class="row">
    {#each $playlistsStore as playlist}
-      <div class="col-12 col-lg-4 col-md-4 col-sm-6">
+      <div class="col-12 col-lg-4 col-md-4 col-sm-6 mt-2">
         <PlaylistComponent {playlist} />
       </div>
     {/each}

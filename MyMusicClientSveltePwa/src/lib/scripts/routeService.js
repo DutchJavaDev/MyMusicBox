@@ -3,6 +3,7 @@ import { writable } from "svelte/store";
 import Home from "../pages/Home.svelte";
 import NotFound from "../pages/NotFound.svelte";
 import Playlist from "../pages/Playlist.svelte";
+import Settings from "../pages/Settings.svelte";
 import { getSearchParameters, createSearchParameters } from "../scripts/util";
 
 const componentsPathMap = new Map([
@@ -10,6 +11,7 @@ const componentsPathMap = new Map([
   ["/Home", Home],
   ["/", Home],
   ["/Playlist", Playlist],
+  ["/Settings", Settings],
 ]);
 
 const NotFoundRoutePath = "/404";
