@@ -51,7 +51,7 @@
                 </div>
               </div>
               <div class="col-12 text-center">
-                <img loading="lazy" class="img-fluid border border-1 rounded rounded-2 mt-1" src={getImageUrl($currentSong.thumbnail_path)} alt="404" />
+                <img loading="lazy" class="img-fluid rounded rounded-2 mt-1" src={getImageUrl($currentSong.thumbnail_path)} alt="404" />
               </div>
               <div class="col-12">
                 <input type="range" on:change={seekEvent} class="form-range mt-5" value={$playPercentage} min="0" max="100" step="0.3" />
@@ -88,7 +88,7 @@
                 <div class="row mt-5">
                   <div class="col-4">
                     <button on:click={toggleSleepTimer} aria-label="sleep timer" type="button" class="btn w-100">
-                      <i class="fa-solid fa-stopwatch-20" style="{$isTimerEnabled ? "color: #1CC558;" : "color:white;"}">
+                      <i class="fa-solid fa-stopwatch-20" style="{$isTimerEnabled ? "color: #1CC558;" : "color:#ACACAC;"}">
                         <span style="font-size: 0.8rem;">
                             &nbsp;{$isTimerEnabled ? $timeLeft : ""}
                       </span>
@@ -98,12 +98,12 @@
 
                   <div class="col-4">
                     <button on:click={toggleShuffle} aria-label="shuffle playlist" type="button" class="btn w-100">
-                      <i class="fa-solid fa-shuffle" style="{$isShuffledEnabled ? "color: #1CC558;" : "color:white;"}"></i>
+                      <i class="fa-solid fa-shuffle" style="{$isShuffledEnabled ? "color: #1CC558;" : "color:#ACACAC;"}"></i>
                     </button>
                   </div>
                   <div class="col-4">
                     <button on:click={toggleLoop} aria-label="repeat song" type="button" class="btn w-100">
-                      <i class="fa-solid fa-repeat" style="{$isLoopingEnabled ? "color: #1CC558;" : "color:white;"}"></i>
+                      <i class="fa-solid fa-repeat" style="{$isLoopingEnabled ? "color: #1CC558;" : "color:#ACACAC;"}"></i>
                     </button>
                   </div>
                 </div>
@@ -112,7 +112,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-dark fw-bolder w-100 text-white border border-2" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-dark w-100 text-white" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -123,7 +123,8 @@
   img {
     height: 10rem;
     object-fit: contain;
-    border-color: #1CC558 !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(0, 0, 0, 0.35);
   }
 
   p{
@@ -134,7 +135,8 @@
   }
 
   i{
-    color: #1CC558;
+    font-size: 1.2rem;
+    color: #ACACAC;
     font-weight: bolder;
   }
 
@@ -143,13 +145,12 @@
   }
 
   .modal-footer button {
-    border-color: #1CC558 !important;
-    background-color: #343a4000 !important;
+    background-color: #2c2c2c !important;
   }
 
 
 input[type="range"]::-webkit-slider-thumb {
-   background-color: #1CC558;
+   background-color: #1DB954;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
@@ -157,7 +158,7 @@ input[type="range"]::-webkit-slider-runnable-track {
 }
 
 .modal-content {
-    background-color: #121212 !important;
+    background-color: #1e1e1e !important;
     color: white;
   }
 
@@ -166,6 +167,6 @@ input[type="range"]::-webkit-slider-runnable-track {
   }
 
   .form-range {
-    color: #1CC558;
+    color: #1DB954;
   }
 </style>

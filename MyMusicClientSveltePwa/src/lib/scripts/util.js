@@ -1,3 +1,7 @@
+import { writable } from "svelte/store";
+
+export let searchQuery = writable();
+
 // Mulberry32 PRNG
 function mulberry32(seed) {
   return function () {
@@ -10,7 +14,7 @@ function mulberry32(seed) {
 
 // Generate a stronger random 32-bit seed
 function generateSeed() {
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
     const array = new Uint32Array(1);
     crypto.getRandomValues(array);
     return array[0];

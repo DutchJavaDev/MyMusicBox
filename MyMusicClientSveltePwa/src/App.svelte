@@ -1,18 +1,23 @@
 <!-- App.svelte -->
 <script>
+// @ts-nocheck
+
   import { onMount, onDestroy } from "svelte";
+  import { writable } from "svelte/store";
   import { initializeRouteService, pathName, navigateTo, component, componentParams } from "./lib/scripts/routeService.js";
-  import PlayerBarComponent from "./lib/components/PlayerBarComponent.svelte";
+  import PlayerBar from "./lib/components/PlayerBar.svelte";
   import Modals from "./lib/components/Modals.svelte";
   import { initializePlaylistService } from "./lib/scripts/playlistService.js";
   import { initializePlaybackService } from "./lib/scripts/playbackService.js";
   import { initializeMediaSessionService } from "./lib/scripts/mediasessionService.js";
+  import { searchQuery } from "./lib/scripts/util.js";
+  import SearchBar from "./lib/components/SearchBar.svelte";
 
   $: $pathName;
   $: $component;
 
   // @ts-ignore
-  const version = __APP_VERSION__;
+  export const version = __APP_VERSION__;
 
   onMount(() => {
     async function initializeServices() {
@@ -34,7 +39,13 @@
 <div class="app-layout">
   <!-- Sticky Top Bar -->
   <header class="top-bar">
-    <div class="container-fluid h-100">{$pathName} <span style="font-size: 0.8rem;">(v{version})</span></div>
+    <div class="top-bar-title text-center">MyMusicBox<span style="font-size: 0.8rem;">(v{version})</span></div>
+    <div class="row">
+      <div class="col-12 mt-2">
+        <!-- Search Bar -->
+         <SearchBar />
+      </div>
+    </div>
   </header>
 
   <!-- Scrollable Content -->
@@ -45,16 +56,19 @@
   </main>
 
   <!-- Sticky Player Bar -->
-  <PlayerBarComponent />
+  <PlayerBar />
 
   <!-- Sticky Bottom Bar -->
   <footer class="bottom-bar">
-    <div class="row w-100 justify-content-center align-items-center">
-      <div class="col-4 col-lg-4 col-md-4 col-sm-4">
-        <button aria-label="empty storage" class="btn btn-dark w-100" on:click={refresh}><i class="fa-solid fa-arrows-rotate"></i></button>
+    <div class="row w-100 justify-content-center">
+      <div class="col-3 col-lg-2 col-md-2 col-sm-2">
+        <button aria-label="empty storage" class="btn btn-dark w-100 text-center" on:click={refresh}><i class="fa-solid fa-arrows-rotate"></i></button>
       </div>
-      <div class="col-4 col-lg-4 col-md-4 col-sm-4">	
+      <div class="col-3 col-lg-2 col-md-2 col-sm-2">
         <button aria-label="home" class="btn btn-dark w-100" on:click={() => navigateTo("/Home")}><i class="fa-solid fa-house"></i></button>
+      </div>
+      <div class="col-3 col-lg-2 col-md-2 col-sm-2">
+        <button aria-label="home" class="btn btn-dark w-100" on:click={() => navigateTo("/Settings")}><i class="fa-solid fa-gear"></i></button>
       </div>
     </div>
   </footer>
@@ -70,26 +84,18 @@
     flex-direction: column;
     height: 100vh;
     width: 100vw;
-    background-color: #121212;
+    background-color: #1e1e1e;
   }
 
   .bottom-bar button {
-    font-size: 1.2rem;
+    font-size: 0.6rem;
     max-height: 3rem;
     border: none !important;
   }
-
-  .top-bar {
-    flex: 0 0 auto;
-    padding: 1rem;
-    position: sticky;
-    height: 3.5rem;
-    top: 0;
-    z-index: 10;
-    text-align: center;
-    border-bottom: 0.2rem solid #1CC558;
-    border-bottom-left-radius: 1.5rem;
-    border-bottom-right-radius: 1.5rem;
+  .top-bar-title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color:  #b3b3b3;
   }
 
   .scrollable-content {
@@ -97,7 +103,6 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 1rem 1rem 3rem; /* 👈 Important: bottom padding to make space for bottom bar */
-    background-color: #121212;
   }
 
   .bottom-bar {
@@ -108,15 +113,13 @@
     z-index: 10;
     display: flex;
     justify-content: center;
-    border-top: 0.2rem solid #1CC558;
-    border-top-left-radius: 1.5rem;
-    border-top-right-radius: 1.5rem;
-    height: 3.8rem; /* Optional: define fixed height if needed for padding calc */
+    border-top: 0.1rem solid #867878;
+    background-color: unset;
+    height: 3.2rem; /* Optional: define fixed height if needed for padding calc */
   }
 
   .bottom-bar button {
     font-weight: bolder;
-    border: 0.1rem solid #1CC558 !important;
-    background-color: #343a40 !important;
+    background-color: #2c2c2c !important;
   }
 </style>

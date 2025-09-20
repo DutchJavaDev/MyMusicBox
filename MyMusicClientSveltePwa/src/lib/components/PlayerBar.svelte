@@ -2,6 +2,7 @@
   // @ts-nocheck
   import { get } from "svelte/store";
   import { isPlaying, currentSong, playOrPauseSong, playPercentage, isLoading } from "../scripts/playbackService";
+  import { getImageUrl } from "../scripts/api";
 
   $: $currentSong;
   $: $isPlaying;
@@ -15,10 +16,13 @@
   }
 </script>
 
-<div class="container-fluid player-bar mb-2 rounded rounded-5">
+<div class="container-fluid player-bar mb-2">
   <div class="row space-between">
-    <div class="col-9 col-md-10 col-lg-11 rounded-end rounded-end-0 rounded-5" style="background: linear-gradient(to right, gray {$playPercentage}%, #1CC558 {$playPercentage}%);">
-      <button type="button" class="btn clickable-text rounded-end rounded-end-0 rounded-5" data-bs-toggle="{$currentSong ? "modal" : ""}" data-bs-target="{$currentSong ? "#songControlModal" : ""}">
+    <div class="image-placeholder col-2 col-md-2 col-lg-2" style="--url: url({getImageUrl($currentSong.thumbnail_path)});">
+      &nbsp;
+    </div>
+    <div class="col-8 col-md-8 col-lg-9" style="background: linear-gradient(to right, #1DB954 {$playPercentage}%, #2c2c2c {$playPercentage}%);">
+      <button type="button" class="btn clickable-text" data-bs-toggle="{$currentSong ? "modal" : ""}" data-bs-target="{$currentSong ? "#songControlModal" : ""}">
         {#if $currentSong}
           {$currentSong.name}
         {:else}
@@ -26,8 +30,8 @@
         {/if}
       </button>
     </div>
-    <div class="col-3 col-md-2 col-lg-1 border-start border-2">
-      <button on:click={togglePlay} class="btn btn-dark play-button rounded-end rounded-end-5 w-100">
+    <div class="col-2 col-md-2 col-lg-1">
+      <button on:click={togglePlay} class="btn play-button w-100">
         {#if $currentSong && $isPlaying && !$isLoading}
           <i class="fa-solid fa-pause"></i>
         {:else if !$isLoading && !$isPlaying}
@@ -42,7 +46,7 @@
 
 <style>
   .player-bar .clickable-text {
-    font-size: 0.85rem;
+    font-size: 0.65rem;
     max-height: 2.8rem;
     min-height: 2.8rem;
     width: 100%;
@@ -58,7 +62,14 @@
   }
 
   .player-bar {
-    background-color: rgb(0, 0, 0) !important;
+    background-color: transparent;
+  }
+
+  .image-placeholder{
+    background-image: var(--url);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 
   .play-button {
@@ -68,15 +79,18 @@
     height: 100%;
     display: block !important;
     margin: 0;
-    color: #1CC558;
+    color: #1DB954;
     font-weight: bolder;
+    background-color: #2c2c2c;
+    border: none !important;
+    border-radius: 0 !important;
   }
 
-  .player-bar .col-9 {
+  .player-bar .col-8 {
     padding: 0 !important;
   }
 
-  .player-bar .col-3 {
+  .player-bar .col-2 {
     padding: 0 !important;
   }
 </style>
