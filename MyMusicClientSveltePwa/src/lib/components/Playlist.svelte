@@ -11,7 +11,7 @@
   let songCount = 0;
 
   function viewPlaylist() {
-    navigateTo(`/Playlist`, { playlistId: playlist.id });
+    navigateTo(`/Playlists`, { playlistId: playlist.id });
   }
 
   function playPlaylist() {
@@ -24,8 +24,7 @@
   });
 </script>
 
-<div class="playlist-component">
-  {#if playlist}
+{#if playlist}
     <!-- Playlist Card -->
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -41,7 +40,6 @@
   {:else}
     <p>No playlist available.</p>
   {/if}
-</div>
 
 <style>
   .card {
@@ -53,24 +51,34 @@
     min-height: 180px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
     border: 1px solid rgba(0, 0, 0, 0.35);
+    transition:transform 0.2s ease, background-color 0.2s ease;
   }
+
   .card .art {
     height: 120px;
     background-image: var(--url);
     background-size: cover;
     background-position: center;
+    
   }
+  
+  .card:hover {
+    transform:scale(1.05);
+  }
+
   .card .meta {
     padding: 14px;
     display: flex;
     flex-direction: column;
     gap: 6px;
   }
+
   .card h3 {
     margin: 0;
     font-size: 20px;
     color: #ffffff;
   }
+
   .card p {
     margin: 0;
     color: #b3b3b3;

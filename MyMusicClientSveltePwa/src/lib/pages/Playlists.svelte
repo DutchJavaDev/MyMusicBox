@@ -4,7 +4,7 @@
   import { onDestroy, onMount, setContext } from "svelte";
   import { getCachedPlaylistSongs } from "../scripts/storageService";
   import { playOrPauseSong, setPlaylists, updateCurrentPlaylist } from "../scripts/playbackService";
-  import SongComponent from "../components/SongComponent.svelte";
+  import SongComponent from "../components/Song.svelte";
 
   const updateIntervalTimeOut = 1500; // Update every second
   let intervalId

@@ -2,15 +2,15 @@
 import { writable } from "svelte/store";
 import Home from "../pages/Home.svelte";
 import NotFound from "../pages/NotFound.svelte";
-import Playlist from "../pages/Playlist.svelte";
+import Playlists from "../pages/Playlists.svelte";
 import Settings from "../pages/Settings.svelte";
-import { getSearchParameters, createSearchParameters } from "../scripts/util";
+import { getSearchParameters, createSearchParameters, searchQuery } from "../scripts/util";
 
 const componentsPathMap = new Map([
   ["/404", NotFound],
   ["/Home", Home],
   ["/", Home],
-  ["/Playlist", Playlist],
+  ["/Playlists", Playlists],
   ["/Settings", Settings],
 ]);
 
@@ -58,6 +58,7 @@ export function navigateTo(newRoute, parameters = null) {
       componentParams.set(parameters);
     }
     pathName.set(newRoute.split("/")[1]);
+    searchQuery.set("");
   }
 
   let URLSearchParams = createSearchParameters(parameters);
