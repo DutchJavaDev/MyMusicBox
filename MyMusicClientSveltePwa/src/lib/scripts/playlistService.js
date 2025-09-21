@@ -1,11 +1,12 @@
 import { writable } from "svelte/store";
-import { getCachedPlaylists, setPlaylists, setPlaylistSongs, getCachedPlaylistSongs } from "./storageService";
+import { getCachedPlaylists, setPlaylists, setPlaylistSongs, getCachedPlaylistSongs, appConfiguration, getConfiguration } from "./storageService";
 import { fetchPlaylists, fetchPlaylistSongs, fetchNewPlaylist, fetchNewPlaylistSongs } from "./api";
 
 export const playlistsStore = writable([]);
 
-const updateInterval = 1000 * 3; // 3 seconds
+let updateInterval; 
 let isUpdating = false;
+let intervalId;
 
 // Check storage for stored playlists, if empty fetch from API
 export async function initializePlaylistService() {
@@ -22,12 +23,30 @@ export async function initializePlaylistService() {
     }
   }
 
-  setInterval(() => {
+  updateInterval = getConfiguration().fetchTimer * 1000; // Need to multiply by 1000 to get milliseconds
+  // Subscribe to configuration changes
+  // If fetchTimer is updated, clear the old interval and set a new one
+  
+  appConfiguration.subscribe(config => {
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+    updateInterval = config.fetchTimer * 1000; // Need to multiply by 1000 to get milliseconds
+
+    console.log("Update interval set to:", updateInterval, "ms");
+
+    intervalId = setInterval(() => {
+    
     if (isUpdating) return; // Prevent multiple updates at the same time
+    
     isUpdating = true;
+    
     backgroundUpdate();
+    
     isUpdating = false;
+
   }, updateInterval);
+  });
 }
 
 async function backgroundUpdate() {
