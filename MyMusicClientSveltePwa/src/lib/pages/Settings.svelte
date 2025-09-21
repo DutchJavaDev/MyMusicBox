@@ -47,7 +47,8 @@
 </form>
 
 <div class="mt-3 mb-3 p-2 rounded rounded-2 tile-bg">
-  <label for="localStorageClear" class="form-label">Local Storage</label>
+  <label for="localStorageClear" class="form-label">Local Storage !Expirmental</label>
+  <!-- This is causing some issues, playback breaks and updating ui freezes -->
   <!-- svelte-ignore event_directive_deprecated -->
   <button id="localStorageClear" class="btn btn-danger" on:click={() => clearStorage()}>Clear Local Storage</button>
 </div>
