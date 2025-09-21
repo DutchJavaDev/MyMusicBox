@@ -1,3 +1,5 @@
+import { get, writable } from "svelte/store";
+
 // @ts-ignore
 const storageType = "localStorage";
 const PlaylistsKey = "cachedPlaylists";
@@ -7,6 +9,14 @@ const CurrentPlaylistIdKey = "currentPlaylistId";
 const CurrentSongIndexKey = "currentSongIndex";
 const CurrentShuffeldPlaylistKey = "currentShuffledPlaylist";
 const CurrentSongTimeKey = "currentSongTime";
+const ConfigKey = "appConfig";
+
+export let appConfiguration = writable(getConfiguration());
+
+export function setConfiguration(config) {
+  appConfiguration.set(config);
+  setItem(ConfigKey, config);
+}
 
 export function setPlaylists(playlists) {
   setItem(PlaylistsKey, playlists);
@@ -71,6 +81,13 @@ export function getCurrentShuffledPlaylist() {
 
 export function getCurrentSongTime() {
   return getItem(CurrentSongTimeKey) || 0;
+}
+
+export function getConfiguration() {
+  return getItem(ConfigKey) || { sleepTimer: 15, // minutes 
+                                 fetchTimer: 3,  // seconds
+                                 byPassCache: false 
+                                };
 }
 
 export function clearStorage() {
