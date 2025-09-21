@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { writable, get } from "svelte/store";
+import { getConfiguration } from "./storageService";
 
 export let timeLeft = writable(0);
 export let isTimerEnabled = writable(false);
@@ -21,7 +22,9 @@ if (get(isTimerEnabled)) {
   return;
 }
 
-const totalMinutes = 30; // Default to 30 minutes if no time is provided
+const config = getConfiguration();
+
+const totalMinutes = config.sleepTimer; // Default to 30 minutes if no time is provided
 let remainingMinutes = totalMinutes;
 
 timeLeft.set(remainingMinutes);

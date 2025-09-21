@@ -8,10 +8,10 @@ import { getSearchParameters, createSearchParameters, searchQuery } from "../scr
 
 const componentsPathMap = new Map([
   ["/404", NotFound],
-  ["/Home", Home],
+  ["/home", Home],
   ["/", Home],
-  ["/Playlists", Playlists],
-  ["/Settings", Settings],
+  ["/playlists", Playlists],
+  ["/settings", Settings],
 ]);
 
 const NotFoundRoutePath = "/404";
@@ -47,7 +47,10 @@ export function initializeRouteService() {
 
 // Sets the current route and updates the component and parameters accordingly
 // If the route does not exist, it sets the NotFound component and parameters
-export function navigateTo(newRoute, parameters = null) {
+export function navigateTo(_newRoute, parameters = null) {
+
+  let newRoute = _newRoute.toLowerCase();
+
   if (!componentsPathMap.has(newRoute)) {
     component.set(componentsPathMap.get(NotFoundRoutePath));
     componentParams.set({ page: newRoute });

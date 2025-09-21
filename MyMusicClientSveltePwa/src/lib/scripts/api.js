@@ -2,6 +2,8 @@ const baseApiUrl = import.meta.env.VITE_BASE_API_URL;
 const staticImageUrl = import.meta.env.VITE_STATIC_IMAGE_URL;
 const staticAudioUrl = import.meta.env.VITE_STATIC_AUDIO_URL;
 
+import { getConfiguration } from "./storageService";
+
 export async function fetchPlaylists() {
     try {
         const response = await fetch(`${baseApiUrl}/playlist`);
@@ -59,9 +61,23 @@ export async function fetchPlaylistSongs(playlistId) {
 }
 
 export function getImageUrl(path) {
+
+    var config = getConfiguration();
+
+    if(config.byPassCache){
+        return `${staticImageUrl}/${path}?cb=${new Date().getMilliseconds()}`;
+    }
+
     return `${staticImageUrl}/${path}`;
 }
 
 export function getPlaybackUrl(source_id) {
+
+    var config = getConfiguration();
+
+    if(config.byPassCache){
+        return `${staticAudioUrl}/${source_id}.opus?cb=${new Date().getMilliseconds()}`;
+    }
+
     return `${staticAudioUrl}/${source_id}.opus`; // Assuming all audio files are in .opus format
 }
