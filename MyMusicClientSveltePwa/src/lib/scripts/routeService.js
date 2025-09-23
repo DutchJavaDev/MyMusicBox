@@ -18,7 +18,7 @@ const NotFoundRoutePath = "/404";
 const NotFoundPathName = "404";
 
 
-export let pathName = writable("Home");
+export let pathName = writable("home");
 export let component = writable(componentsPathMap.get(`/${pathName}`));
 export let componentParams = writable(getSearchParameters());
 
@@ -39,7 +39,7 @@ export function initializeRouteService() {
   componentParams.set(parameters);
 
   if (path === "/") {
-    path = "/Home";
+    path = "/home";
   }
 
   pathName.set(path.split("/")[1]);
