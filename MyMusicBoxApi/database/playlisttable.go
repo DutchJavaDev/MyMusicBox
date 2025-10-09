@@ -55,12 +55,13 @@ func (table *PlaylistTable) FetchPlaylists(ctx context.Context, lastKnowPlaylist
 }
 
 func (table *PlaylistTable) InsertPlaylist(playlist models.Playlist) (lastInsertedId int, error error) {
-	query := `INSERT INTO Playlist (name, description, thumbnailPath) VALUES ($1, $2, $3) RETURNING Id`
+	query := `INSERT INTO Playlist (name, description, thumbnailPath, ispublic) VALUES ($1, $2, $3, $4) RETURNING Id`
 
 	lastInsertedId, err := table.InsertWithReturningId(query,
 		playlist.Name,
 		playlist.Description,
 		playlist.ThumbnailPath,
+		playlist.IsPublic,
 	)
 
 	return lastInsertedId, err
