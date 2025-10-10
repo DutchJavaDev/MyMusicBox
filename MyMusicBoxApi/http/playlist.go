@@ -45,10 +45,10 @@ func (handler *PlaylistHandler) FetchPlaylists(ctx *gin.Context) {
 }
 
 type FormSt struct {
-	Name        string                `form:"playlistName"`
-	Image       *multipart.FileHeader `form:"backgroundImage"`
-	IsPublic    string                `form:"publicPlaylist"`
-	Description string                `form:"playlistDescription"`
+	Name        string               `form:"playlistName"`
+	Image       multipart.FileHeader `form:"backgroundImage"`
+	IsPublic    string               `form:"publicPlaylist"`
+	Description string               `form:"playlistDescription"`
 }
 
 func (hanlder *PlaylistHandler) InsertPlaylist(ctx *gin.Context) {
@@ -64,16 +64,12 @@ func (hanlder *PlaylistHandler) InsertPlaylist(ctx *gin.Context) {
 	}
 
 	var playlist models.Playlist
+	var fileName string
 
-	if playlistModel.Image != nil {
-		fileName := fmt.Sprintf("%s.jpg", uuid.New().String())
-		err = ctx.SaveUploadedFile(playlistModel.Image, filepath.Join(configuration.Config.SourceFolder, fmt.Sprintf("images/%s", fileName)))
+	hasFormFile := playlistModel.Image.Size > 0
 
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
-			return
-		}
-
+	if hasFormFile {
+		fileName = fmt.Sprintf("%s.jpg", uuid.New().String())
 		playlist.ThumbnailPath = fileName
 	} else {
 		// default_playlist_cover.jpg
@@ -92,6 +88,20 @@ func (hanlder *PlaylistHandler) InsertPlaylist(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
+	}
+
+	if hasFormFile {
+		path := filepath.Join(configuration.Config.SourceFolder, fmt.Sprintf("images/%s", fileName))
+
+		logging.Info(path)
+
+		err = ctx.SaveUploadedFile(playlistModel.Image, path)
+
+		if err != nil {
+			logging.ErrorStackTrace(err)
+			ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
+			return
+		}
 	}
 
 	ctx.JSON(http.StatusOK, models.OkResponse(gin.H{"playlistId": playlistId}, "Created new playlist"))
