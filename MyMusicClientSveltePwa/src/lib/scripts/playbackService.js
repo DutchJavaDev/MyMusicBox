@@ -104,6 +104,10 @@ export function initializePlaybackService() {
   });
 }
 
+export function stopPlayback() {
+  playOrPauseSong(currentSong.id);
+}
+
 export function nextSong() {
   songIndex = (songIndex + 1) % playlistSongs.length; // Loop back to start if at end of playlist
   const nextSong = playlistSongs[songIndex];
