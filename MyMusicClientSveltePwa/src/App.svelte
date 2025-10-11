@@ -68,6 +68,16 @@
         <button aria-label="home" class="btn btn-dark w-100" on:click={() => navigateTo("/Home")}><i class="fa-solid fa-house"></i></button>
       </div>
       <div class="col-3 col-lg-2 col-md-2 col-sm-2">
+        <div class="btn-group dropup w-100">
+          
+          <button type="button" aria-label="home" class="btn btn-dark w-100 dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-plus"></i></button>
+          
+          <div class="dropdown-menu bg-dark w-100">
+            <button class="btn btn-primary dropdown-item" data-bs-toggle="modal" data-bs-target="#createPlaylistModal" >New Playlist</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-3 col-lg-2 col-md-2 col-sm-2">
         <button aria-label="home" class="btn btn-dark w-100" on:click={() => navigateTo("/Settings")}><i class="fa-solid fa-gear"></i></button>
       </div>
     </div>
@@ -121,5 +131,6 @@
   .bottom-bar button {
     font-weight: bolder;
     background-color: #2c2c2c !important;
+    color:  white;
   }
 </style>

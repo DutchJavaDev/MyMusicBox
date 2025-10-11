@@ -60,6 +60,31 @@ export async function fetchPlaylistSongs(playlistId) {
     }
 }
 
+export async function createPlaylist(formData) {
+    try {
+        const response = await fetch(`${baseApiUrl}/playlist`, {
+            method: "POST",
+            body: formData
+        })
+        
+        const jsonResponse = await response.json();
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${jsonResponse.Data.Message}`);
+        }
+        return {
+            success: true,
+            data: jsonResponse
+        };
+    } catch (error) {
+        console.error("Error creating playlist:", error);
+        return {
+            success: false,
+            data: error
+        };
+    }
+}
+
 export function getImageUrl(path) {
 
     var config = getConfiguration();
