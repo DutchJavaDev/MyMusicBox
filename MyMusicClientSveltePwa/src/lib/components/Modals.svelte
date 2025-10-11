@@ -37,14 +37,16 @@
     var response = await createPlaylist(formData);
 
     if (response.success){
+      alert(`Playlist has been created successfully.`);
+      
       // Close modal
       const modalElement = document.getElementById('createPlaylistModal');
       const modalInstance = bootstrap.Modal.getInstance(modalElement);
       modalInstance.hide();
-       // clear form
+      
+      // clear form
       event.target.reset();
 
-      alert(`Created playlist: ${response.data}`);
     } else {
       alert(`Failed to create playlist: ${response.data}`);
     }
