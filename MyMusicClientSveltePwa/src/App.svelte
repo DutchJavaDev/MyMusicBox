@@ -7,7 +7,7 @@
   import { initializeRouteService, pathName, navigateTo, component, componentParams } from "./lib/scripts/routeService.js";
   import PlayerBar from "./lib/components/PlayerBar.svelte";
   import Modals from "./lib/components/Modals.svelte";
-  import { initializePlaylistService } from "./lib/scripts/playlistService.js";
+  import { initializePlaylistService, deleteCurrentPlaylist } from "./lib/scripts/playlistService.js";
   import { initializePlaybackService } from "./lib/scripts/playbackService.js";
   import { initializeMediaSessionService } from "./lib/scripts/mediasessionService.js";
   import { searchQuery } from "./lib/scripts/util.js";
@@ -72,8 +72,9 @@
           
           <button type="button" aria-label="home" class="btn btn-dark w-100 dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-plus"></i></button>
           
-          <div class="dropdown-menu bg-dark w-100">
+          <div id="actions" class="dropdown-menu w-100">
             <button class="btn btn-primary dropdown-item" data-bs-toggle="modal" data-bs-target="#createPlaylistModal" >New Playlist</button>
+            <button class="btn btn-primary dropdown-item text-danger" on:click={deleteCurrentPlaylist} disabled={!$pathName.includes("playlists")}>Delete Current Playlist</button>
           </div>
         </div>
       </div>
@@ -89,6 +90,16 @@
 <audio id="audio-player" preload="none" style="display: none;"></audio>
 
 <style>
+
+  #actions{
+    background-color: #1e1e1e;
+  }
+
+  #actions button{
+    padding: 5px auto;
+    border: 5px solid red;
+  }
+
   .app-layout {
     display: flex;
     flex-direction: column;
