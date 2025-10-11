@@ -18,7 +18,7 @@ export function setConfiguration(config) {
   setItem(ConfigKey, config);
 }
 
-export function setPlaylists(playlists) {
+export function setCachedPlaylists(playlists) {
   setItem(PlaylistsKey, playlists);
 }
 
