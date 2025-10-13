@@ -2,7 +2,6 @@ package http
 
 import (
 	"fmt"
-	"mime/multipart"
 	"musicboxapi/configuration"
 	"musicboxapi/database"
 	"musicboxapi/logging"
@@ -44,13 +43,6 @@ func (handler *PlaylistHandler) FetchPlaylists(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, models.OkResponse(playlists, fmt.Sprintf("Found %d playlist", len(playlists))))
 }
 
-type FormSt struct {
-	Name        string               `form:"playlistName"`
-	Image       multipart.FileHeader `form:"backgroundImage"`
-	IsPublic    string               `form:"publicPlaylist"`
-	Description string               `form:"playlistDescription"`
-}
-
 func (hanlder *PlaylistHandler) InsertPlaylist(ctx *gin.Context) {
 
 	var playlistModel models.CreatePlaylistModel
@@ -58,6 +50,7 @@ func (hanlder *PlaylistHandler) InsertPlaylist(ctx *gin.Context) {
 	err := ctx.ShouldBind(&playlistModel)
 
 	if err != nil {
+		logging.Error("Failed to bind model")
 		logging.ErrorStackTrace(err)
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
@@ -118,6 +111,8 @@ func (handler *PlaylistHandler) DeletePlaylist(ctx *gin.Context) {
 	}
 
 	err = handler.PlaylistTable.DeletePlaylist(id)
+
+	// TODO delete background image if its not the default image for it
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))

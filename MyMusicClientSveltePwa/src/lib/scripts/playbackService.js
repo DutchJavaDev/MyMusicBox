@@ -50,7 +50,10 @@ export function initializePlaybackService() {
     songIndex = getCurrentSongIndex();
     isPlaying.set(false);
     setCurrentTime(getCurrentSongTime());
-    playOrPauseSong(playlistSongs[songIndex].id);
+
+    if(playlistSongs.length > 0 && songIndex >= 0 && songIndex <= playlistSongs.length){
+      playOrPauseSong(playlistSongs[songIndex].id);
+    }
   }
 
   audioElement.addEventListener("play", () => {
@@ -74,10 +77,15 @@ export function initializePlaybackService() {
     updateMediaSessionPlaybackState(false);
   });
 
-  // audioElement.addEventListener("playing", () => {
-  //   isPlaying.set(true);
-  //   updateMediaSessionPlaybackState(true);
-  // });
+  audioElement.addEventListener("playing", () => {
+    if(!get(isPlaying)){
+      isPlaying.set(true);
+    }
+    if(get(isLoading)){
+      isLoading.set(false);
+    }
+    updateMediaSessionPlaybackState(true);
+  });
 
   audioElement.addEventListener("timeupdate", () => {
     const percentage = (audioElement.currentTime / audioElement.duration) * 100;

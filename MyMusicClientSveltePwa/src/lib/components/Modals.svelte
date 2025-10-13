@@ -31,7 +31,7 @@
     }
   }
 
-  async function handleCreatePlaylistSubmit(e) {
+  async function handleCreatePlaylistSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     var response = await createPlaylist(formData);
@@ -42,11 +42,12 @@
       // Close modal
       const modalElement = document.getElementById('createPlaylistModal');
       const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      
+      // clear form
       modalInstance.hide();
       
       // clear form
       event.target.reset();
-
     } else {
       alert(`Failed to create playlist: ${response.data}`);
     }

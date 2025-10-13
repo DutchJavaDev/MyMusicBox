@@ -18,12 +18,12 @@
 
 <div class="container-fluid player-bar mb-2">
   <div class="row space-between">
-    <div class="image-placeholder col-2 col-md-2 col-lg-2" style="--url: url({getImageUrl($currentSong.thumbnail_path)});">
+    <div class="image-placeholder col-2 col-md-2 col-lg-2" style="--url: url({$currentSong.id !== -999 ? getImageUrl($currentSong.thumbnail_path) : "" });">
       &nbsp;
     </div>
-    <div class="col-8 col-md-8 col-lg-9" style="background: linear-gradient(to right, #1DB954 {$playPercentage}%, #2c2c2c {$playPercentage}%);">
-      <button type="button" class="btn clickable-text" data-bs-toggle="{$currentSong ? "modal" : ""}" data-bs-target="{$currentSong ? "#songControlModal" : ""}">
-        {#if $currentSong}
+    <div class="col-8 col-md-8 col-lg-9" style="background: linear-gradient(to right, #1DB954 {($currentSong && $currentSong.id !== -999) ? $playPercentage:0}%, #2c2c2c {($currentSong && $currentSong.id !== -999) ? $playPercentage:0}%);">
+      <button type="button" class="btn clickable-text" data-bs-toggle="{($currentSong && $currentSong.id !== -999) ? "modal" : ""}" data-bs-target="{($currentSong && $currentSong.id !== -999) ? "#songControlModal" : ""}">
+        {#if $currentSong && $currentSong.id !== -999}
           {$currentSong.name}
         {:else}
           No song playing
@@ -32,7 +32,7 @@
     </div>
     <div class="col-2 col-md-2 col-lg-1">
       <button on:click={togglePlay} class="btn play-button w-100">
-        {#if $currentSong && $isPlaying && !$isLoading}
+        {#if ($currentSong && $currentSong.id !== -999) && $isPlaying && !$isLoading}
           <i class="fa-solid fa-pause"></i>
         {:else if !$isLoading && !$isPlaying}
           <i class="fa-solid fa-play"></i>

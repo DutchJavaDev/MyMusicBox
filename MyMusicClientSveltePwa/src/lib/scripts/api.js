@@ -5,104 +5,121 @@ const staticAudioUrl = import.meta.env.VITE_STATIC_AUDIO_URL;
 import { getConfiguration } from "./storageService";
 
 export async function fetchPlaylists() {
-    try {
-        const response = await fetch(`${baseApiUrl}/playlist`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const playlists = await response.json();
-        return playlists.Data;
-    } catch (error) {
-        console.error("Error fetching playlists:", error);
-        return [];
+  try {
+    const response = await fetch(`${baseApiUrl}/playlist`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    const playlists = await response.json();
+    return playlists.Data;
+  } catch (error) {
+    console.error("Error fetching playlists:", error);
+    return [];
+  }
 }
 
-export async function fetchNewPlaylist(lastKnowPlaylistId){
-        try {
-        const response = await fetch(`${baseApiUrl}/playlist?lastKnowPlaylistId=${lastKnowPlaylistId}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const playlists = await response.json();
-        return playlists.Data;
-    } catch (error) {
-        console.error("Error fetching playlists:", error);
-        return [];
+export async function fetchNewPlaylist(lastKnowPlaylistId) {
+  try {
+    const response = await fetch(`${baseApiUrl}/playlist?lastKnowPlaylistId=${lastKnowPlaylistId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    const playlists = await response.json();
+    return playlists.Data;
+  } catch (error) {
+    console.error("Error fetching playlists:", error);
+    return [];
+  }
 }
 
 export async function fetchNewPlaylistSongs(playlistId, lastKnowSongPosition) {
-        try {
-        const response = await fetch(`${baseApiUrl}/playlist/${playlistId}?lastKnowSongPosition=${lastKnowSongPosition}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const songs = await response.json();
-        return songs.Data;
-    } catch (error) {
-        console.error("Error fetching playlist songs:", error);
-        return [];
+  try {
+    const response = await fetch(`${baseApiUrl}/playlist/${playlistId}?lastKnowSongPosition=${lastKnowSongPosition}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    const songs = await response.json();
+    return songs.Data;
+  } catch (error) {
+    console.error("Error fetching playlist songs:", error);
+    return [];
+  }
 }
 
 export async function fetchPlaylistSongs(playlistId) {
-    try {
-        const response = await fetch(`${baseApiUrl}/playlist/${playlistId}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const songs = await response.json();
-        return songs.Data;
-    } catch (error) {
-        console.error("Error fetching playlist songs:", error);
-        return [];
+  try {
+    const response = await fetch(`${baseApiUrl}/playlist/${playlistId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    const songs = await response.json();
+    return songs.Data;
+  } catch (error) {
+    console.error("Error fetching playlist songs:", error);
+    return [];
+  }
 }
 
 export async function createPlaylist(formData) {
-    try {
-        const response = await fetch(`${baseApiUrl}/playlist`, {
-            method: "POST",
-            body: formData
-        })
-        
-        const jsonResponse = await response.json();
+  try {
+    const response = await fetch(`${baseApiUrl}/playlist`, {
+      method: "POST",
+      body: formData,
+    });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${jsonResponse.Data.Message}`);
-        }
-        return {
-            success: true,
-            data: jsonResponse
-        };
-    } catch (error) {
-        console.error("Error creating playlist:", error);
-        return {
-            success: false,
-            data: error
-        };
+    const jsonResponse = await response.json();
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${jsonResponse.Data.Message}`);
     }
+    return {
+      success: true,
+      data: jsonResponse,
+    };
+  } catch (error) {
+    console.error("Error creating playlist:", error);
+    return {
+      success: false,
+      data: error,
+    };
+  }
+}
+
+export async function deletePlaylist(playlistId) {
+  try {
+    const response = await fetch(`${baseApiUrl}/playlist/${playlistId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response}`);
+    }
+    return {
+      success: true,
+      data: response,
+    };
+  } catch (error) {
+    console.error("Error deleting playlist:", error);
+    return;
+  }
 }
 
 export function getImageUrl(path) {
+  var config = getConfiguration();
 
-    var config = getConfiguration();
+  if (config.byPassCache) {
+    return `${staticImageUrl}/${path}?cb=${new Date().getMilliseconds()}`;
+  }
 
-    if(config.byPassCache){
-        return `${staticImageUrl}/${path}?cb=${new Date().getMilliseconds()}`;
-    }
-
-    return `${staticImageUrl}/${path}`;
+  return `${staticImageUrl}/${path}`;
 }
 
 export function getPlaybackUrl(source_id) {
+  var config = getConfiguration();
 
-    var config = getConfiguration();
+  if (config.byPassCache) {
+    return `${staticAudioUrl}/${source_id}.opus?cb=${new Date().getMilliseconds()}`;
+  }
 
-    if(config.byPassCache){
-        return `${staticAudioUrl}/${source_id}.opus?cb=${new Date().getMilliseconds()}`;
-    }
-
-    return `${staticAudioUrl}/${source_id}.opus`; // Assuming all audio files are in .opus format
+  return `${staticAudioUrl}/${source_id}.opus`; // Assuming all audio files are in .opus format
 }

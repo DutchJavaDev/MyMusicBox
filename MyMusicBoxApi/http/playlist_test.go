@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"musicboxapi/database"
 	"musicboxapi/models"
 	"net/http"
@@ -145,14 +147,23 @@ func TestInsertPlaylist(t *testing.T) {
 	router.POST(route, playlistHandler.InsertPlaylist)
 
 	recorder := httptest.NewRecorder()
+	recorder.Header().Set("Content-Type", "multipart/form-data")
 
-	body := models.Playlist{
-		Description: "Cool playlist",
-	}
+	buf := &bytes.Buffer{}
+	w := multipart.NewWriter(buf)
+	w.WriteField("playlistDescription", "Cool playlist")
+	w.WriteField("playlistName", "Banger Songs")
+	w.WriteField("publicPlaylist", "on")
 
-	bodyBytes, _ := json.Marshal(body)
+	imgWrite, err := w.CreateFormFile("backgroundImage", "default.png")
 
-	req, _ := http.NewRequest("POST", route, bytes.NewBuffer(bodyBytes))
+	io.Copy(imgWrite, bytes.NewReader([]byte("0")))
+
+	w.Close()
+
+	req, _ := http.NewRequest("POST", route, buf)
+
+	req.Header.Add("Content-Type", w.FormDataContentType())
 
 	// Act
 	router.ServeHTTP(recorder, req)
@@ -162,7 +173,7 @@ func TestInsertPlaylist(t *testing.T) {
 
 	var rawResult map[string]any
 
-	err := json.Unmarshal(recorder.Body.Bytes(), &rawResult)
+	err = json.Unmarshal(recorder.Body.Bytes(), &rawResult)
 
 	assert.Equal(t, nil, err)
 

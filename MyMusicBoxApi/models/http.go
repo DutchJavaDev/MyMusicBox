@@ -7,9 +7,9 @@ type DownloadRequestModel struct {
 }
 
 type CreatePlaylistModel struct {
-	Name        string                `form:"playlistName"`
+	Name        string                `form:"playlistName" binding:"required"`
 	Image       *multipart.FileHeader `form:"backgroundImage"`
-	IsPublic    string                `form:"publicPlaylist"`
+	IsPublic    string                `form:"publicPlaylist" binding:"required"`
 	Description string                `form:"playlistDescription"`
 }
 
