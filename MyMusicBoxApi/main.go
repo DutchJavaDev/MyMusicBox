@@ -8,6 +8,7 @@ import (
 	"musicboxapi/http"
 	"musicboxapi/logging"
 	"os"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -68,8 +69,12 @@ func corsMiddelWare() gin.HandlerFunc {
 			return cors.Default()
 		} else {
 			strictCors := cors.New(cors.Config{
-				AllowAllOrigins: false,
-				AllowOrigins:    []string{origin}, // move to env
+				AllowAllOrigins:  false,
+				AllowOrigins:     []string{origin}, // move to env
+				AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+				AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
+				AllowCredentials: false,
+				MaxAge:           12 * time.Hour,
 			})
 			return strictCors
 		}
