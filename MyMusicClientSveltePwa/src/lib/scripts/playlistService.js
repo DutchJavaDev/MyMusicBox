@@ -2,7 +2,7 @@ import { writable, get } from "svelte/store";
 import { getCachedPlaylists, setCachedPlaylists, setPlaylistSongs, getCachedPlaylistSongs, appConfiguration, getConfiguration, getCurrentPlaylistId } from "./storageService";
 import { fetchPlaylists, fetchPlaylistSongs, fetchNewPlaylist, fetchNewPlaylistSongs, deletePlaylist } from "./api";
 import { componentParams, navigateTo } from "./routeService";
-import { playOrPauseSong, setPlaylists, currentSong } from "./playbackService";
+import { playOrPauseSong, setPlaylists, currentSong, playPercentage } from "./playbackService";
 
 export const playlistsStore = writable([]);
 
@@ -41,8 +41,6 @@ export async function initializePlaylistService() {
     }
     updateInterval = config.fetchTimer * 1000; // Need to multiply by 1000 to get milliseconds
 
-    console.log("Update interval set to:", updateInterval, "ms");
-
     intervalId = setInterval(() => {
       if (isUpdating) return; // Prevent multiple updates at the same time
 
@@ -73,12 +71,15 @@ export async function deleteCurrentPlaylist() {
     if (result.success) {
       const currentPlaylist = getCurrentPlaylistId();
 
-            // If the deleted playlist is the current playing playlist, stop playback
+      // If the deleted playlist is the current playing playlist, stop playback
       if (currentPlaylist === playlistId) {
         // stop playback
         playOrPauseSong(null);
         setPlaylists(0);
+        currentSong.set({id: -999, title: "", artist: "", album: "", source_id: ""});
       }
+      
+      playPercentage.set(0);
 
       // Remove playlist from cached playlists
       cachedPlaylists.splice(playlistIndex, 1);
@@ -110,11 +111,6 @@ async function backgroundUpdate() {
     const playlistId = playlist.id;
     const cachedSongs = getCachedPlaylistSongs(playlistId);
     const lastKnowSongPosition = cachedSongs.length;
-
-    if (playlistId === 22) {
-      console.log("Updating playlist:", playlistId, "Last known song position:", lastKnowSongPosition);
-      console.log("Cached songs:", cachedSongs);
-    }
 
     const newSongs = await fetchNewPlaylistSongs(playlistId, lastKnowSongPosition);
     if (newSongs.length > 0) {
