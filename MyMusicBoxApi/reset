@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# delete dev music and images
+sudo rm -r music_dev
+
 # stop dev docker postgres
 cd ..
 cd dev_database

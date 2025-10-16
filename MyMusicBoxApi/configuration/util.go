@@ -3,7 +3,9 @@ package configuration
 import (
 	"flag"
 	"fmt"
+	"musicboxapi/logging"
 	"musicboxapi/models"
+	"os"
 )
 
 var Config models.Config
@@ -24,5 +26,13 @@ func GetApiGroupUrl(version string) string {
 	} else {
 		return fmt.Sprintf("/api/%s", version)
 	}
+}
 
+func DeleteFile(path string) {
+	err := os.Remove(path)
+
+	if err != nil {
+		logging.ErrorStackTrace(err)
+		logging.Error(fmt.Sprintf("Failed to delete file, path: %s", path))
+	}
 }

@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"musicboxapi/configuration"
 	"musicboxapi/database"
 	"musicboxapi/models"
 	"net/http"
@@ -13,6 +14,8 @@ import (
 type PlaylistSongHandler struct {
 	PlaylistsongTable database.IPlaylistsongTable
 }
+
+const DefaultPlaylistId = 1
 
 // @Produce json
 // @Param playlistId   path      int  true  "Id of playlist"
@@ -99,5 +102,29 @@ func (handler *PlaylistSongHandler) DeletePlaylistSong(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
 		return
 	}
+
+	if playlistId == DefaultPlaylistId {
+
+		songTable := database.NewSongTableInstance()
+		song, err := songTable.FetchSongById(songId)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
+			return
+		}
+
+		// Delete actual song file
+		audioFilePath := song.Path
+		configuration.DeleteFile(audioFilePath)
+
+		// Delete actual thumbnail file
+		thumbnail := song.ThumbnailPath
+		thumbnailPath := fmt.Sprintf("%s/images/%s", configuration.Config.SourceFolder, thumbnail)
+		configuration.DeleteFile(thumbnailPath)
+
+		// Delete from database
+		songTable.DeleteSongById(song.Id)
+	}
+
 	ctx.Status(http.StatusOK)
 }
