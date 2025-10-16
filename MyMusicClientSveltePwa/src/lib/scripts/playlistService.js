@@ -2,7 +2,7 @@ import { writable, get } from "svelte/store";
 import { getCachedPlaylists, setCachedPlaylists, setPlaylistSongs, getCachedPlaylistSongs, appConfiguration, getConfiguration, getCurrentPlaylistId } from "./storageService";
 import { fetchPlaylists, fetchPlaylistSongs, fetchNewPlaylist, fetchNewPlaylistSongs, deletePlaylist } from "./api";
 import { componentParams, navigateTo } from "./routeService";
-import { playOrPauseSong, setPlaylists, currentSong, playPercentage } from "./playbackService";
+import { playOrPauseSong, setPlaylists, currentSong, playPercentage, updateCurrentPlaylist } from "./playbackService";
 
 export const playlistsStore = writable([]);
 
@@ -89,6 +89,22 @@ export async function deleteCurrentPlaylist() {
 
       navigateTo("/");
     }
+  }
+}
+
+export function removeSongFromPlaylist(songId) {
+  const cachedPlaylists = getCachedPlaylists();
+
+  // remove song from playlist
+  for (const playlist of cachedPlaylists) {
+    const playlistId = playlist.id;
+    const cachedSongs = getCachedPlaylistSongs(playlistId);
+    const songIndex = cachedSongs.findIndex((s) => s.id === songId);
+    if (songIndex !== -1) {
+      cachedSongs.splice(songIndex, 1);
+      setPlaylistSongs(playlistId, cachedSongs);
+    }
+    updateCurrentPlaylist(playlistId);
   }
 }
 

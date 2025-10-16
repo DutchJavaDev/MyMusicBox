@@ -3,9 +3,11 @@
 
   import { getContext, onMount, setContext } from "svelte";
   import { currentSong, isPlaying, isLoading } from "../scripts/playbackService";
-  import { getImageUrl } from "../scripts/api";
+  import { getImageUrl, deleteSongFromPlaylist } from "../scripts/api";
+  import { removeSongFromPlaylist } from "../scripts/playlistService";
 
   export let song;
+  export let playlistId;
 
   let playOrPauseSong;
 
@@ -13,87 +15,110 @@
     playOrPauseSong = getContext("playOrPauseSong");
   });
 
+  async function deleteSong() {
+    if(confirm(`Are you sure you want to delete the song "${song.name}" from this playlist?`)) {
+      var deleted = await deleteSongFromPlaylist(playlistId, song.id);
+
+      if(deleted) {
+        removeSongFromPlaylist(song.id);
+      } else {
+        alert(`Failed to delete song with ID: ${song.id} from playlist ID: ${playlistId}`);
+      }
+    }
+  }
+
   $: $isPlaying;
   $: $currentSong;
   $: $isLoading;
 </script>
 
 {#if song}
-  <div class="song">
-  <div class="thumb" style="--url: url({getImageUrl(song.thumbnail_path)});"></div>
-  <div class="song-info">
-    <div class="title">{song.name}</div>
+  <div class="song" style="--url: url({getImageUrl(song.thumbnail_path)});">
+    <div class="blur"></div>
+    <div class="row align-items-center mt-3 content">
+      <div class="col-2">
+        <button on:click={() => playOrPauseSong(song.id)} style="background-color: transparent; border: none; color: #1db954;">
+          {#if $currentSong && $currentSong.id === song.id && $isPlaying}
+            <i class="fa-solid fa-pause"></i>
+          {:else if $isLoading && $currentSong.id === song.id}
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          {:else}
+            <i class="fa-solid fa-play"></i>
+          {/if}
+        </button>
+      </div>
+      <div class="song-info col-8">
+        <div class="title">{song.name}</div>
+      </div>
+      <div class="col-2">
+        <button on:click={deleteSong} class="text-center" aria-label="settings" style="background-color: transparent; border: none; font-size: 1rem;">
+          <i class="fa-solid fa-trash text-danger"></i>
+        </button>
+      </div>
+    </div>
   </div>
-  <button on:click={() => playOrPauseSong(song.id)} class="play-btn" title="Play">
-    {#if $currentSong && $currentSong.id === song.id && $isPlaying}
-          <i class="fa-solid fa-pause"></i>
-        {:else if $isLoading && $currentSong.id === song.id}
-          <i class="fa-solid fa-spinner fa-spin"></i>
-        {:else}
-          <i class="fa-solid fa-play"></i>
-        {/if}
-  </button>
-</div>
 {:else}
   <p>No song available.</p>
 {/if}
 
 <style>
   .song {
-    display:flex;
-    align-items:center;
-    background:#2C2C2C;
-    border-radius:12px;
-    padding:10px 14px;
-    margin-bottom:12px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.4);
-    transition:transform 0.2s ease, background-color 0.2s ease;
-  }
-  .song:hover {
-    background:#333333;
-    transform:translateY(-2px);
-  }
-  .thumb {
-    width:48px;
-    height:48px;
-    border-radius:8px;
+    position: relative;
+    background: #2c2c2c;
+    border-radius: 10px;
+    padding: 0px 10px;
+    margin-bottom: 10px;
+    min-height: 80px;
+    box-shadow: 0 4px 12px rgba(90, 89, 89, 0.4);
     background-image: var(--url);
     background-size: cover;
     background-position: center;
-    flex-shrink:0;
+    overflow: hidden;
+    transition:
+      transform 0.2s ease,
   }
+
+  .song:hover {
+    transform: translateY(-3px);
+  }
+
   .song-info {
-    flex:1;
-    margin:0 12px;
-    display:flex;
-    flex-direction:column;
+    flex: 1;
+    margin: 0 12px;
+    display: flex;
+    flex-direction: column;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .title {
-    color:#FFFFFF;
-    font-weight:600;
-    font-size: 0.8rem;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 0.5rem;
     margin: 5px;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .play-btn {
-    /* background:#1DB954; */
-    border:none;
-    border-color: transparent;
-    width:36px;
-    height:36px;
-    color:#1DB954;
-    background-color: transparent;;
-    font-size:1.3rem;
-    cursor:pointer;
-    /* transition: background-color 0.2s; */
+  .blur {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.60);
+    backdrop-filter: blur(5px);
+    z-index: 1;
+    border-radius: 5px;
   }
-  /* .play-btn:hover {
-    background:#17a84b;
-  } */
+
+  /* Keep content visible above blur */
+  .content {
+    position: relative;
+    z-index: 2;
+  }
 </style>

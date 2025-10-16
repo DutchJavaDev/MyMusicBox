@@ -104,6 +104,32 @@ export async function deletePlaylist(playlistId) {
   }
 }
 
+export async function deleteSongFromPlaylist(playlistId, songId) {
+  try {
+    const response = await fetch(`${baseApiUrl}/playlistsong/${playlistId}/${songId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response}`);
+    }
+
+    console.log("Delete song response:", response);
+
+     return {
+      success: true,
+      data: response,
+    };
+
+  } catch (error) {
+    console.error("Error deleting song from playlist:", error);
+     return {
+      success: false,
+      data: error,
+    };
+  }
+}
+
 export function getImageUrl(path) {
   var config = getConfiguration();
 
