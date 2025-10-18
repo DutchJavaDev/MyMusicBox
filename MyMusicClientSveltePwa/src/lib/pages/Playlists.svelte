@@ -11,6 +11,11 @@
   let updating = false
 
   export let playlistId = -1;
+  let visibleCount = 100;
+
+  function loadMore() {
+    visibleCount += 100;
+  }
 
   let songs = writable([]);
 
@@ -39,11 +44,16 @@
 
 {#if $songs.length > 0}
   <div class="row">
-      {#each $songs as song}
+      {#each $songs.slice(0, visibleCount) as song}
         <div class="col-12 col-lg-4">
           <SongComponent {song} {playlistId} />
         </div>
       {/each}
+      {#if visibleCount < $songs.length}
+        <div class="col-12 text-center my-3">
+          <button class="btn btn-primary" on:click={loadMore}>Load More</button>
+        </div>
+      {/if}
     </div>
 {:else}
   <p>No songs in playlist.</p>
