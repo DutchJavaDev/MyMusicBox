@@ -26,7 +26,7 @@ func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
 
 	config := configuration.Config
 	storageFolderName := config.SourceFolder
-	archiveFileName := fmt.Sprintf("%s/video_archive", storageFolderName)
+	archiveFileName := fmt.Sprintf("%s/video_archive", storageFolderName) // move to env / congif
 	idsFileName := fmt.Sprintf("%s/ids.%d", storageFolderName, parentTask.Id)
 	namesFileName := fmt.Sprintf("%s/names.%d", storageFolderName, parentTask.Id)
 	durationFileName := fmt.Sprintf("%s/durations.%d", storageFolderName, parentTask.Id)

@@ -1,12 +1,15 @@
 package http
 
 import (
+	"bufio"
 	"fmt"
 	"musicboxapi/configuration"
 	"musicboxapi/database"
 	"musicboxapi/models"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -124,6 +127,50 @@ func (handler *PlaylistSongHandler) DeletePlaylistSong(ctx *gin.Context) {
 
 		// Delete from database
 		songTable.DeleteSongById(song.Id)
+
+		// Delete from video_archive
+		strSplit := strings.Split(song.Path, ".")
+
+		filenameWithOutExtension := strSplit[0]
+		strSplit = strings.Split(filenameWithOutExtension, "/")
+
+		filenameWithOutExtension = strSplit[1]
+
+		filePath := fmt.Sprintf("%s/%s", configuration.Config.SourceFolder, "video_archive")
+
+		// Read the file
+		file, err := os.Open(filePath)
+		if err != nil {
+			fmt.Println("Error opening file:", err)
+			ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
+			return
+		}
+		defer file.Close()
+
+		var lines []string
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			line := scanner.Text()
+			// Keep the line only if it’s not the target
+			if strings.TrimSpace(line) != fmt.Sprintf("youtube %s", filenameWithOutExtension) {
+				lines = append(lines, line)
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			fmt.Println("Error reading file:", err)
+			ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
+			return
+		}
+
+		// Write the updated content back to the file
+		output := strings.Join(lines, "\n")
+		err = os.WriteFile(filePath, []byte(output+"\n"), 0644)
+		if err != nil {
+			fmt.Println("Error writing file:", err)
+			ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
+			return
+		}
 	}
 
 	ctx.Status(http.StatusOK)
