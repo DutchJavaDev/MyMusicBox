@@ -125,6 +125,12 @@ export function previousSong() {
 }
 
 export function playOrPauseSong(songId) {
+
+  if (songId < 0) {
+    // Invalid songId, do nothing
+    return;
+  }
+
   const _currentSong = get(currentSong);
 
   if (songId === null || songId === undefined) {

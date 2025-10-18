@@ -22,7 +22,7 @@ export function setCachedPlaylists(playlists) {
   setItem(PlaylistsKey, playlists);
 }
 
-export function setPlaylistSongs(playlistId, songs) {
+export function setCachedPlaylistSongs(playlistId, songs) {
   const key = `${PlaylistSongsKey}${playlistId}`;
   setItem(key, songs);
 }

@@ -1,5 +1,5 @@
 import { writable, get } from "svelte/store";
-import { getCachedPlaylists, setCachedPlaylists, setPlaylistSongs, getCachedPlaylistSongs, appConfiguration, getConfiguration, getCurrentPlaylistId } from "./storageService";
+import { getCachedPlaylists, setCachedPlaylists, setCachedPlaylistSongs, getCachedPlaylistSongs, appConfiguration, getConfiguration, getCurrentPlaylistId } from "./storageService";
 import { fetchPlaylists, fetchPlaylistSongs, fetchNewPlaylist, fetchNewPlaylistSongs, deletePlaylist } from "./api";
 import { componentParams, navigateTo } from "./routeService";
 import { playOrPauseSong, setPlaylists, currentSong, playPercentage, updateCurrentPlaylist } from "./playbackService";
@@ -27,7 +27,7 @@ export async function initializePlaylistService() {
     setCachedPlaylists(fetchedPlaylists);
     for (const playlist of fetchedPlaylists) {
       const songs = await fetchPlaylistSongs(playlist.id);
-      setPlaylistSongs(playlist.id, songs);
+      setCachedPlaylistSongs(playlist.id, songs);
     }
   }
 
@@ -69,16 +69,16 @@ export async function deleteCurrentPlaylist() {
     // TODO delete resource from API, images etc
     const result = await deletePlaylist(playlistId);
     if (result.success) {
-      const currentPlaylist = getCurrentPlaylistId();
+      const currentPlaylistId = getCurrentPlaylistId();
 
       // If the deleted playlist is the current playing playlist, stop playback
-      if (currentPlaylist === playlistId) {
+      if (currentPlaylistId === playlistId) {
         // stop playback
         playOrPauseSong(null);
         setPlaylists(0);
-        currentSong.set({id: -999, title: "", artist: "", album: "", source_id: ""});
+        currentSong.set({ id: -999, title: "", artist: "", album: "", source_id: "" });
       }
-      
+
       playPercentage.set(0);
 
       // Remove playlist from cached playlists
@@ -100,11 +100,11 @@ export function removeSongFromPlaylist(songId) {
     const playlistId = playlist.id;
     const cachedSongs = getCachedPlaylistSongs(playlistId);
     const songIndex = cachedSongs.findIndex((s) => s.id === songId);
-    if (songIndex !== -1) {
-      cachedSongs.splice(songIndex, 1);
-      setPlaylistSongs(playlistId, cachedSongs);
+    const removed = cachedSongs.splice(songIndex, 1);
+
+    if (removed.length > 0) {
+      setCachedPlaylistSongs(playlistId, cachedSongs);
     }
-    updateCurrentPlaylist(playlistId);
   }
 }
 
@@ -128,10 +128,15 @@ async function backgroundUpdate() {
     const cachedSongs = getCachedPlaylistSongs(playlistId);
     const lastKnowSongPosition = cachedSongs.length;
 
-    const newSongs = await fetchNewPlaylistSongs(playlistId, lastKnowSongPosition);
-    if (newSongs.length > 0) {
-      const updatedSongs = [...cachedSongs, ...newSongs];
-      setPlaylistSongs(playlistId, updatedSongs);
-    }
+    const newPlaylistSongs = await fetchNewPlaylistSongs(playlistId, lastKnowSongPosition);
+    
+    // get the difference between cachedSongs and newPlaylistSongs
+    const songsToAdd = newPlaylistSongs.filter(song => !cachedSongs.some(cs => cs.id === song.id));
+
+    if (songsToAdd.length > 0) {
+      const updatedSongs = [...cachedSongs, ...songsToAdd];
+      setCachedPlaylistSongs(playlistId, updatedSongs);
+    } 
+
   }
 }

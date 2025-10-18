@@ -5,6 +5,12 @@
   import { currentSong, isPlaying, isLoading } from "../scripts/playbackService";
   import { getImageUrl, deleteSongFromPlaylist } from "../scripts/api";
   import { removeSongFromPlaylist } from "../scripts/playlistService";
+  import { getCurrentPlaylistId, setCurrentSongIndex, setCurrentSongTime } from "../scripts/storageService";
+  import { get } from "svelte/store";
+
+  $: $isPlaying;
+  $: $currentSong;
+  $: $isLoading;
 
   export let song;
   export let playlistId;
@@ -16,20 +22,27 @@
   });
 
   async function deleteSong() {
-    if(confirm(`Are you sure you want to delete the song "${song.name}" from this playlist?`)) {
+    if (confirm(`Are you sure you want to delete the song "${song.name}" from this playlist?`)) {
       var deleted = await deleteSongFromPlaylist(playlistId, song.id);
 
-      if(deleted) {
+      if (deleted) {
         removeSongFromPlaylist(song.id);
+        const currentPlaylistId = getCurrentPlaylistId();
+        // If the deleted playlist is the current playing playlist, stop playback
+        const _currentSong = get(currentSong);
+        if (song.id === _currentSong.id) {
+          // stop playback
+          playOrPauseSong(null);
+          currentSong.set({ id: -999, title: "", artist: "", album: "", source_id: "" });
+          setCurrentSongTime(0);
+          setCurrentSongIndex(-1);
+        }
       } else {
         alert(`Failed to delete song with ID: ${song.id} from playlist ID: ${playlistId}`);
       }
     }
   }
 
-  $: $isPlaying;
-  $: $currentSong;
-  $: $isLoading;
 </script>
 
 {#if song}
@@ -74,8 +87,7 @@
     background-size: cover;
     background-position: center;
     overflow: hidden;
-    transition:
-      transform 0.2s ease,
+    transition: transform 0.2s ease;
   }
 
   .song:hover {
@@ -110,7 +122,7 @@
   .blur {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.60);
+    background-color: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(5px);
     z-index: 1;
     border-radius: 5px;
