@@ -92,6 +92,11 @@ export async function deletePlaylist(playlistId) {
     });
 
     if (!response.ok) {
+      
+      response.json().then((data) => {
+        console.error("Error deleting playlist:", data);
+      });
+
       throw new Error(`HTTP error! status: ${response}`);
     }
     return {
