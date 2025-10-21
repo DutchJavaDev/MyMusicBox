@@ -15,7 +15,7 @@ import (
 )
 
 type PlaylistSongHandler struct {
-	PlaylistsongTable database.IPlaylistsongTable
+	PlaylistsongTable database.IPlaylistSongTable
 }
 
 const DefaultPlaylistId = 1
@@ -106,6 +106,7 @@ func (handler *PlaylistSongHandler) DeletePlaylistSong(ctx *gin.Context) {
 		return
 	}
 
+	// Thumbnail and .opus file will be deleted only if you delete a song via the main playlist containing all the songs
 	if playlistId == DefaultPlaylistId {
 
 		songTable := database.NewSongTableInstance()

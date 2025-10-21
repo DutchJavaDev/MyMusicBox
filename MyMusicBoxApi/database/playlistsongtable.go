@@ -7,7 +7,7 @@ import (
 	"musicboxapi/models"
 )
 
-type IPlaylistsongTable interface {
+type IPlaylistSongTable interface {
 	FetchPlaylistSongs(ctx context.Context, playlistId int, lastKnowPosition int) (songs []models.Song, error error)
 	InsertPlaylistSong(playlistId int, songId int) (lastInsertedId int, error error)
 	DeleteAllPlaylistSongs(playlistId int) (error error)
@@ -18,7 +18,7 @@ type PlaylistsongTable struct {
 	BaseTable
 }
 
-func NewPlaylistsongTableInstance() IPlaylistsongTable {
+func NewPlaylistsongTableInstance() IPlaylistSongTable {
 	return &PlaylistsongTable{
 		BaseTable: NewBaseTableInstance(),
 	}
