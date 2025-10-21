@@ -24,7 +24,7 @@ func NewPlaylistTableInstance() IPlaylistTable {
 }
 
 func (table *PlaylistTable) FetchPlaylists(ctx context.Context, lastKnowPlaylistId int) (playlists []models.Playlist, error error) {
-	query := "SELECT Id, Name, ThumbnailPath, Description, CreationDate FROM Playlist WHERE Id > $1 ORDER BY Id" // order by?
+	query := "SELECT Id, Name, ThumbnailPath, Description, CreationDate, IsPublic FROM Playlist WHERE Id > $1 ORDER BY Id" // order by?
 
 	rows, err := table.QueryRowsContex(ctx, query, lastKnowPlaylistId)
 
@@ -41,7 +41,7 @@ func (table *PlaylistTable) FetchPlaylists(ctx context.Context, lastKnowPlaylist
 	playlists = make([]models.Playlist, 0)
 
 	for rows.Next() {
-		scanError := rows.Scan(&playlist.Id, &playlist.Name, &playlist.ThumbnailPath, &playlist.Description, &playlist.CreationDate)
+		scanError := rows.Scan(&playlist.Id, &playlist.Name, &playlist.ThumbnailPath, &playlist.Description, &playlist.CreationDate, &playlist.IsPublic)
 
 		if scanError != nil {
 			logging.Error(fmt.Sprintf("Scan error: %s", scanError.Error()))
@@ -68,9 +68,9 @@ func (table *PlaylistTable) InsertPlaylist(playlist models.Playlist) (lastInsert
 }
 
 func (table *PlaylistTable) DeletePlaylist(playlistId int) (error error) {
-	query := `DELETE FROM Playlist WHERE Id = $1`
+	query := `DELETE FROM Playlist WHERE Id = $1 AND IsPublic = $2` // Prevemts private playlists (like the default one) from being deleted for real
 
-	err := table.NonScalarQuery(query, playlistId)
+	err := table.NonScalarQuery(query, playlistId, true)
 
 	if err != nil {
 		logging.Error(fmt.Sprintf("Failed to delete playlist: %s", err.Error()))
