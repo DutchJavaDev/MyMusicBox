@@ -6,7 +6,6 @@
   import { playOrPauseSong, setPlaylists, updateCurrentPlaylist } from "../scripts/playbackService";
   import SongComponent from "../components/Song.svelte";
   import VirtualList from "@sveltejs/svelte-virtual-list/VirtualList.svelte";
-  import ListItem from "../components/ListItem.svelte";
   import Song from "../components/Song.svelte";
 
   const updateIntervalTimeOutInMs = 750; // Update every 750 ms
