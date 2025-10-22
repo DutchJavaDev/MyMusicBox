@@ -45,7 +45,7 @@ func CreateDatabasConnectionPool() error {
 	// Should create test for these?
 	var _ ISongTable = (*SongTable)(nil)
 	var _ IPlaylistTable = (*PlaylistTable)(nil)
-	var _ IPlaylistsongTable = (*PlaylistsongTable)(nil)
+	var _ IPlaylistSongTable = (*PlaylistsongTable)(nil)
 	var _ ITasklogTable = (*TasklogTable)(nil)
 	var _ IMigrationTable = (*MigrationTable)(nil)
 

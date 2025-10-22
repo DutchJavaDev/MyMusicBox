@@ -19,6 +19,7 @@ type ApiResponseModel struct {
 }
 
 func ErrorResponse(data any) ApiResponseModel {
+
 	return ApiResponseModel{
 		Data:    data,
 		Message: "An error occurred",

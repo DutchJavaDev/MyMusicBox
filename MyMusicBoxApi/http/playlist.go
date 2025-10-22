@@ -110,6 +110,11 @@ func (handler *PlaylistHandler) DeletePlaylist(ctx *gin.Context) {
 		return
 	}
 
+	if DefaultPlaylistId == id {
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse("Funky music... "))
+		return
+	}
+
 	err = handler.PlaylistTable.DeletePlaylist(id)
 
 	// TODO delete background image if its not the default image for it
