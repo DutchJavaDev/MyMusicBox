@@ -1,14 +1,20 @@
 <script>
   // @ts-nocheck
-  import { writable } from "svelte/store";
+  import { get, writable } from "svelte/store";
   import { onDestroy, onMount, setContext } from "svelte";
   import { getCachedPlaylistSongs } from "../scripts/storageService";
   import { playOrPauseSong, setPlaylists, updateCurrentPlaylist } from "../scripts/playbackService";
   import SongComponent from "../components/Song.svelte";
+  import VirtualList from "@sveltejs/svelte-virtual-list/VirtualList.svelte";
+  import items from "../pages/data";
+  import ListItem from "../components/ListItem.svelte";
+  import Song from "../components/Song.svelte";
 
   const updateIntervalTimeOutInMs = 750; // Update every 750 ms
-  let intervalId
-  let updating = false
+  let intervalId;
+  let updating = false;
+  let start;
+  let end;
 
   export let playlistId = -1;
   let visibleCount = 100;
@@ -18,15 +24,18 @@
   }
 
   let songs = writable([]);
+  let readableSongs = [];
 
   onMount(() => {
     songs.set(getCachedPlaylistSongs(playlistId));
     setContext("playOrPauseSong", playOrPause);
+    readableSongs = getCachedPlaylistSongs(playlistId);
 
     intervalId = setInterval(() => {
       // if (updating) return; // Prevent multiple updates at the same time
       updating = true;
-      songs.set(getCachedPlaylistSongs(playlistId));
+      readableSongs = getCachedPlaylistSongs(playlistId);
+      songs.set(readableSongs);
       updateCurrentPlaylist(playlistId);
       updating = false;
     }, updateIntervalTimeOutInMs);
@@ -34,7 +43,6 @@
 
   function playOrPause(songId) {
     setPlaylists(playlistId);
-    playOrPauseSong(songId);
   }
 
   onDestroy(() => {
@@ -42,19 +50,22 @@
   });
 </script>
 
-{#if $songs.length > 0}
-  <div class="row">
-      {#each $songs.slice(0, visibleCount) as song}
-        <div class="col-12 col-lg-4">
-          <SongComponent {song} {playlistId} />
-        </div>
-      {/each}
-      {#if visibleCount < $songs.length}
-        <div class="col-12 text-center my-3">
-          <button class="btn btn-primary" on:click={loadMore}>Load More</button>
-        </div>
-      {/if}
-    </div>
+{#if readableSongs.length > 0}
+<!-- <p>showing items {start}-{end}</p> -->
+<div class='container'>
+	<VirtualList items={readableSongs} bind:start bind:end let:item>
+    <SongComponent song={item} {playlistId} />
+	</VirtualList>
+</div>
 {:else}
   <p>No songs in playlist.</p>
 {/if}
+
+<style>
+.container {
+		border-top: 1px solid #333;
+		border-bottom: 1px solid #333;
+		min-height: 65vh;
+		height: calc(100vh - 15em);
+	}
+</style>

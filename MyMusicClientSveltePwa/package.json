@@ -18,6 +18,7 @@
     "vite-plugin-pwa": "^1.0.0"
   },
   "dependencies": {
+    "@sveltejs/svelte-virtual-list": "^3.0.1",
     "@sveltestrap/sveltestrap": "^7.1.0"
   }
 }
