@@ -265,8 +265,7 @@ func TestDeletePlaylistPlaylistId(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 
-	// Unable to parse to int, will throw error
-	_route := "/playlist/1"
+	_route := "/playlist/2"
 
 	req, _ := http.NewRequest("DELETE", _route, nil)
 
@@ -275,4 +274,34 @@ func TestDeletePlaylistPlaylistId(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, http.StatusOK, recorder.Code)
+}
+
+func TestDeletePlaylistPlaylistIdDefaultPlaylist(t *testing.T) {
+	// Arrange
+	route := "/playlist/:playlistId"
+	router := SetupTestRouter()
+
+	mockTable := &mockPlaylistTable{
+		deletePlaylist: func(playlistId int) (error error) {
+			return nil
+		},
+	}
+
+	playlistHandler := PlaylistHandler{
+		PlaylistTable: mockTable,
+	}
+
+	router.DELETE(route, playlistHandler.DeletePlaylist)
+
+	recorder := httptest.NewRecorder()
+
+	_route := "/playlist/1"
+
+	req, _ := http.NewRequest("DELETE", _route, nil)
+
+	// Act
+	router.ServeHTTP(recorder, req)
+
+	// Assert
+	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
 }
