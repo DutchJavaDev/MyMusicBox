@@ -25,6 +25,7 @@ func ErrorResponse(data any) ApiResponseModel {
 		Message: "An error occurred",
 	}
 }
+
 func OkResponse(data any, message string) ApiResponseModel {
 	return ApiResponseModel{
 		Data:    data,
