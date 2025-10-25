@@ -30,7 +30,7 @@
     readableSongs = getCachedPlaylistSongs(playlistId);
 
     intervalId = setInterval(() => {
-      // if (updating) return; // Prevent multiple updates at the same time
+      if (updating) return; // Prevent multiple updates at the same time
       updating = true;
       readableSongs = getCachedPlaylistSongs(playlistId);
       songs.set(readableSongs);
@@ -41,6 +41,7 @@
 
   function playOrPause(songId) {
     setPlaylists(playlistId);
+    playOrPauseSong(songId);
   }
 
   onDestroy(() => {
@@ -50,7 +51,7 @@
 
 {#if readableSongs.length > 0}
 <!-- <p>showing items {start}-{end}</p> -->
-<div class='container'>
+<div class='container overflow-hidden'>
 	<VirtualList items={readableSongs} bind:start bind:end let:item>
     <SongComponent song={item} {playlistId} />
 	</VirtualList>
@@ -61,9 +62,11 @@
 
 <style>
 .container {
-		border-top: 1px solid #333;
-		border-bottom: 1px solid #333;
-		min-height: 65vh;
+		/* border-top: 1px solid #333;
+		border-bottom: 1px solid #333; */
+		min-height: 60vh;
 		height: calc(100vh - 15em);
+    padding-right: unset;
+    padding-left: unset;
 	}
 </style>
