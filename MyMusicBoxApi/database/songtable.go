@@ -10,6 +10,8 @@ import (
 type ISongTable interface {
 	InsertSong(song *models.Song) (err error)
 	FetchSongs(ctx context.Context) (songs []models.Song, err error)
+	FetchSongById(songId int) (song models.Song, err error)
+	DeleteSongById(songId int) (err error)
 }
 
 type SongTable struct {
@@ -47,6 +49,29 @@ func (table *SongTable) InsertSong(song *models.Song) (error error) {
 	return err
 }
 
+func (table *SongTable) FetchSongById(songId int) (song models.Song, err error) {
+
+	query := "SELECT Id, Name, Path, ThumbnailPath, Duration, SourceId, UpdatedAt, CreatedAt FROM Song WHERE Id = $1"
+
+	row := table.QueryRow(query, songId)
+
+	_err := row.Err()
+
+	if _err != nil {
+		logging.ErrorStackTrace(_err)
+		return models.Song{}, _err
+	}
+
+	_err = row.Scan(&song.Id, &song.Name, &song.Path, &song.ThumbnailPath, &song.Duration, &song.SourceId, &song.UpdatedAt, &song.CreatedAt)
+
+	if _err != nil {
+		logging.ErrorStackTrace(_err)
+		return models.Song{}, _err
+	}
+
+	return song, nil
+}
+
 func (table *SongTable) FetchSongs(ctx context.Context) (songs []models.Song, error error) {
 
 	query := "SELECT Id, Name, Path, ThumbnailPath, Duration, SourceId, UpdatedAt, CreatedAt FROM Song" // order by?
@@ -76,4 +101,9 @@ func (table *SongTable) FetchSongs(ctx context.Context) (songs []models.Song, er
 	}
 
 	return songs, nil
+}
+
+func (table *SongTable) DeleteSongById(songId int) (err error) {
+	query := "DELETE FROM Song WHERE Id = $1"
+	return table.NonScalarQuery(query, songId)
 }

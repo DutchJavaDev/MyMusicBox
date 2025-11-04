@@ -19,11 +19,13 @@ type ApiResponseModel struct {
 }
 
 func ErrorResponse(data any) ApiResponseModel {
+
 	return ApiResponseModel{
 		Data:    data,
 		Message: "An error occurred",
 	}
 }
+
 func OkResponse(data any, message string) ApiResponseModel {
 	return ApiResponseModel{
 		Data:    data,

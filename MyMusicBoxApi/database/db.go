@@ -45,7 +45,7 @@ func CreateDatabasConnectionPool() error {
 	// Should create test for these?
 	var _ ISongTable = (*SongTable)(nil)
 	var _ IPlaylistTable = (*PlaylistTable)(nil)
-	var _ IPlaylistsongTable = (*PlaylistsongTable)(nil)
+	var _ IPlaylistSongTable = (*PlaylistsongTable)(nil)
 	var _ ITasklogTable = (*TasklogTable)(nil)
 	var _ IMigrationTable = (*MigrationTable)(nil)
 
@@ -151,8 +151,8 @@ func (base *BaseTable) NonScalarQuery(query string, params ...any) (error error)
 	return nil
 }
 
-func (base *BaseTable) QueryRow(query string) *sql.Row {
-	return base.DB.QueryRow(query)
+func (base *BaseTable) QueryRow(query string, params ...any) *sql.Row {
+	return base.DB.QueryRow(query, params...)
 }
 
 func (base *BaseTable) QueryRowsContex(ctx context.Context, query string, params ...any) (*sql.Rows, error) {

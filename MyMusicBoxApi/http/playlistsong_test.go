@@ -13,7 +13,7 @@ import (
 )
 
 type mockPlaylistSongTable struct {
-	database.IPlaylistsongTable
+	database.IPlaylistSongTable
 	fetchPlaylistSongs     func(ctx context.Context, playlistId int, lastKnowPosition int) (songs []models.Song, error error)
 	insertPlaylistSong     func(playlistId int, songId int) (lastInsertedId int, error error)
 	deleteAllPlaylistSongs func(playlistId int) (error error) // TODO

@@ -92,6 +92,11 @@ export async function deletePlaylist(playlistId) {
     });
 
     if (!response.ok) {
+      
+      response.json().then((data) => {
+        console.error("Error deleting playlist:", data);
+      });
+
       throw new Error(`HTTP error! status: ${response}`);
     }
     return {
@@ -101,6 +106,32 @@ export async function deletePlaylist(playlistId) {
   } catch (error) {
     console.error("Error deleting playlist:", error);
     return;
+  }
+}
+
+export async function deleteSongFromPlaylist(playlistId, songId) {
+  try {
+    const response = await fetch(`${baseApiUrl}/playlistsong/${playlistId}/${songId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response}`);
+    }
+
+    console.log("Delete song response:", response);
+
+     return {
+      success: true,
+      data: response,
+    };
+
+  } catch (error) {
+    console.error("Error deleting song from playlist:", error);
+     return {
+      success: false,
+      data: error,
+    };
   }
 }
 

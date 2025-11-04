@@ -2,8 +2,8 @@
 <script>
 // @ts-nocheck
 
-  import { onMount, onDestroy } from "svelte";
-  import { writable } from "svelte/store";
+  import { onMount, onDestroy, setContext } from "svelte";
+  import { get, writable } from "svelte/store";
   import { initializeRouteService, pathName, navigateTo, component, componentParams } from "./lib/scripts/routeService.js";
   import PlayerBar from "./lib/components/PlayerBar.svelte";
   import Modals from "./lib/components/Modals.svelte";
@@ -19,7 +19,25 @@
   // @ts-ignore
   export const version = __APP_VERSION__;
 
+  let autoScroll = writable(true);
+
+  export function preventAutoScroll(value = true) {
+    // flips state of autoScroll, false to true and true to false and so on for eternity
+    // that is all it should do.... but its javaScript so who knows what will happen in 2 weeks
+    if (value && value === true || value === false) {
+      autoScroll.set(value);
+    }
+    else{
+      autoScroll.set(!get(autoScroll));
+    }
+  }
+
   onMount(() => {
+    component.subscribe((value) => {
+      // Whenever the component changes, enable auto scroll
+     preventAutoScroll()
+    });
+    setContext("preventAutoScroll", preventAutoScroll);
     async function initializeServices() {
       initializeRouteService();
       await initializePlaylistService();
@@ -41,7 +59,7 @@
   <header class="top-bar">
     <div class="top-bar-title text-center">MyMusicBox<span style="font-size: 0.8rem;">(v{version})</span></div>
     <div class="row">
-      <div class="col-12 mt-2">
+      <div class="col-12 mt-2 justify-content-center">
         <!-- Search Bar -->
          <SearchBar />
       </div>
@@ -49,7 +67,7 @@
   </header>
 
   <!-- Scrollable Content -->
-  <main class="scrollable-content">
+  <main class="{($autoScroll ? "scrollable-content" :"none-scrollable-content")}  ">
     <div class="container-fluid">
       <svelte:component this={$component} {...$componentParams} />
     </div>
@@ -90,7 +108,6 @@
 <audio id="audio-player" preload="none" style="display: none;"></audio>
 
 <style>
-
   #actions{
     background-color: #1e1e1e;
   }
@@ -126,6 +143,13 @@
     padding: 1rem 1rem 3rem; /* 👈 Important: bottom padding to make space for bottom bar */
   }
 
+  .none-scrollable-content {
+    flex: 1 1 auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem 1rem 3rem; /* 👈 Important: bottom padding to make space for bottom bar */
+  }
+
   .bottom-bar {
     flex: 0 0 auto;
     padding: 0.5rem;
@@ -136,8 +160,9 @@
     justify-content: center;
     border-top: 0.1rem solid #867878;
     background-color: unset;
-    height: 3.2rem; /* Optional: define fixed height if needed for padding calc */
+    height: 3.2rem; 
   }
+  /* Optional: define fixed height if needed for padding calc */
 
   .bottom-bar button {
     font-weight: bolder;

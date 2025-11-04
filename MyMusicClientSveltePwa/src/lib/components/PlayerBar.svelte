@@ -16,12 +16,12 @@
   }
 </script>
 
-<div class="container-fluid player-bar mb-2">
+<div class="container-fluid border-3 border-bottom border-top player-bar mb-2 rounded rounded-1">
   <div class="row space-between">
     <div class="image-placeholder col-2 col-md-2 col-lg-2" style="--url: url({$currentSong.id !== -999 ? getImageUrl($currentSong.thumbnail_path) : "" });">
       &nbsp;
     </div>
-    <div class="col-8 col-md-8 col-lg-9" style="background: linear-gradient(to right, #1DB954 {($currentSong && $currentSong.id !== -999) ? $playPercentage:0}%, #2c2c2c {($currentSong && $currentSong.id !== -999) ? $playPercentage:0}%);">
+    <div class="col-8 col-md-8 col-lg-9" style="background: linear-gradient(to right, #1DB954 {($currentSong && $currentSong.id !== -999) ? $playPercentage:0}%, #1E1E1E {($currentSong && $currentSong.id !== -999) ? $playPercentage:0}%);">
       <button type="button" class="btn clickable-text" data-bs-toggle="{($currentSong && $currentSong.id !== -999) ? "modal" : ""}" data-bs-target="{($currentSong && $currentSong.id !== -999) ? "#songControlModal" : ""}">
         {#if $currentSong && $currentSong.id !== -999}
           {$currentSong.name}
@@ -30,7 +30,7 @@
         {/if}
       </button>
     </div>
-    <div class="col-2 col-md-2 col-lg-1">
+    <div class="col-2 col-md-2 col-lg-1 border border-dark rounded rounded-0" style="border-color: #2A2A2A !important;">
       <button on:click={togglePlay} class="btn play-button w-100">
         {#if ($currentSong && $currentSong.id !== -999) && $isPlaying && !$isLoading}
           <i class="fa-solid fa-pause"></i>
@@ -51,7 +51,7 @@
     min-height: 2.8rem;
     width: 100%;
     font-weight: bold;
-    color: white;
+    color: rgba(255, 255, 255, 0.77);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
@@ -62,7 +62,9 @@
   }
 
   .player-bar {
-    background-color: transparent;
+    background-color: #1E1E1E !important;
+    max-width: calc(100vw - 17vw);
+    border-color: #969696 !important;
   }
 
   .image-placeholder{
