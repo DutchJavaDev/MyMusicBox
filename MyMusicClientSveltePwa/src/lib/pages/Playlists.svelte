@@ -1,7 +1,7 @@
 <script>
   // @ts-nocheck
   import { get, writable } from "svelte/store";
-  import { onDestroy, onMount, setContext } from "svelte";
+  import { getContext, onDestroy, onMount, setContext } from "svelte";
   import { getCachedPlaylistSongs } from "../scripts/storageService";
   import { playOrPauseSong, setPlaylists, updateCurrentPlaylist } from "../scripts/playbackService";
   import SongComponent from "../components/Song.svelte";
@@ -25,6 +25,9 @@
   let readableSongs = [];
 
   onMount(() => {
+    let auto = getContext("preventAutoScroll");
+    auto(null);
+
     songs.set(getCachedPlaylistSongs(playlistId));
     setContext("playOrPauseSong", playOrPause);
     readableSongs = getCachedPlaylistSongs(playlistId);
@@ -51,7 +54,7 @@
 
 {#if readableSongs.length > 0}
 <!-- <p>showing items {start}-{end}</p> -->
-<div class='container overflow-hidden'>
+<div class='container-cs border border-dark'>
 	<VirtualList items={readableSongs} bind:start bind:end let:item>
     <SongComponent song={item} {playlistId} />
 	</VirtualList>
@@ -61,11 +64,12 @@
 {/if}
 
 <style>
-.container {
-		/* border-top: 1px solid #333;
-		border-bottom: 1px solid #333; */
-		min-height: 60vh;
-		height: calc(100vh - 15em);
+.container-cs {
+    background: #2a2a2a;
+		border-top: 1px solid #333;
+		border-bottom: 1px solid #333;
+		/* min-height: calc(100vh - 30vh); */
+		height: calc(100vh - 35vh);
     padding-right: unset;
     padding-left: unset;
 	}

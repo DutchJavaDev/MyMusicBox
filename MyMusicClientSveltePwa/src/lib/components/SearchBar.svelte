@@ -3,7 +3,7 @@
   import { searchQuery } from "../scripts/util";
 </script>
 
-<div class="search" role="search" aria-label="Search music">
+<div class="search border border-1 border-dark" role="search" aria-label="Search music">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
     <path stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35" />
     <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
@@ -26,7 +26,7 @@
     align-items: center;
     gap: 12px;
     box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-    width: 95%;
+    width: 95vw;
     margin: 0px auto;
   }
   .search svg {
