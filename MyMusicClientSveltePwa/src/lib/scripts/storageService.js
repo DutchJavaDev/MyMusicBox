@@ -10,6 +10,7 @@ const CurrentSongIndexKey = "currentSongIndex";
 const CurrentShuffeldPlaylistKey = "currentShuffledPlaylist";
 const CurrentSongTimeKey = "currentSongTime";
 const ConfigKey = "appConfig";
+const ConfigKeySearchQyery = "searchQuery";
 
 export let appConfiguration = writable(getConfiguration());
 
@@ -17,6 +18,14 @@ export function setConfiguration(config) {
   appConfiguration.set(config);
   setItem(ConfigKey, config);
 }
+
+export function setSearchQueryInStorage(query) {
+  setItem(ConfigKeySearchQyery, query);
+} 
+
+export function getSearchQueryFromStorage() {
+  return getItem(ConfigKeySearchQyery) || '';
+} 
 
 export function setCachedPlaylists(playlists) {
   setItem(PlaylistsKey, playlists);

@@ -1,6 +1,33 @@
 <script>
   // @ts-nocheck
   import { searchQuery } from "../scripts/util";
+  import { getSearchQueryFromStorage, setSearchQueryInStorage } from "../scripts/storageService";
+  import {  onMount } from "svelte";
+  import { component } from "../scripts/routeService";
+  
+  let query = '';
+  
+  onMount(() => {
+    // Initialize the search query from storage
+    const storedQuery = getSearchQueryFromStorage();
+    if (storedQuery && storedQuery.length > 0) {
+      searchQuery.set(storedQuery);
+      query = storedQuery;
+    }
+
+    // There is a x on right side of the input that triggers a 'search' event when clicked
+    // it cleares the input but we also need to clear our stores and storage... :))))) javaScript
+    document.getElementById('search-input').addEventListener('search', (e) => {
+      searchQuery.set('');
+      setSearchQueryInStorage('');
+      query = '';
+    });
+
+      // update component on search query change
+      component.subscribe(() => {
+        searchQuery.set(getSearchQueryFromStorage());
+      });
+  });
 </script>
 
 <div class="search border border-1 border-dark" role="search" aria-label="Search music">
@@ -8,12 +35,20 @@
     <path stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35" />
     <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
   </svg>
-  <input
+  <input 
+    id="search-input"
+    bind:value={query}
     type="search"
-    on:keydown={(e) => {
-      searchQuery.set(e.target.value);
+    on:keyup={(e) => {
+      setSearchQueryInStorage(query);
+      searchQuery.set(query);
     }}
-    placeholder="Search music #not working jet..."
+    on:change={(e) => {
+      console.log("change event", e);
+      setSearchQueryInStorage(query);
+      searchQuery.set(query);
+    }}
+    placeholder="Search and you shall find..."
     aria-label="Search"
   />
 </div>
