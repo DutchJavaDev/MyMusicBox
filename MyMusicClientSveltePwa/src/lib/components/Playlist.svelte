@@ -23,7 +23,6 @@
     songCount = getCachedPlaylistSongs(playlist.id).length;
   });
 </script>
-
 {#if playlist}
     <!-- Playlist Card -->
     <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -38,7 +37,7 @@
       </article>
     </div>
   {:else}
-    <p>No playlist available.</p>
+    <p>No playlist founnd with id: {playlist.id}.</p>
   {/if}
 
 <style>

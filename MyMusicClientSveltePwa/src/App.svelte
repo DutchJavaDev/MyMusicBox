@@ -4,7 +4,7 @@
 
   import { onMount, onDestroy, setContext } from "svelte";
   import { get, writable } from "svelte/store";
-  import { initializeRouteService, pathName, navigateTo, component, componentParams } from "./lib/scripts/routeService.js";
+  import { initializeRouteService, pathName, navigateTo, component as currentView, componentParams } from "./lib/scripts/routeService.js";
   import PlayerBar from "./lib/components/PlayerBar.svelte";
   import Modals from "./lib/components/Modals.svelte";
   import { initializePlaylistService, deleteCurrentPlaylist } from "./lib/scripts/playlistService.js";
@@ -14,7 +14,7 @@
   import SearchBar from "./lib/components/SearchBar.svelte";
 
   $: $pathName;
-  $: $component;
+  $: $currentView;
 
   // @ts-ignore
   export const version = __APP_VERSION__;
@@ -33,7 +33,7 @@
   }
 
   onMount(() => {
-    component.subscribe((value) => {
+    currentView.subscribe((value) => {
       // Whenever the component changes, enable auto scroll
      preventAutoScroll()
     });
@@ -59,6 +59,7 @@
   <header class="top-bar">
     <div class="top-bar-title text-center">MyMusicBox<span style="font-size: 0.8rem;">(v{version})</span></div>
     <div class="row">
+      <!-- Configurable via js/storage/options etc per page / component -->
       <div class="col-12 mt-2 justify-content-center">
         <!-- Search Bar -->
          <SearchBar />
@@ -69,7 +70,7 @@
   <!-- Scrollable Content -->
   <main class="{($autoScroll ? "scrollable-content" :"none-scrollable-content")}  ">
     <div class="container-fluid">
-      <svelte:component this={$component} {...$componentParams} />
+      <svelte:component this={$currentView} {...$componentParams} />
     </div>
   </main>
 

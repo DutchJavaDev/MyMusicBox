@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 
-export let searchQuery = writable();
+export let searchQuery = writable('');
 
 // Mulberry32 PRNG
 function mulberry32(seed) {
@@ -8,7 +8,7 @@ function mulberry32(seed) {
     let t = (seed += 0x6d2b79f5);
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    return ((t ^ (t >>> 16)) >>> 0) / 4294967296;
   };
 }
 
@@ -25,45 +25,58 @@ function generateSeed() {
 
 // Fisher-Yates shuffle with optional seed
 export function shuffleArray(array) {
-  const seed = generateSeed();
-  const rng = mulberry32(seed);
-
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
+  const rng = mulberry32(generateSeed());
+  let i = array.length;
+  while (i > 1) {
+    const j = Math.floor(rng() * i--);
     [array[i], array[j]] = [array[j], array[i]];
   }
-
   return array;
 }
 
 export function getSearchParameters() {
-  const searchParams = new URLSearchParams(window.location.search);
   const result = {};
-  for (const [key, value] of searchParams.entries()) {
-    if (result[key]) {
-      // If key already exists, convert to array or push into existing array
-      result[key] = Array.isArray(result[key]) ? [...result[key], parseValue(value)] : [result[key], parseValue(value)];
+  for (const [key, value] of new URLSearchParams(window.location.search)) {
+    const parsed = parseValue(value);
+    if (key in result) {
+      result[key] = Array.isArray(result[key]) ? [...result[key], parsed] : [result[key], parsed];
     } else {
-      result[key] = parseValue(value);
+      result[key] = parsed;
     }
   }
   return result;
 }
 
+/**
+ * Parses a string value to its appropriate type.
+ * @param {string} value
+ * @returns {boolean|number|string|null|undefined}
+ */
 export function parseValue(value) {
   if (value === "true") return true;
   if (value === "false") return false;
-  if (!isNaN(value) && value.trim() !== "") return Number(value);
+  if (value == null) return value;
+  const trimmed = value.trim();
+  if (/^-?\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed);
   return value;
 }
 
+/**
+ * Creates a URL search string from an object of parameters.
+ * @param {Object} params
+ * @returns {string}
+ */
 export function createSearchParameters(params) {
   const searchParams = new URLSearchParams();
   for (const key in params) {
-    if (Array.isArray(params[key])) {
-      params[key].forEach((value) => searchParams.append(key, value));
+    const val = params[key];
+    if (val == null) continue;
+    if (Array.isArray(val)) {
+      for (const v of val) searchParams.append(key, v);
+    } else if (typeof val === "object") {
+      searchParams.set(key, JSON.stringify(val));
     } else {
-      searchParams.set(key, params[key]);
+      searchParams.set(key, val);
     }
   }
   return searchParams.toString();
