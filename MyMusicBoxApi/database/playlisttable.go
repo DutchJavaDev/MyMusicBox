@@ -11,6 +11,7 @@ type IPlaylistTable interface {
 	FetchPlaylists(ctx context.Context, lastKnowPlaylistId int) (playlists []models.Playlist, error error)
 	InsertPlaylist(playlist models.Playlist) (lastInsertedId int, error error)
 	DeletePlaylist(playlistId int) (error error)
+	FetchPlaylistsById(ctx context.Context, playlistId int) (plst models.Playlist, error error)
 }
 
 type PlaylistTable struct {
@@ -52,6 +53,24 @@ func (table *PlaylistTable) FetchPlaylists(ctx context.Context, lastKnowPlaylist
 	}
 
 	return playlists, nil
+}
+
+func (table *PlaylistTable) FetchPlaylistsById(ctx context.Context, playlistId int) (plst models.Playlist, error error) {
+	query := "SELECT Id, Name, ThumbnailPath, Description, CreationDate, IsPublic FROM Playlist WHERE Id = $1" //
+	//rows, err := table.QueryRowsContex(ctx, query, playlistId)
+
+	row := table.QueryRow(query, playlistId)
+
+	var playlist models.Playlist
+
+	scanError := row.Scan(&playlist.Id, &playlist.Name, &playlist.ThumbnailPath, &playlist.Description, &playlist.CreationDate, &playlist.IsPublic)
+
+	if scanError != nil {
+		logging.Error(fmt.Sprintf("Scan error: %s", scanError.Error()))
+		return models.Playlist{}, scanError
+	}
+
+	return playlist, nil
 }
 
 func (table *PlaylistTable) InsertPlaylist(playlist models.Playlist) (lastInsertedId int, error error) {
