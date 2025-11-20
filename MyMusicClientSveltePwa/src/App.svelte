@@ -12,8 +12,10 @@
   import { initializeMediaSessionService } from "./lib/scripts/mediasessionService.js";
   import { searchQuery } from "./lib/scripts/util.js";
   import SearchBar from "./lib/components/SearchBar.svelte";
+  import { syncPlaylistById } from "./lib/scripts/api.js";
 
   $: $pathName;
+  $: $componentParams;
   $: $currentView;
 
   // @ts-ignore
@@ -51,6 +53,16 @@
   // It can be replaced with a more specific implementation later.
   async function refresh() {
     window.location.reload();
+  }
+
+  async function syncPlaylist() {
+    const playlistId = get(componentParams).playlistId
+    if (playlistId) {
+      // alert(`Syncing playlist ${playlistId} not yet implemented.`);
+      await syncPlaylistById(playlistId);
+    } else {
+      alert("No playlist selected to sync.");
+    }
   }
 </script>
 
@@ -92,7 +104,8 @@
           <button type="button" aria-label="home" class="btn btn-dark w-100 dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-plus"></i></button>
           
           <div id="actions" class="dropdown-menu w-100">
-            <button class="btn btn-primary dropdown-item" data-bs-toggle="modal" data-bs-target="#createPlaylistModal" >New Playlist</button>
+            <button class="btn btn-primary text-success dropdown-item" on:click={syncPlaylist} disabled={!$pathName.includes("playlists")}>Sync Playlist</button>
+            <button class="btn btn-primary text-info dropdown-item" data-bs-toggle="modal" data-bs-target="#createPlaylistModal" >New Playlist</button>
             <button class="btn btn-primary dropdown-item text-danger" on:click={deleteCurrentPlaylist} disabled={!$pathName.includes("playlists")}>Delete Current Playlist</button>
           </div>
         </div>

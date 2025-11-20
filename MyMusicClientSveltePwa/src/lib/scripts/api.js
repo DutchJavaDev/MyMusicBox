@@ -135,6 +135,32 @@ export async function deleteSongFromPlaylist(playlistId, songId) {
   }
 }
 
+export async function syncPlaylistById(playlistId) {
+  try {
+    const response = await fetch(`${baseApiUrl}/playlist/sync/${playlistId}`, {
+      method: "POST",
+    });
+
+    var cd = response.json()
+
+    console.log("Sync playlist response:", cd)
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response}`);
+    }
+    return {
+      success: true,
+      data: response,
+    };
+  } catch (error) {
+    console.log("Error syncing playlist:", error);
+    return {
+      success: false,
+      data: error,
+    };
+  }
+}
+
 export function getImageUrl(path) {
   var config = getConfiguration();
 

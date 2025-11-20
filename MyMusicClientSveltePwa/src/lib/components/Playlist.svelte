@@ -19,6 +19,10 @@
     playOrPauseSong(null);
   }
 
+  function syncPlaylist() {
+    alert("Syncing playlist not yet implemented.");
+  }
+
   onMount(() => {
     songCount = getCachedPlaylistSongs(playlist.id).length;
   });
@@ -35,6 +39,7 @@
           <p>{songCount} songs • {playlist.description}</p>
         </div>
       </article>
+      
     </div>
   {:else}
     <p>No playlist founnd with id: {playlist.id}.</p>

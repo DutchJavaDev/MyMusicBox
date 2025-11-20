@@ -125,6 +125,7 @@ export function previousSong() {
 }
 
 export function playOrPauseSong(songId) {
+  return
   if (songId < 0) {
     // Invalid songId, do nothing
     return;
