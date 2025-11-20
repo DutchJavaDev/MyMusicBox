@@ -74,7 +74,8 @@ func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
 			PrintToFile("%(duration)s", durationFileName).
 			PrintToFile("%(playlist_title)s", playlistTitleFileName).
 			PrintToFile("%(playlist_id)s", playlistIdFileName).
-			Cookies("selenium/cookies_netscape")
+			Cookies("selenium/cookies_netscape").
+			IgnoreErrors()
 
 		// Start download (flat download)
 		result, err := dlp.Run(context.Background(), downloadRequest.Url)
