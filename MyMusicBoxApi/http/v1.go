@@ -37,6 +37,7 @@ func V1Endpoints(apiv1Group *gin.RouterGroup) {
 	apiv1Group.GET("/tasklogs/:parentId", taskLogHandler.FetchChildTaskLogs)
 
 	apiv1Group.POST("/playlist", playlistHandler.InsertPlaylist)
+	apiv1Group.POST("/playlist/sync/:playlistId", playlistHandler.SyncPlaylist)
 	apiv1Group.POST("/playlistsong/:playlistId/:songId", playlistSongHandler.InsertPlaylistSong)
 	apiv1Group.POST("/download", DownloadRequest)
 

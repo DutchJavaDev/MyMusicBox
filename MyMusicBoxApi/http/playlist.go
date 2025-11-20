@@ -6,6 +6,7 @@ import (
 	"musicboxapi/database"
 	"musicboxapi/logging"
 	"musicboxapi/models"
+	"musicboxapi/service"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -41,6 +42,42 @@ func (handler *PlaylistHandler) FetchPlaylists(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, models.OkResponse(playlists, fmt.Sprintf("Found %d playlist", len(playlists))))
+}
+
+func (handler *PlaylistHandler) SyncPlaylist(ctx *gin.Context) {
+
+	playlistIdParameter := ctx.Param("playlistId")
+
+	id, err := strconv.Atoi(playlistIdParameter)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
+		return
+	}
+
+	if DefaultPlaylistId == id {
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse("Funky music... wrong year"))
+		return
+	}
+
+	playlistTable := database.NewPlaylistTableInstance()
+
+	playlist, err := playlistTable.FetchPlaylistsById(ctx.Request.Context(), id)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.ErrorResponse(err))
+		return
+	}
+
+	playlistId := strings.Split(playlist.ThumbnailPath, ".")[0]
+
+	var request models.DownloadRequestModel
+
+	request.Url = fmt.Sprintf("https://www.youtube.com/playlist?list=%s", playlistId)
+
+	go service.StartDownloadTask(request)
+
+	ctx.JSON(http.StatusOK, models.OkResponse(gin.H{"": ""}, "Created"))
 }
 
 func (hanlder *PlaylistHandler) InsertPlaylist(ctx *gin.Context) {
