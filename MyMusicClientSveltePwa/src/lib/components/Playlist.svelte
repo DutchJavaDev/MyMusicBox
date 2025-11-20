@@ -19,10 +19,6 @@
     playOrPauseSong(null);
   }
 
-  function syncPlaylist() {
-    alert("Syncing playlist not yet implemented.");
-  }
-
   onMount(() => {
     songCount = getCachedPlaylistSongs(playlist.id).length;
   });
