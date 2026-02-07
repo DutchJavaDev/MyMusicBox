@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"log"
+	"musicboxapi/logging"
 	"os"
 )
 
@@ -19,14 +20,14 @@ func FlatPlaylistDownload(
 	logOutput string,
 	logOutputError string,
 ) bool {
-
-	Stdout, err := os.OpenFile(logOutput, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	Stdout, err := os.Create(logOutput)
 
 	if err != nil {
+		logging.ErrorStackTrace(err)
 		panic(-65465465)
 	}
 
-	Stderr, err := os.OpenFile(logOutputError, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	Stderr, err := os.Create(logOutputError)
 
 	if err != nil {
 		panic(-65324465)

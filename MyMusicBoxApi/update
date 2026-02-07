@@ -7,7 +7,7 @@ SCRIPTS_FOLDER="$DATABASE_FOLDER/initscripts"
 IMAGES_FOLDER="$RELEASE_FOLDER/music/images"
 COOKIES_FOLDER="$RELEASE_FOLDER/selenium"
 MIGRATION_FOLDER="$RELEASE_FOLDER/migration_scripts"
-HOTFIX_FOLDER="$RELEASE_FOLDER/hotfix_logs"
+HOTFIX_FOLDER="$RELEASE_FOLDER/music/hotfix_logs"
 
 echo "=== Checking release folder ==="
 
@@ -38,9 +38,9 @@ cp selenium/* "$COOKIES_FOLDER"
 echo "=== Updating executable ==="
 go build -trimpath -buildvcs=false -ldflags="-s -w" -o "$RELEASE_FOLDER"
 
-echo "=== Reducing executable size ==="
-cd "$RELEASE_FOLDER"
-upx --best --lzma musicboxapi
+# echo "=== Reducing executable size ==="
+# cd "$RELEASE_FOLDER"
+# upx --best --lzma musicboxapi
 
 echo "=== Restarting mymusic service ==="
 sudo systemctl stop mymusic || echo "Service 'mymusic' was not running."
