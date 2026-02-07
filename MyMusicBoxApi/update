@@ -7,6 +7,7 @@ SCRIPTS_FOLDER="$DATABASE_FOLDER/initscripts"
 IMAGES_FOLDER="$RELEASE_FOLDER/music/images"
 COOKIES_FOLDER="$RELEASE_FOLDER/selenium"
 MIGRATION_FOLDER="$RELEASE_FOLDER/migration_scripts"
+HOTFIX_FOLDER="$RELEASE_FOLDER/hotfix_logs"
 
 echo "=== Checking release folder ==="
 
@@ -17,6 +18,7 @@ FOLDERS=(
   "$IMAGES_FOLDER"
   "$COOKIES_FOLDER"
   "$MIGRATION_FOLDER"
+  "$HOTFIX_FOLDER"
 )
 
 for folder in "${FOLDERS[@]}"; do

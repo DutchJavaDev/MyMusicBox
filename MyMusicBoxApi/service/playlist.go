@@ -114,7 +114,7 @@ func downloadPlaylist(
 
 	for id := range downloadCount {
 		name := names[id]
-		if canDownload(name) {
+		if canDownload(name) && !existInArchive(archiveFileName, ids[id]) {
 
 			childTask, _ := tasklogTable.CreateChildTaskLog(parentTask)
 
@@ -178,6 +178,22 @@ func downloadPlaylist(
 			tasklogTable.ChildTaskLogDone(childTask)
 		}
 	}
+}
+
+func existInArchive(path string, id string) bool {
+	lines, err := readLines(path)
+
+	if err != nil {
+		panic(-654654)
+	}
+
+	for line := range lines {
+		if strings.Contains(lines[line], fmt.Sprintf("youtube %s", id)) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func canDownload(name string) bool {
