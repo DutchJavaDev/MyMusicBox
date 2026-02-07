@@ -39,7 +39,6 @@ cp selenium/* "$COOKIES_FOLDER"
 cp migration_scripts/* "$MIGRATION_FOLDER"
 
 echo "=== Building executable ==="
-go mod tidy
 go build -trimpath -buildvcs=false -ldflags="-s -w" -o "$RELEASE_FOLDER"
 
 echo "=== Reducing executable size ==="

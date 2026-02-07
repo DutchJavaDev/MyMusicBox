@@ -47,7 +47,6 @@ func FlatPlaylistDownload(
 			"--print-to-file", "%(playlist_id)s", playlistIdFileName,
 			"--print-to-file", "%(playlist_title)s", playlistTitleFileName,
 			"--ignore-errors",
-			fmt.Sprintf("--download-archive=%s", archiveFileName),
 			"--extractor-args=youtube:player_js_variant=tv",
 			fmt.Sprintf("--cookies=%s", cookiesPath),
 			"--js-runtimes=deno:/home/admin/.deno/bin",
