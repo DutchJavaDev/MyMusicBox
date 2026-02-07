@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"musicboxapi/configuration"
 	"musicboxapi/database"
@@ -12,13 +11,13 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/lrstanley/go-ytdlp"
 )
 
 // @title MusicBoxApi API
 // @version 1.0
 // @BasePath  /api/v1
 func main() {
+
 	configuration.LoadConfiguration()
 
 	err := database.CreateDatabasConnectionPool()
@@ -32,9 +31,6 @@ func main() {
 	}
 
 	database.ApplyMigrations()
-
-	// If yt-dlp isn't installed yet, download and cache it for further use.
-	ytdlp.MustInstall(context.TODO(), nil)
 
 	setGinMode()
 

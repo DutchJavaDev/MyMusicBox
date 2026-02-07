@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/lrstanley/go-ytdlp"
 )
 
 func downloadPlaylist(
@@ -26,6 +24,9 @@ func downloadPlaylist(
 	playlistIdFileName string,
 	imagesFolder string,
 	fileExtension string,
+	logfilesOutputPath string,
+	logfilesOutputPathError string,
+	storageFolderName string,
 ) {
 	/*
 			Ignore
@@ -95,21 +96,21 @@ func downloadPlaylist(
 		_ = os.Rename(oldpath, newpath)
 	}
 
-	defaultSettings := ytdlp.New().
-		ExtractAudio().
-		AudioQuality("0").
-		AudioFormat(fileExtension).
-		DownloadArchive(archiveFileName).
-		WriteThumbnail().
-		ConcurrentFragments(10).
-		ConvertThumbnails("jpg").
-		ForceIPv4().
-		//sudo apt install aria2
-		Downloader("aria2c").
-		DownloaderArgs("aria2c:-x 16 -s 16 -j 16").
-		NoKeepVideo().
-		Output(storage + "/%(id)s.%(ext)s").
-		Cookies("selenium/cookies_netscape")
+	// defaultSettings := ytdlp.New().
+	// 	ExtractAudio().
+	// 	AudioQuality("0").
+	// 	AudioFormat(fileExtension).
+	// 	DownloadArchive(archiveFileName).
+	// 	WriteThumbnail().
+	// 	ConcurrentFragments(10).
+	// 	ConvertThumbnails("jpg").
+	// 	ForceIPv4().
+	// 	//sudo apt install aria2
+	// 	Downloader("aria2c").
+	// 	DownloaderArgs("aria2c:-x 16 -s 16 -j 16").
+	// 	NoKeepVideo().
+	// 	Output(storage + "/%(id)s.%(ext)s").
+	// 	Cookies("selenium/cookies_netscape")
 
 	for id := range downloadCount {
 		name := names[id]
@@ -121,14 +122,22 @@ func downloadPlaylist(
 
 			tasklogTable.UpdateChildTaskLogStatus(childTask)
 
-			ytdlpInstance := defaultSettings.Clone()
+			downloaded := FlatSingleDownload(
+				archiveFileName,
+				idsFileName,
+				namesFileName,
+				durationFileName,
+				playlistTitleFileName,
+				playlistIdFileName,
+				fmt.Sprintf("https://www.youtube.com/watch?v=%s", ids[id]),
+				logfilesOutputPath,
+				logfilesOutputPathError,
+				storageFolderName,
+				fileExtension)
 
-			result, err := ytdlpInstance.Run(context.Background(), fmt.Sprintf("https://www.youtube.com/watch?v=%s", ids[id]))
-
-			// outputLogs[ids[id]] = result.Stdout
-
-			if err != nil {
-				json, _ := json.Marshal(result.Stdout)
+			if !downloaded {
+				file, err := os.ReadFile(logfilesOutputPathError)
+				json, _ := json.Marshal(file)
 				childTask.OutputLog = json
 				tasklogTable.ChildTaskLogError(childTask)
 				logging.Error(fmt.Sprintf("Failed to download %s, error:%s", ids[id], err.Error()))
@@ -156,7 +165,13 @@ func downloadPlaylist(
 
 			_ = os.Rename(oldpath, newpath)
 
-			json, _ := json.Marshal(result.OutputLogs)
+			file, err := os.ReadFile(logfilesOutputPath)
+
+			if err != nil {
+				panic(-1564654654)
+			}
+
+			json, _ := json.Marshal(file)
 
 			childTask.OutputLog = json
 

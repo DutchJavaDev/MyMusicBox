@@ -2,7 +2,6 @@ package service
 
 import (
 	"bufio"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/fs"
@@ -13,8 +12,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/lrstanley/go-ytdlp"
 )
 
 func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
@@ -34,6 +31,8 @@ func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
 	playlistIdFileName := fmt.Sprintf("%s/playlist_id.%d", storageFolderName, parentTask.Id)
 	imagesFolder := fmt.Sprintf("%s/images", storageFolderName)
 	fileExtension := config.OutputExtension
+	logfilesOutputPath := fmt.Sprintf("%s/hotfix_logs/%s", storageFolderName, fmt.Sprintf("logrun_%d", parentTask.Id))
+	logfilesOutputPathError := fmt.Sprintf("%s/hotfix_logs/%s", storageFolderName, fmt.Sprintf("logrunError_%d", parentTask.Id))
 
 	if !pathExists(storageFolderName) {
 		err := os.Mkdir(storageFolderName, fs.ModePerm|fs.ModeDir)
@@ -59,30 +58,31 @@ func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
 		durationFileName,
 		playlistTitleFileName,
 		playlistIdFileName,
+		logfilesOutputPath,
+		logfilesOutputPathError,
 	}
 
 	if isPlaylist {
-		dlp := ytdlp.New().
-			DownloadArchive(archiveFileName).
-			ForceIPv4().
-			NoKeepVideo().
-			SkipDownload().
-			FlatPlaylist().
-			WriteThumbnail().
-			PrintToFile("%(id)s", idsFileName).
-			PrintToFile("%(title)s", namesFileName).
-			PrintToFile("%(duration)s", durationFileName).
-			PrintToFile("%(playlist_title)s", playlistTitleFileName).
-			PrintToFile("%(playlist_id)s", playlistIdFileName).
-			Cookies("selenium/cookies_netscape").
-			IgnoreErrors()
+		downloaded := FlatPlaylistDownload(
+			archiveFileName,
+			idsFileName,
+			namesFileName,
+			durationFileName,
+			playlistTitleFileName,
+			playlistIdFileName,
+			downloadRequest.Url,
+			logfilesOutputPath,
+			logfilesOutputPathError)
 
 		// Start download (flat download)
-		result, err := dlp.Run(context.Background(), downloadRequest.Url)
+		if !downloaded {
 
-		if err != nil {
+			fmt.Printf("Failed to download for %s check logs at %s", downloadRequest.Url, logfilesOutputPathError)
+
+			file, err := os.ReadFile(logfilesOutputPathError)
+
 			// Set Task state -> Error
-			json, err := json.Marshal(result.OutputLogs)
+			json, err := json.Marshal(string(file))
 
 			errChildTask, err := tasklogTable.CreateChildTaskLog(parentTask)
 
@@ -96,6 +96,19 @@ func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
 
 			//Delete created files if any
 			for _, path := range cleanupFile {
+
+				if strings.Contains(path, "logrunError") {
+					lines, err := readLines(path)
+
+					if err != nil {
+						panic(-654654654)
+					}
+
+					if len(lines) > 0 && len(lines[0]) > 0 {
+						// skip deleting log so it can be used for debug
+						continue
+					}
+				}
 				os.Remove(path)
 			}
 			return
@@ -133,10 +146,27 @@ func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
 			playlistTitleFileName,
 			playlistIdFileName,
 			imagesFolder,
-			fileExtension)
+			fileExtension,
+			logfilesOutputPath,
+			logfilesOutputPathError,
+			storageFolderName)
 
 		// Delete created files
 		for _, path := range cleanupFile {
+
+			if strings.Contains(path, "logrunError") {
+				lines, err := readLines(path)
+
+				if err != nil {
+					panic(-654654654)
+				}
+
+				if len(lines) > 0 && len(lines[0]) > 0 {
+					// skip deleting log so it can be used for debug
+					continue
+				}
+			}
+
 			os.Remove(path)
 		}
 	} else {
@@ -148,26 +178,19 @@ func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
 			return
 		}
 
-		dlp := ytdlp.New().
-			ExtractAudio().
-			AudioQuality("0").
-			AudioFormat(fileExtension).
-			DownloadArchive(archiveFileName).
-			WriteThumbnail().
-			ConcurrentFragments(10).
-			ConvertThumbnails("jpg").
-			ForceIPv4().
-			PrintToFile("%(id)s", idsFileName).
-			PrintToFile("%(title)s", namesFileName).
-			PrintToFile("%(duration)s", durationFileName).
-			//sudo apt install aria2
-			Downloader("aria2c").
-			DownloaderArgs("aria2c:-x 16 -s 16 -j 16").
-			NoKeepVideo().
-			Output(storageFolderName + "/%(id)s.%(ext)s").
-			Cookies("selenium/cookies_netscape")
+		downloaded := FlatSingleDownload(
+			archiveFileName,
+			idsFileName,
+			namesFileName,
+			durationFileName,
+			playlistTitleFileName,
+			playlistIdFileName,
+			downloadRequest.Url,
+			logfilesOutputPath,
+			logfilesOutputPathError,
+			storageFolderName,
+			fileExtension)
 
-		// Update task status
 		childTask.Status = int(models.Downloading)
 
 		err = tasklogTable.UpdateChildTaskLogStatus(childTask)
@@ -176,12 +199,13 @@ func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
 			return
 		}
 
-		// Start download
-		result, err := dlp.Run(context.Background(), downloadRequest.Url)
+		if !downloaded {
+			fmt.Printf("Failed to download for %s check logs at %s", downloadRequest.Url, logfilesOutputPathError)
 
-		if err != nil {
+			file, err := os.ReadFile(logfilesOutputPathError)
+
 			// Set Task state -> Error
-			json, err := json.Marshal(result.OutputLogs)
+			json, err := json.Marshal(string(file))
 
 			childTask.OutputLog = json
 
@@ -251,7 +275,9 @@ func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
 			logging.Error(fmt.Sprintf("Failed to move song image to / images folder: %s", err.Error()))
 		}
 
-		json, err := json.Marshal(result.OutputLogs)
+		file, err := os.ReadFile(logfilesOutputPath)
+
+		json, err := json.Marshal(string(file))
 
 		childTask.OutputLog = json
 		childTask.Status = int(models.Done)
@@ -263,6 +289,19 @@ func StartDownloadTask(downloadRequest models.DownloadRequestModel) {
 
 		//Delete created files
 		for _, path := range cleanupFile {
+
+			if strings.Contains(path, "logrunError") {
+				lines, err := readLines(path)
+
+				if err != nil {
+					panic(-654654654)
+				}
+
+				if len(lines) > 0 && len(lines[0]) > 0 {
+					// skip deleting log so it can be used for debug
+					continue
+				}
+			}
 			os.Remove(path)
 		}
 	}
