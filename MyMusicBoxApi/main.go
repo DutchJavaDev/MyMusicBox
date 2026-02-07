@@ -1,9 +1,7 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"log"
 	"musicboxapi/configuration"
 	"musicboxapi/database"
 	"musicboxapi/http"
@@ -13,7 +11,6 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/lrstanley/go-ytdlp"
 )
 
 // @title MusicBoxApi API
@@ -21,37 +18,6 @@ import (
 // @BasePath  /api/v1
 func main() {
 
-	procAttr := os.ProcAttr{
-		// Dir: "/usr/bin",
-	}
-
-	procAttr.Files = []*os.File{os.Stdin, os.Stdout, os.Stderr}
-
-	proc, _err := os.StartProcess(
-		"/usr/bin/yt-dlp-mmb",
-		[]string{
-			"yt-dlp-mmb",
-			"--extractor-args=youtube:player_js_variant=tv",
-			"--cookies=/home/admin/projects/workspace/MyMusicBoxApi/selenium/cookies_netscape",
-			"--js-runtimes=deno:/home/admin/.deno/bin",
-			"--remote-components=ejs:npm",
-			"https://www.youtube.com/watch?v=Y0ivz1umQ6g",
-		},
-		&os.ProcAttr{
-			Files: []*os.File{
-				os.Stdin,
-				os.Stdout,
-				os.Stderr,
-			},
-		},
-	)
-	if _err != nil {
-		log.Fatal(_err)
-	}
-
-	proc.Wait()
-
-	return
 	configuration.LoadConfiguration()
 
 	err := database.CreateDatabasConnectionPool()
@@ -66,16 +32,6 @@ func main() {
 
 	database.ApplyMigrations()
 
-	ytdlp.RemoveInstallCache()
-
-	// If yt-dlp isn't installed yet, download and cache it for further use.
-	options := ytdlp.InstallOptions{
-		DisableChecksum:      true,
-		AllowVersionMismatch: true,
-		DownloadURL:          "https://github.com/yt-dlp/yt-dlp/releases/download/2026.01.29/yt-dlp_linux",
-	}
-
-	ytdlp.MustInstall(context.TODO(), &options)
 	setGinMode()
 
 	ginEngine := gin.Default()

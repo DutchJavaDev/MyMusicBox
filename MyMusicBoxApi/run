@@ -1,9 +1,11 @@
 #!/bin/bash
 echo "=== Setting up folders ==="
 IMAGES_FOLDER="music_dev/images"
+HOTFIX_FOLDER="music_dev/hotfix_logs"
 
 FOLDERS=(
   "$IMAGES_FOLDER"
+  "$HOTFIX_FOLDER"
 )
 
 for folder in "${FOLDERS[@]}"; do
