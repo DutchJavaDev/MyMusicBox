@@ -114,7 +114,7 @@ func downloadPlaylist(
 
 	for id := range downloadCount {
 		name := names[id]
-		if canDownload(name) && !existInArchive(archiveFileName, ids[id]) {
+		if canDownload(name) {
 
 			childTask, _ := tasklogTable.CreateChildTaskLog(parentTask)
 
