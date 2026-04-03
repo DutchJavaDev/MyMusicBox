@@ -27,6 +27,9 @@ cd ..
 cd dev_database
 sudo docker compose up -d
 
+# give enough time for containers to start
+sleep 15s
+
 # run executable
 cd ..
 cd MyMusicBoxApi
