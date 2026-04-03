@@ -34,9 +34,9 @@ func FlatPlaylistDownload(
 	}
 
 	proc, _err := os.StartProcess(
-		"/usr/bin/yt-dlp-mmb",
+		"/usr/bin/yt-dlp_linux",
 		[]string{
-			"yt-dlp-mmb",
+			"yt-dlp_linux",
 			"--force-ipv4",
 			"--no-keep-video",
 			"--skip-download",
@@ -48,10 +48,9 @@ func FlatPlaylistDownload(
 			"--print-to-file", "%(playlist_id)s", playlistIdFileName,
 			"--print-to-file", "%(playlist_title)s", playlistTitleFileName,
 			"--ignore-errors",
-			"--extractor-args=youtube:player_js_variant=tv",
 			fmt.Sprintf("--cookies=%s", cookiesPath),
-			"--js-runtimes=deno:/home/admin/.deno/bin",
-			"--remote-components=ejs:npm",
+			"--js-runtimes=deno:/home/admin/.deno/bin/deno",
+			"--remote-components=ejs:github",
 			url,
 		},
 		&os.ProcAttr{
@@ -102,9 +101,9 @@ func FlatSingleDownload(
 	}
 
 	proc, _err := os.StartProcess(
-		"/usr/bin/yt-dlp-mmb",
+		"/usr/bin/yt-dlp_linux",
 		[]string{
-			"yt-dlp-mmb",
+			"yt-dlp_linux",
 			"--force-ipv4",
 			"--write-thumbnail",
 			"--extract-audio",
@@ -122,10 +121,9 @@ func FlatSingleDownload(
 			"--concurrent-fragments=20",
 			"--ignore-errors",
 			fmt.Sprintf("--download-archive=%s", archiveFileName),
-			"--extractor-args=youtube:player_js_variant=tv",
 			fmt.Sprintf("--cookies=%s", cookiesPath),
-			"--js-runtimes=deno:/home/admin/.deno/bin",
-			"--remote-components=ejs:npm",
+			"--js-runtimes=deno:/home/admin/.deno/bin/deno",
+			"--remote-components=ejs:github",
 			url,
 		},
 		&os.ProcAttr{
