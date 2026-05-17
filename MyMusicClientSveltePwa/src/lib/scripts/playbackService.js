@@ -109,7 +109,17 @@ export function initializePlaybackService() {
 
   audioElement.addEventListener("error", (e) => {
     console.error("Error loading audio:", e);
+    // Retry
+    audioElement.load();
+    isLoading.set(true);
   });
+
+  audioElement.addEventListener("abort", (e) => {
+    console.error("Abort loading audio:", e);
+    // Retry
+    audioElement.load();
+    isLoading.set(true);
+  })
 }
 
 export function nextSong() {
@@ -143,10 +153,10 @@ export function playOrPauseSong(songId) {
     songIndex = playlistSongs.findIndex((song) => song.id === songId);
     audioElement.src = getPlaybackUrl(song.source_id);
     audioElement.load();
+    isLoading.set(true);
     currentSong.set(playlistSongs.find((song) => song.id === songId));
     isPlaying.set(false); // set to false since this is a new song
     setCurrentSongIndex(songIndex);
-    isLoading.set(true);
   }
   else if (get(isPlaying)) {
     audioElement.pause();
